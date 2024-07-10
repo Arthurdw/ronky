@@ -1,0 +1,12 @@
+[package]
+name = "rs-exporter"
+version = "0.0.0-a"
+edition = "2021"
+description = "Export a part of the Rust AST to JSON"
+license = "GNU GPL-3.0"
+authors = ["Arthur De Witte <dev@arthurdw.com>"]
+repository = "https://github.com/Arthurdw/rs-exporter"
+categories = ["development-tools"]
+keywords = ["rust", "ast", "exporter", "json"]
+
+[dependencies]
