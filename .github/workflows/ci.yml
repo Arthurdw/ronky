@@ -1,5 +1,4 @@
-# Working example showing how to use nextest to reuse builds and partition test runs on GitHub Actions.
-# See workflow runs at https://github.com/nextest-rs/reuse-build-partition-example/actions/workflows/ci.yml.
+# https://github.com/nextest-rs/reuse-build-partition-example/actions/workflows/ci.yml.
 
 name: CI
 
@@ -9,7 +8,6 @@ on:
   push:
     branches: [main]
   schedule:
-    # Run this every day at 01:00 UTC.
     - cron: 0 1 * * *
 
 env:
@@ -22,8 +20,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          # By default actions/checkout checks out a merge commit. Check out the PR head instead.
-          # https://github.com/actions/checkout#checkout-pull-request-head-commit-instead-of-merge-commit
           ref: ${{ github.event.pull_request.head.sha }}
       - uses: actions-rs/toolchain@v1
         with:
@@ -47,15 +43,9 @@ jobs:
       matrix:
         partition: [1, 2]
     steps:
-      # The source directory must be checked out.
       - uses: actions/checkout@v4
         with:
-          # By default actions/checkout checks out a merge commit. Check out the PR head instead.
-          # https://github.com/actions/checkout#checkout-pull-request-head-commit-instead-of-merge-commit
           ref: ${{ github.event.pull_request.head.sha }}
-      # In this example, the Rust toolchain is not installed. cargo nextest's run phase does not
-      # require Cargo. You can choose to install Rust if your tests require it, of course.
-      # Instead, create ~/.cargo/bin as required by the install action.
       - run: mkdir -p ~/.cargo/bin
       - name: Install nextest
         uses: taiki-e/install-action@nextest
