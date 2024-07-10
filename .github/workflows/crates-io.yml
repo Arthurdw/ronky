@@ -10,6 +10,8 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+      # echo CARGO_REGISTRY_TOKEN
+      - run: "token: ${{ secrets.CARGO_REGISTRY_TOKEN }}"
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
       - uses: katyo/publish-crates@v2
