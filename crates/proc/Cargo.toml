@@ -1,0 +1,22 @@
+[package]
+name = "proc"
+version = "0.1.0"
+readme = "README.md"
+description = "A procedural macro for generating types based on a struct definition"
+authors.workspace = true
+categories.workspace = true
+edition.workspace = true
+keywords.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+quote = "1.0.36"
+syn = "2.0.70"
+serde_json.workspace = true
+
+[dev-dependencies]
+exported = { path = "../exported" }
+
+[lib]
+proc-macro = true
