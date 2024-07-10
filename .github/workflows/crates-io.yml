@@ -1,6 +1,6 @@
 ---
 name: Deploy to crates.io
-run-name: ${{ github.actor }} is deploying to crates.io
+run-name: deploying to crates.io
 on:
   push:
     branches:
