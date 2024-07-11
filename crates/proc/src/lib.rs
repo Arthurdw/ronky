@@ -1,21 +1,16 @@
+mod fmt;
+mod formatter;
+
 extern crate proc_macro;
 
+use fmt::format_field;
+use proc_macro::TokenStream;
 use quote::{quote, ToTokens};
-use syn::{parse, DeriveInput, Field};
+use syn::{parse, DeriveInput};
 
-fn format_field(field: &Field) -> proc_macro2::TokenStream {
-    let name = field.ident.as_ref().unwrap();
-    let ty = &field.ty;
-    quote! {
-        {
-            "name": stringify!(#name),
-            "type": stringify!(#ty),
-        }
-    }
-}
-
+/// This macro will generate a JSON representation of a struct with its fields.
 #[proc_macro]
-pub fn export_stream(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+pub fn export_stream(input: TokenStream) -> TokenStream {
     let input: DeriveInput = parse(input).unwrap();
     let struct_name = &input.ident;
 
@@ -47,8 +42,10 @@ pub fn export_stream(input: proc_macro::TokenStream) -> proc_macro::TokenStream 
     expanded.into()
 }
 
+/// Implement the Export trait for a struct. This does a compile time traversal of the struct its
+/// AST properties.
 #[proc_macro_derive(Export)]
-pub fn export_struct(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+pub fn export_struct(input: TokenStream) -> TokenStream {
     let input: DeriveInput = parse(input).unwrap();
     let struct_name = input.clone().ident;
     let result = export_stream(input.into_token_stream().into());
