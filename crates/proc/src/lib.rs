@@ -26,16 +26,15 @@ pub fn export_stream(input: TokenStream) -> TokenStream {
 
     let fields = fields.iter().map(format_field);
 
-    let expanded = quote! {
+    quote! {
         serde_json::json!({
             "name": #struct_name,
             "fields": [
                 #(#fields),*
             ]
         })
-    };
-
-    expanded.into()
+    }
+    .into()
 }
 
 /// Implement the Export trait for a struct. This does a compile time traversal of the struct its
@@ -47,13 +46,12 @@ pub fn export_struct(input: TokenStream) -> TokenStream {
     let result = export_stream(input.into_token_stream().into());
     let quotable_result: proc_macro2::TokenStream = result.into();
 
-    let expanded = quote! {
+    quote! {
         impl Exported for #struct_name {
             fn export() -> serde_json::Value {
                 #quotable_result
             }
         }
-    };
-
-    expanded.into()
+    }
+    .into()
 }

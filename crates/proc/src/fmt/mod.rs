@@ -1,7 +1,9 @@
 mod base;
+mod generic;
 mod vec;
 
 use base::{get_path, BaseFormatter};
+use generic::GenericFormatter;
 use proc_macro2::TokenStream;
 use syn::Field;
 use vec::VecFormatter;
@@ -21,9 +23,10 @@ pub fn format_field(field: &Field) -> TokenStream {
         let ident = segment.ident.to_string();
 
         match ident.as_str() {
-            "Vec" => break 'formatter Box::new(VecFormatter()),
-            _ => panic!("Unknown type: {}", ident),
-        };
+            "Vec" => Box::new(VecFormatter()),
+            _ => Box::new(GenericFormatter()),
+            // _ => panic!("Unknown type: {}", ident),
+        }
     };
 
     formatter.format_field(field)

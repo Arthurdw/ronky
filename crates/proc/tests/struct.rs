@@ -108,4 +108,35 @@ mod tests {
             })
         )
     }
+
+    #[test]
+    fn test_generics() {
+        #[allow(dead_code)]
+        #[derive(Export)]
+        struct Human {
+            friends: Friend<Super, Bestie>,
+        }
+        struct Bestie();
+        struct Super();
+        struct Friend<T, U> {
+            marker1: std::marker::PhantomData<T>,
+            marker2: std::marker::PhantomData<U>,
+        }
+
+        let export = Human::export();
+
+        assert_eq!(
+            export,
+            json!({
+                "name": "Human",
+                "fields": [
+                    {
+                        "name": "friends",
+                        "type": "Friend",
+                        "generics": ["Super", "Bestie"]
+                    }
+                ]
+            })
+        )
+    }
 }
