@@ -5,12 +5,41 @@ mod tests {
     use serde_json::json;
 
     #[test]
-    fn test_basic_export() {
+    fn test_basic_struct() {
         #[allow(dead_code)]
         #[derive(Export)]
         struct Human {
             name: String,
-            age: u8,
+            age: u32,
+        }
+        let export = Human::export();
+        assert_eq!(
+            export,
+            json!({
+                "types": [
+                    {
+                        "name": "Human",
+                        "fields": [
+                            {
+                                "name": "name",
+                                "type": "String"
+                            },
+                            {
+                                "name": "age",
+                                "type": "u32"
+                            }
+                        ]
+                    }
+                ]
+            })
+        );
+    }
+
+    #[test]
+    fn test_arrays() {
+        #[allow(dead_code)]
+        #[derive(Export)]
+        struct Human {
             hobbies: Vec<String>,
         }
 
@@ -24,14 +53,6 @@ mod tests {
                         "name": "Test",
                         "fields": [
                             {
-                                "name": "name",
-                                "type": "string"
-                            },
-                            {
-                                "name": "age",
-                                "type": "u8"
-                            },
-                            {
                                 "name": "hobbies",
                                 "type": ["string"]
                             }
@@ -43,7 +64,7 @@ mod tests {
     }
 
     #[test]
-    fn test_basic_nesting() {
+    fn test_nesting() {
         #[allow(dead_code)]
         #[derive(Export)]
         struct Human {
@@ -91,7 +112,7 @@ mod tests {
     }
 
     #[test]
-    fn test_basic_recursion() {
+    fn test_recursion() {
         #[allow(dead_code)]
         #[derive(Export)]
         struct Human {

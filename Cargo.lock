@@ -20,6 +20,7 @@ name = "proc"
 version = "0.1.0"
 dependencies = [
  "exported",
+ "proc-macro2",
  "quote",
  "serde_json",
  "syn",
