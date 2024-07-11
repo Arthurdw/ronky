@@ -1,9 +1,9 @@
 [package]
 name = "ronky"
-version = "0.0.0-a"
 description = "Export a part of the Rust AST to JSON"
 readme = "README.md"
 
+version.workspace = true
 authors.workspace = true
 categories.workspace = true
 edition.workspace = true
@@ -12,8 +12,8 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
-proc = { path = "crates/proc" }
-exported = { path = "crates/exported" }
+ronky_proc = { path = "crates/proc" }
+ronky_exported = { path = "crates/exported" }
 
 serde_json.workspace = true
 
@@ -24,6 +24,7 @@ workspace = true
 members = ["crates/*"]
 
 [workspace.package]
+version = "0.0.0-a"
 edition = "2021"
 license = "GPL-3.0-or-later"
 authors = ["Arthur De Witte <dev@arthurdw.com>"]

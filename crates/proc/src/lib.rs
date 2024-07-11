@@ -1,8 +1,6 @@
 mod fmt;
 mod formatter;
 
-extern crate proc_macro;
-
 use fmt::format_field;
 use proc_macro::TokenStream;
 use quote::{quote, ToTokens};

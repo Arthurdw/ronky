@@ -5,8 +5,8 @@
 
 #[cfg(test)]
 mod tests {
-    use exported::Exported;
-    use proc::Export;
+    use ronky_exported::Exported;
+    use ronky_proc::Export;
     use serde_json::json;
 
     #[test]
