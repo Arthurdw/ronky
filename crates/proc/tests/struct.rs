@@ -16,19 +16,15 @@ mod tests {
         assert_eq!(
             export,
             json!({
-                "types": [
+                "name": "Human",
+                "fields": [
                     {
-                        "name": "Human",
-                        "fields": [
-                            {
-                                "name": "name",
-                                "type": "string"
-                            },
-                            {
-                                "name": "age",
-                                "type": "u32"
-                            }
-                        ]
+                        "name": "name",
+                        "type": "String"
+                    },
+                    {
+                        "name": "age",
+                        "type": "u32"
                     }
                 ]
             })
@@ -48,16 +44,12 @@ mod tests {
         assert_eq!(
             export,
             json!({
-                "types": [
+                "name": "Human",
+                "fields": [
                     {
-                        "name": "Human",
-                        "fields": [
-                            {
-                                "name": "hobbies",
-                                "type": "list",
-                                "of": ["string"]
-                            }
-                        ]
+                        "name": "hobbies",
+                        "type": "list",
+                        "of": ["String"]
                     }
                 ]
             })
@@ -73,39 +65,19 @@ mod tests {
         }
 
         #[allow(dead_code)]
-        #[derive(Export)]
-        struct Pet {
-            name: String,
-            species: String,
-        }
+        struct Pet();
 
         let export = Human::export();
 
         assert_eq!(
             export,
             json!({
-                "types": [
+                "name": "Human",
+                "fields": [
                     {
-                        "name": "Human",
-                        "fields": [
-                            {
-                                "name": "pets",
-                                "type": ["Pet"]
-                            }
-                        ]
-                    },
-                    {
-                        "name": "Pet",
-                        "fields": [
-                            {
-                                "name": "name",
-                                "type": "string"
-                            },
-                            {
-                                "name": "species",
-                                "type": "string"
-                            }
-                        ]
+                        "name": "pets",
+                        "type": "list",
+                        "of": ["Pet"]
                     }
                 ]
             })
@@ -125,15 +97,12 @@ mod tests {
         assert_eq!(
             export,
             json!({
-                "types": [
+                "name": "Human",
+                "fields": [
                     {
-                        "name": "Human",
-                        "fields": [
-                            {
-                                "name": "friends",
-                                "type": ["Human"]
-                            }
-                        ]
+                        "name": "friends",
+                        "type": "list",
+                        "of": ["Human"]
                     }
                 ]
             })

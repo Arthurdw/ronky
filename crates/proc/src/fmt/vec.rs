@@ -2,10 +2,7 @@ use proc_macro2::TokenStream;
 use quote::quote;
 use syn::Field;
 
-use crate::{
-    fmt::base::{fmt_ident, get_path},
-    formatter::FieldFormatter,
-};
+use crate::{fmt::base::get_path, formatter::FieldFormatter};
 
 pub struct VecFormatter();
 
@@ -15,17 +12,16 @@ impl FieldFormatter for VecFormatter {
         let path = get_path(field);
         let segment = path.segments.first().unwrap();
 
-        let segment_name = segment.ident.to_string().to_lowercase();
-        if segment_name != "vec" {
-            panic!("Expected vec, found {}", segment_name);
+        let segment_name = segment.ident.to_string();
+        if segment_name != "Vec" {
+            panic!("Expected Vec, found {}", segment_name);
         }
 
         let argument = match &segment.arguments {
             syn::PathArguments::AngleBracketed(arguments) => 'argument: {
                 while let Some(arg) = arguments.args.iter().next() {
-                    match arg {
-                        syn::GenericArgument::Type(ty) => break 'argument ty,
-                        _ => continue,
+                    if let syn::GenericArgument::Type(ty) = arg {
+                        break 'argument ty;
                     }
                 }
 
@@ -38,7 +34,7 @@ impl FieldFormatter for VecFormatter {
         };
 
         let ident = match argument {
-            syn::Type::Path(path) => fmt_ident(path.path.get_ident().unwrap()),
+            syn::Type::Path(path) => path.path.get_ident().unwrap().to_string(),
             t => panic!("Expected a path argument for a vector type. Got: {:?}", t),
         };
 

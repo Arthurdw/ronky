@@ -1,7 +1,7 @@
 mod base;
 mod vec;
 
-use base::{fmt_ident, get_path, BaseFormatter};
+use base::{get_path, BaseFormatter};
 use proc_macro2::TokenStream;
 use syn::Field;
 use vec::VecFormatter;
@@ -18,10 +18,10 @@ pub fn format_field(field: &Field) -> TokenStream {
         }
 
         let segment = path.segments.first().unwrap();
-        let ident = fmt_ident(&segment.ident);
+        let ident = segment.ident.to_string();
 
         match ident.as_str() {
-            "vec" => break 'formatter Box::new(VecFormatter()),
+            "Vec" => break 'formatter Box::new(VecFormatter()),
             _ => panic!("Unknown type: {}", ident),
         };
     };

@@ -1,5 +1,5 @@
 [package]
-name = "rs-exporter"
+name = "ronky"
 version = "0.0.0-a"
 description = "Export a part of the Rust AST to JSON"
 readme = "README.md"
@@ -26,9 +26,9 @@ members = ["crates/*"]
 edition = "2021"
 license = "GPL-3.0-or-later"
 authors = ["Arthur De Witte <dev@arthurdw.com>"]
-repository = "https://github.com/Arthurdw/rs-exporter"
+repository = "https://github.com/Arthurdw/ronky"
 categories = ["development-tools"]
-keywords = ["rust", "ast", "exporter", "json"]
+keywords = ["rust", "ast", "exporter", "json", "ronky", "development-tools"]
 
 [workspace.lints.clippy]
 multiple_crate_versions = "allow"

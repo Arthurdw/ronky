@@ -14,7 +14,7 @@ impl FieldFormatter for BaseFormatter {
         quote! {
             {
                 "name": #name,
-                "type": stringify!(#ty).to_lowercase(),
+                "type": stringify!(#ty),
             }
         }
     }
@@ -25,8 +25,4 @@ pub fn get_path(field: &Field) -> syn::Path {
         syn::Type::Path(path) => path.path.clone(),
         t => panic!("Received unsupported type! {:?}", t),
     }
-}
-
-pub fn fmt_ident(ident: &syn::Ident) -> String {
-    ident.to_string().to_lowercase()
 }

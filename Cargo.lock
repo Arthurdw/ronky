@@ -45,7 +45,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "rs-exporter"
+name = "ronky"
 version = "0.0.0-a"
 dependencies = [
  "proc",

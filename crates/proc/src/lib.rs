@@ -12,7 +12,7 @@ use syn::{parse, DeriveInput};
 #[proc_macro]
 pub fn export_stream(input: TokenStream) -> TokenStream {
     let input: DeriveInput = parse(input).unwrap();
-    let struct_name = &input.ident;
+    let struct_name = &input.ident.to_string();
 
     let data = match input.data {
         syn::Data::Struct(data) => data,
@@ -28,13 +28,9 @@ pub fn export_stream(input: TokenStream) -> TokenStream {
 
     let expanded = quote! {
         serde_json::json!({
-            "types": [
-                {
-                    "name": stringify!(#struct_name),
-                    "fields": [
-                        #(#fields),*
-                    ]
-                }
+            "name": #struct_name,
+            "fields": [
+                #(#fields),*
             ]
         })
     };
