@@ -30,7 +30,7 @@ license = "GPL-3.0-or-later"
 authors = ["Arthur De Witte <dev@arthurdw.com>"]
 repository = "https://github.com/Arthurdw/ronky"
 categories = ["development-tools"]
-keywords = ["rust", "ast", "exporter", "json", "ronky", "development-tools"]
+keywords = ["rust", "ast", "exporter", "json", "development-tools"]
 
 [workspace.lints.clippy]
 multiple_crate_versions = "allow"
