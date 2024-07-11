@@ -1,5 +1,5 @@
-use exported::Exported;
-use proc::Export;
+use ronky_exported::Exported;
+use ronky_proc::Export;
 use serde_json::json;
 
 #[allow(dead_code)]
@@ -18,7 +18,7 @@ struct Pet {
     species: String,
 }
 
-pub fn main() {
+pub fn demo() {
     // todo!("make this properly exported and integrated with extensions")
     let human = Human::export();
     let pet = Pet::export();
