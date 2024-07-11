@@ -13,6 +13,7 @@ repository.workspace = true
 
 [dependencies]
 proc = { path = "crates/proc" }
+exported = { path = "crates/exported" }
 
 serde_json.workspace = true
 

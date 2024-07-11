@@ -48,6 +48,7 @@ dependencies = [
 name = "ronky"
 version = "0.0.0-a"
 dependencies = [
+ "exported",
  "proc",
  "serde_json",
 ]

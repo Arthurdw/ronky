@@ -1,3 +1,8 @@
+// TODO: slice type
+// TODO: option type
+// TODO: tuple type
+// TODO: enum type
+
 #[cfg(test)]
 mod tests {
     use exported::Exported;
