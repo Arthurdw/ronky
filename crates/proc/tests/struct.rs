@@ -22,7 +22,7 @@ mod tests {
                         "fields": [
                             {
                                 "name": "name",
-                                "type": "String"
+                                "type": "string"
                             },
                             {
                                 "name": "age",
@@ -50,11 +50,12 @@ mod tests {
             json!({
                 "types": [
                     {
-                        "name": "Test",
+                        "name": "Human",
                         "fields": [
                             {
                                 "name": "hobbies",
-                                "type": ["string"]
+                                "type": "list",
+                                "of": ["string"]
                             }
                         ]
                     }
@@ -126,11 +127,11 @@ mod tests {
             json!({
                 "types": [
                     {
-                        "name": "Test",
+                        "name": "Human",
                         "fields": [
                             {
                                 "name": "friends",
-                                "type": ["Test"]
+                                "type": ["Human"]
                             }
                         ]
                     }
