@@ -34,7 +34,7 @@ dependencies = [
 
 [[package]]
 name = "ronky"
-version = "0.0.2-a"
+version = "0.0.4-a"
 dependencies = [
  "ronky_exported",
  "ronky_proc",
@@ -43,14 +43,14 @@ dependencies = [
 
 [[package]]
 name = "ronky_exported"
-version = "0.0.2-a"
+version = "0.0.4-a"
 dependencies = [
  "serde_json",
 ]
 
 [[package]]
 name = "ronky_proc"
-version = "0.0.2-a"
+version = "0.0.4-a"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -87,9 +87,9 @@ dependencies = [
 
 [[package]]
 name = "serde_json"
-version = "1.0.124"
+version = "1.0.125"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "66ad62847a56b3dba58cc891acd13884b9c61138d330c0d7b6181713d4fce38d"
+checksum = "83c8e735a073ccf5be70aa8066aa984eaf2fa000db6c8d0100ae605b366d31ed"
 dependencies = [
  "itoa",
  "memchr",
