@@ -56,9 +56,12 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add Cargo.toml Cargo.lock
           git commit -m "chore(release): version bump to $(grep '^version = ' Cargo.toml | sed -E 's/version = \"([^\"]+)\"/\1/')"
-          git push origin main
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.PAT_TOKEN }}
+          branch: ${{ github.ref }}
 
       - name: Publish to crates.io
         uses: katyo/publish-crates@v2
