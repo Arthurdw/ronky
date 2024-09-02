@@ -27,7 +27,7 @@ jobs:
       - name: Determine version bump
         id: version_bump
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           # Set default version bump to patch
           echo "bump_type=patch" >> $GITHUB_ENV
