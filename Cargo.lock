@@ -34,7 +34,7 @@ dependencies = [
 
 [[package]]
 name = "ronky"
-version = "0.0.4-a"
+version = "0.0.6-a"
 dependencies = [
  "ronky_exported",
  "ronky_proc",
@@ -43,14 +43,14 @@ dependencies = [
 
 [[package]]
 name = "ronky_exported"
-version = "0.0.4-a"
+version = "0.0.6-a"
 dependencies = [
  "serde_json",
 ]
 
 [[package]]
 name = "ronky_proc"
-version = "0.0.4-a"
+version = "0.0.6-a"
 dependencies = [
  "proc-macro2",
  "quote",
