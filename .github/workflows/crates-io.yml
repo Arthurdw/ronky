@@ -48,7 +48,7 @@ jobs:
         run: |
           bump_type=${{ env.bump_type }}
           echo "Bumping version using: $bump_type"
-          cargo release $bump_type --no-publish --no-push --no-tag --execute --no-confirm
+          cargo release version $bump_type --execute --no-confirm
 
       - name: Commit version bump
         run: |
