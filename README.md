@@ -90,13 +90,12 @@ interface Pet {
 ## In memory of Ronky
 
 In loving memory of my dear cat Ronky, named for his unique habit of spinning
-with a loud sound ("ronk" in Dutch). Ronky lived to the age of 14 and bravely
-endured acromegaly, a hormonal disorder caused by an overproduction of growth
-hormone, often due to a benign tumor on the pituitary gland. This condition
-resulted in the abnormal growth of his tissues and bones.
+with a loud sound _(to "ronk" in Dutch)_. Ronky lived to the age of 14 and bravely
+endured acromegaly. This condition resulted in the abnormal growth of his tissues
+and bones.
 
 He passed away peacefully, surrounded by those who loved him. He will be deeply missed.
 
-[xx photo here xx]
+![Beautiful picture of Ronky](./.readme/assets/ronky.jpg)
 
 Photo by [Startshot](https://www.instagram.com/_startshot_/)
