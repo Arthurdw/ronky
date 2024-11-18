@@ -12,8 +12,8 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
-ronky_proc = { path = "crates/proc", version = "0.0.17" }
-ronky_exported = { path = "crates/exported", version = "0.0.17" }
+ronky_proc = { path = "crates/proc", version = "0.0.18" }
+ronky_exported = { path = "crates/exported", version = "0.0.18" }
 
 
 serde_json.workspace = true
@@ -25,7 +25,7 @@ workspace = true
 members = ["crates/*"]
 
 [workspace.package]
-version = "0.0.17"
+version = "0.0.18"
 edition = "2021"
 license = "GPL-3.0-or-later"
 authors = ["Arthur De Witte <dev@arthurdw.com>"]
