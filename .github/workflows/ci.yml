@@ -30,7 +30,7 @@ jobs:
       - name: Install the mold linker
         uses: rui314/setup-mold@v1
       - name: Build and archive tests
-        run: cargo nextest archive --archive-file nextest-archive.tar.zst
+        run: cargo nextest archive --all-targets --all-features --workspace --archive-file nextest-archive.tar.zst
       - name: Upload archive to workflow
         uses: actions/upload-artifact@v4
         with:
@@ -59,5 +59,5 @@ jobs:
         uses: rui314/setup-mold@v1
       - name: Run tests
         run: |
-          ~/.cargo/bin/cargo-nextest nextest run --archive-file nextest-archive.tar.zst \
+          ~/.cargo/bin/cargo-nextest nextest run --all-targets --all-features --workspace --archive-file nextest-archive.tar.zst \
             --partition count:${{ matrix.partition }}/2
