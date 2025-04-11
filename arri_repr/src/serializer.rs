@@ -24,8 +24,7 @@ impl Serializer {
             self.out.pop();
         }
 
-        let out = self.out.clone();
-        out + "}"
+        self.out.clone() + "}"
     }
 }
 

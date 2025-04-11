@@ -8,6 +8,24 @@ pub struct MetadataSchema {
     pub is_deprecated: Option<bool>,
 }
 
+impl MetadataSchema {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    pub fn set_id(&mut self, id: impl ToString) {
+        self.id = Some(id.to_string());
+    }
+
+    pub fn set_description(&mut self, description: impl ToString) {
+        self.description = Some(description.to_string());
+    }
+
+    pub fn set_is_deprecated(&mut self, is_deprecated: bool) {
+        self.is_deprecated = Some(is_deprecated);
+    }
+}
+
 // TODO: create a macro which automatically generates this implementation with a derive
 impl Serializable for MetadataSchema {
     fn serialize(&self) -> Option<String> {

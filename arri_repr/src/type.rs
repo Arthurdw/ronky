@@ -1,9 +1,24 @@
 // TODO: docs
-use crate::Serializable;
+use crate::{Serializable, serializer::Serializer};
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct TypeSchema {
     r#type: Types,
+}
+
+impl TypeSchema {
+    pub fn new(r#type: Types) -> Self {
+        Self { r#type }
+    }
+}
+
+impl Serializable for TypeSchema {
+    fn serialize(&self) -> Option<String> {
+        Serializer::builder()
+            .set("type", &self.r#type)
+            .build()
+            .into()
+    }
 }
 
 #[derive(Debug, PartialEq, Eq)]

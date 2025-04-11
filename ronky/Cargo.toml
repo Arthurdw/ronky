@@ -15,6 +15,7 @@ repository.workspace = true
 workspace = true
 
 [dependencies]
+arri_repr = { path = "../arri_repr/" }
 ronky_derive = { path = "../ronky_derive/", optional = true }
 
 [dev-dependencies]

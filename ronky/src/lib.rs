@@ -4,6 +4,9 @@ extern crate ronky_derive;
 #[cfg(feature = "derive")]
 pub use ronky_derive::Exported;
 
+extern crate arri_repr;
+pub use arri_repr::*;
+
 // TODO: implement conversion from ATD to Rust types
 // | ATD Type | Rust Type |
 // |---|---|

@@ -43,6 +43,7 @@ dependencies = [
 name = "ronky"
 version = "1.0.0-alpha.1"
 dependencies = [
+ "arri_repr",
  "ronky_derive",
 ]
 
@@ -110,6 +111,7 @@ name = "test_suite"
 version = "0.0.0"
 dependencies = [
  "ronky",
+ "serde_json",
 ]
 
 [[package]]
