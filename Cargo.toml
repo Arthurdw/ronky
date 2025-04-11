@@ -1,7 +1,13 @@
-[package]
-name = "ronky"
-description = "A simple way to export Rust definitions to Arri types"
-readme = "README.md"
+[patch.crates-io]
+ronky = { path = "ronky" }
+
+[workspace]
+resolver = "2"
+members = [
+  "ronky"
+]
+
+[workspace.package]
 version = "1.0.0-alpha.1"
 edition = "2024"
 license = "GPL-3.0-or-later"
@@ -10,12 +16,14 @@ repository = "https://github.com/Arthurdw/ronky"
 categories = ["development-tools"]
 keywords = ["arri"]
 
-[dependencies]
+[workspace.lints.clippy]
+multiple_crate_versions = "allow"
 
-[lints.clippy]
 style = "deny"
 complexity = "deny"
 perf = "deny"
 cargo = "deny"
 correctness = "deny"
 use_self = "deny"
+
+[workspace.dependencies]
