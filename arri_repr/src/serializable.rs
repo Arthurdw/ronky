@@ -23,58 +23,44 @@ impl Eq for dyn Serializable {}
 
 impl Serializable for &str {
     fn serialize(&self) -> Option<String> {
-        Some(format!("\"{}\"", self))
+        format!("\"{}\"", self).into()
     }
 }
 
 impl Serializable for String {
     fn serialize(&self) -> Option<String> {
-        Some(format!("\"{}\"", self))
+        format!("\"{}\"", self).into()
     }
 }
 
 impl Serializable for bool {
     fn serialize(&self) -> Option<String> {
-        Some(self.to_string())
+        self.to_string().into()
     }
 }
 
 impl<T: Serializable> Serializable for Vec<T> {
     fn serialize(&self) -> Option<String> {
         let serialized_elements: Vec<String> = self.iter().filter_map(|e| e.serialize()).collect();
-        Some(format!("[{}]", serialized_elements.join(",")))
+        format!("[{}]", serialized_elements.join(",")).into()
     }
 }
 
 impl<T: Serializable> Serializable for Option<T> {
     fn serialize(&self) -> Option<String> {
-        match self {
-            Some(value) => value.serialize(),
-            None => None,
-        }
+        self.as_ref().and_then(|value| value.serialize())
     }
 }
 
-impl<T: Serializable + Clone> Serializable for HashMap<String, T> {
+impl<T: Serializable> Serializable for HashMap<String, T> {
     fn serialize(&self) -> Option<String> {
-        let mut builder = Serializer::builder();
-
-        for (key, value) in self.iter() {
-            builder.set(key, value.clone());
-        }
-
-        Some(builder.build())
-
-        // Some(
-        //     self.iter()
-        //         .filter_map(|(k, v)| {
-        //             let serialized_value = v.serialize()?;
-        //             Some(format!("\"{}\":{}", k, serialized_value))
-        //         })
-        //         .collect::<Vec<String>>()
-        //         .as_slice()
-        //         .join(","),
-        // )
+        self.iter()
+            .fold(Serializer::builder(), |mut builder, (key, value)| {
+                builder.set(key, value);
+                builder
+            })
+            .build()
+            .into()
     }
 }
 
@@ -82,6 +68,7 @@ impl<T: Serializable + Clone> Serializable for HashMap<String, T> {
 mod tests {
     use super::*;
 
+    #[derive(Clone)]
     struct MockSerializable {
         value: String,
     }
@@ -193,6 +180,73 @@ mod tests {
             serde_json::json!({
                 "key1": "value1",
                 "key2": "value2"
+            })
+        );
+    }
+
+    #[test]
+    fn test_serialize_hashmap_partial_recursion() {
+        let hashmap = HashMap::from([
+            (
+                "value1".to_string(),
+                MockSerializable {
+                    value: "nested_value1".to_string(),
+                },
+            ),
+            (
+                "value2".to_string(),
+                MockSerializable {
+                    value: "nested_value2".to_string(),
+                },
+            ),
+        ]);
+
+        let serialized: serde_json::Value =
+            serde_json::from_str(&hashmap.serialize().unwrap()).unwrap();
+
+        assert_eq!(
+            serialized,
+            serde_json::json!({
+                "value1": "nested_value1",
+                "value2": "nested_value2"
+            })
+        );
+    }
+
+    #[test]
+    fn test_serialize_hashmap_recursion() {
+        let mut hashmap: HashMap<String, HashMap<String, MockSerializable>> = HashMap::new();
+        hashmap.insert(
+            "key1".to_string(),
+            HashMap::from([(
+                "value1".to_string(),
+                MockSerializable {
+                    value: "nested_value1".to_string(),
+                },
+            )]),
+        );
+        hashmap.insert(
+            "key2".to_string(),
+            HashMap::from([(
+                "value2".to_string(),
+                MockSerializable {
+                    value: "nested_value2".to_string(),
+                },
+            )]),
+        );
+
+        let serialized: serde_json::Value =
+            serde_json::from_str(&hashmap.serialize().unwrap()).unwrap();
+
+        assert_eq!(
+            serialized,
+            serde_json::json!({
+                "key1": {
+                    "value1": "nested_value1"
+                },
+                "key2": {
+                    "value2": "nested_value2"
+                }
             })
         );
     }

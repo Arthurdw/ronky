@@ -11,12 +11,11 @@ pub struct MetadataSchema {
 // TODO: create a macro which automatically generates this implementation with a derive
 impl Serializable for MetadataSchema {
     fn serialize(&self) -> Option<String> {
-        Some(
-            Serializer::builder()
-                .set("id", self.id.as_deref())
-                .set("description", self.description.as_deref())
-                .set("isDeprecated", self.is_deprecated)
-                .build(),
-        )
+        Serializer::builder()
+            .set("id", &self.id)
+            .set("description", &self.description)
+            .set("isDeprecated", &self.is_deprecated)
+            .build()
+            .into()
     }
 }

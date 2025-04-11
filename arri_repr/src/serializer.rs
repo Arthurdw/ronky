@@ -11,7 +11,7 @@ impl Serializer {
         }
     }
 
-    pub(crate) fn set(&mut self, key: &str, value: impl Serializable) -> &mut Self {
+    pub(crate) fn set(&mut self, key: &str, value: &impl Serializable) -> &mut Self {
         if let Some(value) = value.serialize() {
             self.out.push_str(&format!("\"{}\":{},", key, value));
         }
@@ -45,14 +45,13 @@ mod tests {
         value2: T,
     }
 
-    impl<T: Serializable + Clone> Serializable for MockSerializable<T> {
+    impl<T: Serializable> Serializable for MockSerializable<T> {
         fn serialize(&self) -> Option<String> {
-            Some(
-                Serializer::builder()
-                    .set("value1", self.value1.clone())
-                    .set("value2", self.value2.clone())
-                    .build(),
-            )
+            Serializer::builder()
+                .set("value1", &self.value1)
+                .set("value2", &self.value2)
+                .build()
+                .into()
         }
     }
 
