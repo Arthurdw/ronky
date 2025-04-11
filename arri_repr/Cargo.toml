@@ -1,0 +1,19 @@
+[package]
+name = "arri_repr"
+description = "Rust representations of Arri types"
+readme = "README.md"
+
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+categories.workspace = true
+keywords.workspace = true
+
+[lints]
+workspace = true
+
+[dev-dependencies]
+# TODO: be able to remove this dev dependency
+serde_json = "1.0.140"

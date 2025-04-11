@@ -3,9 +3,7 @@ ronky = { path = "ronky" }
 
 [workspace]
 resolver = "2"
-members = [
-  "ronky"
-]
+members = [ "arri_repr","ronky", "ronky_derive", "test_suite"]
 
 [workspace.package]
 version = "1.0.0-alpha.1"
@@ -25,5 +23,3 @@ perf = "deny"
 cargo = "deny"
 correctness = "deny"
 use_self = "deny"
-
-[workspace.dependencies]

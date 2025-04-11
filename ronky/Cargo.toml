@@ -11,8 +11,15 @@ keywords.workspace = true
 license.workspace = true
 repository.workspace = true
 
-[dependencies]
-
-
 [lints]
 workspace = true
+
+[dependencies]
+ronky_derive = { path = "../ronky_derive/", optional = true }
+
+[dev-dependencies]
+ronky_derive = { path = "../ronky_derive/" }
+
+[features]
+default = []
+derive = ["ronky_derive"]
