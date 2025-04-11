@@ -64,6 +64,18 @@ impl<T: Serializable> Serializable for HashMap<String, T> {
     }
 }
 
+impl<T: Serializable> Serializable for Box<T> {
+    fn serialize(&self) -> Option<String> {
+        self.as_ref().serialize()
+    }
+}
+
+impl Serializable for Box<dyn Serializable> {
+    fn serialize(&self) -> Option<String> {
+        self.as_ref().serialize()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -248,6 +260,25 @@ mod tests {
                     "value2": "nested_value2"
                 }
             })
+        );
+    }
+
+    #[test]
+    fn test_serialize_box() {
+        let boxed_value = Box::new(MockSerializable {
+            value: "boxed_value".to_string(),
+        });
+        assert_eq!(boxed_value.serialize(), Some("\"boxed_value\"".to_string()));
+    }
+
+    #[test]
+    fn test_serialize_box_dyn() {
+        let boxed_value: Box<dyn Serializable> = Box::new(MockSerializable {
+            value: "boxed_dyn_value".to_string(),
+        });
+        assert_eq!(
+            boxed_value.serialize(),
+            Some("\"boxed_dyn_value\"".to_string())
         );
     }
 }

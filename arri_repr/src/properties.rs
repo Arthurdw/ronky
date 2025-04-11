@@ -13,8 +13,8 @@ pub struct PropertiesSchema {
 impl Serializable for PropertiesSchema {
     fn serialize(&self) -> Option<String> {
         Serializer::builder()
-            // .set("properties", &self.properties)
-            // .set("optionalProperties", &self.optional_properties)
+            .set("properties", &self.properties)
+            .set("optionalProperties", &self.optional_properties)
             .set("strict", &self.strict)
             .build()
             .into()
