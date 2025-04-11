@@ -1,3 +1,2 @@
-pub fn test() -> Result<(), ()> {
-    Ok(())
-}
+pub mod repr;
+pub(crate) mod serialization;

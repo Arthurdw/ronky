@@ -8,10 +8,9 @@ license = "GPL-3.0-or-later"
 authors = ["Arthur De Witte <dev@arthurdw.com>"]
 repository = "https://github.com/Arthurdw/ronky"
 categories = ["development-tools"]
-keywords = []
+keywords = ["arri"]
 
 [dependencies]
-
 
 [lints.clippy]
 style = "deny"
