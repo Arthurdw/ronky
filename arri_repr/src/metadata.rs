@@ -15,28 +15,32 @@ impl MetadataSchema {
         Self::default()
     }
 
-    pub fn set_id(&mut self, id: impl ToString) {
+    pub fn set_id(&mut self, id: impl ToString) -> &mut Self {
         self.id = Some(id.to_string());
+        self
     }
 
-    pub fn set_description(&mut self, description: impl ToString) {
+    pub fn set_description(&mut self, description: impl ToString) -> &mut Self {
         self.description = Some(description.to_string());
+        self
     }
 
-    pub fn set_deprecated(&mut self, flag: bool) {
+    pub fn set_deprecated(&mut self, flag: bool) -> &mut Self {
         self.is_deprecated = Some(flag);
+        self
     }
 
-    pub fn set_deprecated_since(&mut self, version: impl ToString) {
+    pub fn set_deprecated_since(&mut self, version: impl ToString) -> &mut Self {
         self.deprecated_since = Some(version.to_string());
+        self
     }
 
-    pub fn set_deprecated_message(&mut self, message: impl ToString) {
+    pub fn set_deprecated_message(&mut self, message: impl ToString) -> &mut Self {
         self.deprecated_message = Some(message.to_string());
+        self
     }
 }
 
-// TODO: create a macro which automatically generates this implementation with a derive
 impl Serializable for MetadataSchema {
     fn serialize(&self) -> Option<String> {
         Serializer::builder()

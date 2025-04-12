@@ -55,7 +55,6 @@ impl Serializable for Types {
             Self::Int64 => "int64",
             Self::Uint64 => "uint64",
         })
-        .to_string()
-        .into()
+        .serialize()
     }
 }

@@ -16,20 +16,28 @@ impl PropertiesSchema {
         Self::default()
     }
 
-    pub fn set_property(&mut self, key: String, value: Box<dyn Serializable>) {
-        self.properties.insert(key, value);
+    pub fn set_property(&mut self, key: impl ToString, value: Box<dyn Serializable>) -> &mut Self {
+        self.properties.insert(key.to_string(), value);
+        self
     }
 
-    pub fn set_optional_property(&mut self, key: String, value: Box<dyn Serializable>) {
-        self.optional_properties.insert(key, value);
+    pub fn set_optional_property(
+        &mut self,
+        key: impl ToString,
+        value: Box<dyn Serializable>,
+    ) -> &mut Self {
+        self.optional_properties.insert(key.to_string(), value);
+        self
     }
 
-    pub fn set_strict(&mut self, strict: bool) {
+    pub fn set_strict(&mut self, strict: bool) -> &mut Self {
         self.strict = Some(strict);
+        self
     }
 
-    pub fn set_metadata(&mut self, metadata: Box<dyn Serializable>) {
+    pub fn set_metadata(&mut self, metadata: Box<dyn Serializable>) -> &mut Self {
         self.metadata = Some(metadata);
+        self
     }
 }
 
