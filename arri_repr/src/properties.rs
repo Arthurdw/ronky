@@ -39,6 +39,7 @@ impl Serializable for PropertiesSchema {
             .set("properties", &self.properties)
             .set("optionalProperties", &self.optional_properties)
             .set("strict", &self.strict)
+            .set("metadata", &self.metadata)
             .build()
             .into()
     }

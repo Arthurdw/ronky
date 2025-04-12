@@ -6,6 +6,8 @@ pub struct MetadataSchema {
     pub id: Option<String>,
     pub description: Option<String>,
     pub is_deprecated: Option<bool>,
+    pub deprecated_since: Option<String>,
+    pub deprecated_message: Option<String>,
 }
 
 impl MetadataSchema {
@@ -21,8 +23,16 @@ impl MetadataSchema {
         self.description = Some(description.to_string());
     }
 
-    pub fn set_is_deprecated(&mut self, is_deprecated: bool) {
-        self.is_deprecated = Some(is_deprecated);
+    pub fn set_deprecated(&mut self, flag: bool) {
+        self.is_deprecated = Some(flag);
+    }
+
+    pub fn set_deprecated_since(&mut self, version: impl ToString) {
+        self.deprecated_since = Some(version.to_string());
+    }
+
+    pub fn set_deprecated_message(&mut self, message: impl ToString) {
+        self.deprecated_message = Some(message.to_string());
     }
 }
 
@@ -33,6 +43,8 @@ impl Serializable for MetadataSchema {
             .set("id", &self.id)
             .set("description", &self.description)
             .set("isDeprecated", &self.is_deprecated)
+            .set("deprecatedSince", &self.deprecated_since)
+            .set("deprecatedNote", &self.deprecated_message)
             .build()
             .into()
     }

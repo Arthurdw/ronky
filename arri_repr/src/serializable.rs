@@ -3,6 +3,7 @@ use std::{collections::HashMap, fmt::Debug};
 
 use crate::serializer::Serializer;
 
+// TODO: create a macro which automatically generates this implementation with a derive
 pub trait Serializable {
     fn serialize(&self) -> Option<String>;
 }

@@ -21,4 +21,4 @@ workspace = true
 arri_repr = { path = "../arri_repr" }
 proc-macro2 = "1.0.94"
 quote = "1.0.40"
-syn = "2.0.100"
+syn = { version = "2.0.100", features = ["derive"] }
