@@ -1,3 +1,3 @@
 mod basic_export;
-mod deprecated_export;
+mod metadata_export;
 mod primitives_export;

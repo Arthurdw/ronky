@@ -1,12 +1,38 @@
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{DeriveInput, LitStr};
+use syn::{Attribute, DeriveInput, Expr, ExprLit, Lit, LitStr, Meta, MetaNameValue};
 
-pub fn extract(input: &DeriveInput) -> TokenStream {
-    let id = input.ident.to_string();
+fn extract_docs(attrs: &[Attribute]) -> Option<TokenStream> {
+    let docs = attrs
+        .iter()
+        .filter(|attr| attr.path().is_ident("doc"))
+        .map(|attr| match &attr.meta {
+            Meta::NameValue(MetaNameValue {
+                value:
+                    Expr::Lit(ExprLit {
+                        lit: Lit::Str(line),
+                        ..
+                    }),
+                ..
+            }) => line.value().trim().to_string(),
+            _ => unreachable!(),
+        })
+        .collect::<Vec<String>>()
+        .join("\n");
 
-    let deprecated = input
-        .attrs
+    match docs.is_empty() {
+        true => None,
+        false => Some(
+            quote! {
+                metadata.set_description(#docs);
+            }
+            .into(),
+        ),
+    }
+}
+
+fn extract_deprecated(attrs: &[Attribute]) -> Option<proc_macro2::TokenStream> {
+    attrs
         .iter()
         .find(|attr| attr.path().is_ident("deprecated"))
         .map(|attr| {
@@ -40,13 +66,24 @@ pub fn extract(input: &DeriveInput) -> TokenStream {
             });
 
             stream
-        });
+        })
+}
+
+pub fn extract(input: &DeriveInput) -> TokenStream {
+    let id = input.ident.to_string();
+    // TODO: There aint no way we can't just into this?
+    let docs: Option<proc_macro2::TokenStream> = match extract_docs(&input.attrs) {
+        Some(stream) => Some(stream.into()),
+        None => None,
+    };
+    let deprecated = extract_deprecated(&input.attrs);
 
     quote! {
         {
             let mut metadata = ronky::MetadataSchema::new();
             metadata.set_id(#id);
             #deprecated;
+            #docs
             metadata
         }
     }

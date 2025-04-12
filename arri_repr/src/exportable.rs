@@ -1,5 +1,5 @@
-use crate::Serializable;
+use crate::PropertiesSchema;
 
 pub trait Exportable {
-    fn export() -> impl Serializable;
+    fn export() -> PropertiesSchema;
 }

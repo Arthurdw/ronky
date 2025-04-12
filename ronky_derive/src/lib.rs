@@ -59,7 +59,7 @@ pub fn exported_derive(input: TokenStream) -> TokenStream {
 
     quote! {
         impl ronky::Exportable for #struct_name {
-            fn export() -> impl ronky::Serializable {
+            fn export() -> ronky::PropertiesSchema {
                 #quotable_result
             }
         }

@@ -29,9 +29,8 @@ mod tests {
     #[test]
     fn test_export() {
         let export = TestStruct::export();
-        let serialized = export.serialize();
-
-        let expected = PropertiesSchema::new()
+        let mut expected = PropertiesSchema::new();
+        expected
             .set_metadata(Box::new(
                 MetadataSchema::new()
                     .set_id("TestStruct".to_string())
@@ -53,12 +52,6 @@ mod tests {
             // .set_property("timestamp", Box::new(TypeSchema::new(Types::Timestamp)))
             .serialize();
 
-        assert!(serialized.is_some());
-        assert!(expected.is_some());
-
-        let json: serde_json::Value = serde_json::from_str(&serialized.unwrap()).unwrap();
-        let expected_json: serde_json::Value = serde_json::from_str(&expected.unwrap()).unwrap();
-
-        assert_eq!(json, expected_json,);
+        assert_eq!(export, expected);
     }
 }
