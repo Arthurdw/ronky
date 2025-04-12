@@ -1,4 +1,5 @@
 use proc_macro::TokenStream;
+use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
 use syn::{Attribute, DeriveInput, Expr, ExprLit, Lit, LitStr, Meta, MetaNameValue};
 
@@ -31,12 +32,12 @@ fn extract_docs(attrs: &[Attribute]) -> Option<TokenStream> {
     }
 }
 
-fn extract_deprecated(attrs: &[Attribute]) -> Option<proc_macro2::TokenStream> {
+fn extract_deprecated(attrs: &[Attribute]) -> Option<TokenStream> {
     attrs
         .iter()
         .find(|attr| attr.path().is_ident("deprecated"))
         .map(|attr| {
-            let mut stream: proc_macro2::TokenStream = quote! {
+            let mut stream: TokenStream2 = quote! {
                 metadata.set_deprecated(true);
             };
 
@@ -61,22 +62,18 @@ fn extract_deprecated(attrs: &[Attribute]) -> Option<proc_macro2::TokenStream> {
                         });
                         Ok(())
                     }
-                    _ => Err(meta.error("Unsupported deprecated attribute")),
+                    _ => unreachable!(),
                 }
             });
 
-            stream
+            stream.into()
         })
 }
 
 pub fn extract(input: &DeriveInput) -> TokenStream {
     let id = input.ident.to_string();
-    // TODO: There aint no way we can't just into this?
-    let docs: Option<proc_macro2::TokenStream> = match extract_docs(&input.attrs) {
-        Some(stream) => Some(stream.into()),
-        None => None,
-    };
-    let deprecated = extract_deprecated(&input.attrs);
+    let docs: Option<TokenStream2> = extract_docs(&input.attrs).map(Into::into);
+    let deprecated: Option<TokenStream2> = extract_deprecated(&input.attrs).map(Into::into);
 
     quote! {
         {
