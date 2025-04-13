@@ -3,8 +3,8 @@ mod parsers;
 
 use parsers::{ParsedField, parse_field};
 use proc_macro::TokenStream;
-use quote::quote;
-use syn::{DeriveInput, parse_macro_input};
+use quote::{quote, quote_spanned};
+use syn::{DeriveInput, parse_macro_input, spanned::Spanned};
 
 #[proc_macro]
 pub fn export_stream(input: TokenStream) -> TokenStream {
@@ -12,12 +12,18 @@ pub fn export_stream(input: TokenStream) -> TokenStream {
 
     let data = match input.data {
         syn::Data::Struct(ref data) => data,
-        _ => panic!("Only structs are supported"),
+        _ => {
+            return quote_spanned!(input.span() => compile_error!("Only structs are supported"))
+                .into();
+        }
     };
 
     let fields = match &data.fields {
         syn::Fields::Named(fields) => &fields.named,
-        _ => panic!("Only named fields are supported for now"),
+        _ => {
+            return quote_spanned!(input.span() => compile_error!("Only named structs are exportable for now"))
+                .into();
+        }
     };
     let metadata: proc_macro2::TokenStream = metadata::extract(&input).into();
 
