@@ -1,4 +1,5 @@
 pub(crate) mod properties;
+pub(crate) mod typeschema;
 
 use proc_macro::TokenStream;
 use quote::quote_spanned;

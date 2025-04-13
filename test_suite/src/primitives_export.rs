@@ -1,5 +1,4 @@
 #[cfg(test)]
-#[allow(deprecated)]
 mod tests {
     use ronky::{
         Exportable, Exported, MetadataSchema, PropertiesSchema, Serializable, TypeSchema, Types,

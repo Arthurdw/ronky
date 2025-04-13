@@ -72,24 +72,35 @@ fn extract_deprecated(attrs: &[Attribute]) -> Option<TokenStream> {
         })
 }
 
-fn extract_attrs(attrs: &[Attribute]) -> TokenStream {
+fn extract_attrs(attrs: &[Attribute]) -> Option<TokenStream> {
     let docs: Option<TokenStream2> = extract_docs(&attrs).map(Into::into);
     let deprecated: Option<TokenStream2> = extract_deprecated(&attrs).map(Into::into);
 
-    quote! {
-        {
-            let mut metadata = ronky::MetadataSchema::new();
-            #deprecated;
-            #docs
-            metadata
-        }
+    if docs.is_none() && deprecated.is_none() {
+        return None;
     }
-    .into()
+
+    Some(
+        quote! {
+            {
+                let mut metadata = ronky::MetadataSchema::new();
+                #deprecated;
+                #docs
+                metadata
+            }
+        }
+        .into(),
+    )
 }
 
 pub fn extract(ident: impl ToString, attrs: &[Attribute]) -> TokenStream {
     let id = ident.to_string();
-    let base: proc_macro2::TokenStream = extract_attrs(attrs).into();
+    let base: proc_macro2::TokenStream = extract_attrs(attrs).map_or(
+        quote! {
+            ronky::MetadataSchema::new()
+        },
+        Into::into,
+    );
 
     quote! {
         {
@@ -106,5 +117,5 @@ pub fn extract_from_field(field: &Field) -> Option<TokenStream> {
         return None;
     }
 
-    Some(extract_attrs(&field.attrs))
+    extract_attrs(&field.attrs)
 }

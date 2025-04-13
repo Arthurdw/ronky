@@ -7,28 +7,27 @@ use syn::{
 
 use super::parse_arri_attrs;
 
-// TODO: provide method which outputs all available properties
 #[derive(Debug, Default)]
-pub(crate) struct PropertiesArguments {
-    pub(crate) strict: bool,
+pub(crate) struct TypeSchemaArguments {
+    pub(crate) nullable: bool,
 }
 
-impl Parse for PropertiesArguments {
+impl Parse for TypeSchemaArguments {
     fn parse(input: ParseStream) -> syn::Result<Self> {
-        let mut args = PropertiesArguments::default();
+        let mut args = TypeSchemaArguments::default();
 
         while !input.is_empty() {
             let key: Ident = input.parse()?;
             let key_str = key.to_string();
 
             match key_str.as_str() {
-                "strict" => {
+                "nullable" => {
                     if input.peek(Token![=]) {
                         input.parse::<Token![=]>()?;
                         let value: LitBool = input.parse()?;
-                        args.strict = value.value();
+                        args.nullable = value.value();
                     } else {
-                        args.strict = true;
+                        args.nullable = true;
                     }
                 }
                 _ => Err(input.error(format!("Unknown property: {}", key_str)))?,
@@ -41,6 +40,6 @@ impl Parse for PropertiesArguments {
     }
 }
 
-pub(crate) fn extract(attrs: &[Attribute]) -> Result<Option<PropertiesArguments>, TokenStream> {
+pub(crate) fn extract(attrs: &[Attribute]) -> Result<Option<TypeSchemaArguments>, TokenStream> {
     parse_arri_attrs(attrs)
 }

@@ -5,6 +5,7 @@ use crate::{MetadataSchema, Serializable, serializer::Serializer};
 pub struct TypeSchema {
     r#type: Types,
     metadata: Option<MetadataSchema>,
+    nullable: Option<bool>,
 }
 
 impl TypeSchema {
@@ -12,11 +13,17 @@ impl TypeSchema {
         Self {
             r#type,
             metadata: None,
+            nullable: None,
         }
     }
 
     pub fn set_metadata(&mut self, metadata: MetadataSchema) -> &mut Self {
         self.metadata = Some(metadata);
+        self
+    }
+
+    pub fn set_nullable(&mut self, nullable: bool) -> &mut Self {
+        self.nullable = Some(nullable);
         self
     }
 }
@@ -26,6 +33,7 @@ impl Serializable for TypeSchema {
         Serializer::builder()
             .set("type", &self.r#type)
             .set("metadata", &self.metadata)
+            .set("nullable", &self.nullable)
             .build()
             .into()
     }
