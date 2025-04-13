@@ -1,14 +1,23 @@
 // TODO: docs
-use crate::{Serializable, serializer::Serializer};
+use crate::{MetadataSchema, Serializable, serializer::Serializer};
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct TypeSchema {
     r#type: Types,
+    metadata: Option<MetadataSchema>,
 }
 
 impl TypeSchema {
     pub fn new(r#type: Types) -> Self {
-        Self { r#type }
+        Self {
+            r#type,
+            metadata: None,
+        }
+    }
+
+    pub fn set_metadata(&mut self, metadata: MetadataSchema) -> &mut Self {
+        self.metadata = Some(metadata);
+        self
     }
 }
 
@@ -16,6 +25,7 @@ impl Serializable for TypeSchema {
     fn serialize(&self) -> Option<String> {
         Serializer::builder()
             .set("type", &self.r#type)
+            .set("metadata", &self.metadata)
             .build()
             .into()
     }

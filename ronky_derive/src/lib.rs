@@ -25,8 +25,9 @@ pub fn export_stream(input: TokenStream) -> TokenStream {
                 .into();
         }
     };
-    let metadata: proc_macro2::TokenStream = metadata::extract(&input).into();
+    let metadata: proc_macro2::TokenStream = metadata::extract(&input.ident, &input.attrs).into();
 
+    // TODO: find out way to prevent the duplication here
     let properties = fields
         .iter()
         .map(parse_field)
@@ -34,15 +35,39 @@ pub fn export_stream(input: TokenStream) -> TokenStream {
             ParsedField::Required(field, stream) => {
                 let field_name = field.ident.as_ref().unwrap().to_string();
                 let stream: proc_macro2::TokenStream = stream.into();
+                let field_metadata: Option<proc_macro2::TokenStream> =
+                    metadata::extract_from_field(&field).map(|ts| {
+                        let ts: proc_macro2::TokenStream = ts.into();
+                        quote! {
+                            ty.set_metadata(#ts);
+                        }
+                        .into()
+                    });
                 Some(quote! {
-                    schema.set_property(#field_name, Box::new(#stream));
+                    schema.set_property(#field_name, Box::new({
+                        let mut ty = #stream;
+                        #field_metadata;
+                        ty
+                    }));
                 })
             }
             ParsedField::Optional(field, stream) => {
                 let field_name = field.ident.as_ref().unwrap().to_string();
                 let stream: proc_macro2::TokenStream = stream.into();
+                let field_metadata: Option<proc_macro2::TokenStream> =
+                    metadata::extract_from_field(&field).map(|ts| {
+                        let ts: proc_macro2::TokenStream = ts.into();
+                        quote! {
+                            ty.set_metadata(#ts);
+                        }
+                        .into()
+                    });
                 Some(quote! {
-                    schema.set_optional_property(#field_name, Box::new(#stream));
+                    schema.set_optional_property(#field_name, Box::new({
+                        let mut ty = #stream;
+                        #field_metadata;
+                        ty
+                    }));
                 })
             }
         });

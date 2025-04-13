@@ -82,4 +82,54 @@ mod tests {
 
         assert_eq!(export, expected);
     }
+
+    #[test]
+    fn test_metadata_struct_properties() {
+        #[allow(dead_code)]
+        #[derive(Exported)]
+        struct MetadataStruct {
+            #[deprecated(since = "1.0.0", note = "use field2 instead")]
+            field1: String,
+
+            /// Example docs
+            field2: Option<String>,
+        }
+
+        let export = MetadataStruct::export();
+        let mut expected = PropertiesSchema::new();
+        expected
+            .set_metadata(
+                MetadataSchema::new()
+                    .set_id("MetadataStruct".to_string())
+                    .to_owned(),
+            )
+            .set_property(
+                "field1",
+                Box::new({
+                    let mut ty = TypeSchema::new(Types::String);
+                    ty.set_metadata(
+                        MetadataSchema::new()
+                            .set_deprecated(true)
+                            .set_deprecated_since("1.0.0".to_string())
+                            .set_deprecated_message("use field2 instead".to_string())
+                            .to_owned(),
+                    );
+                    ty
+                }),
+            )
+            .set_optional_property(
+                "field2",
+                Box::new({
+                    let mut ty = TypeSchema::new(Types::String);
+                    ty.set_metadata(
+                        MetadataSchema::new()
+                            .set_description("Example docs".to_string())
+                            .to_owned(),
+                    );
+                    ty
+                }),
+            );
+
+        assert_eq!(export, expected);
+    }
 }

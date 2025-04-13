@@ -1,7 +1,10 @@
-use proc_macro::TokenStream;
+use proc_macro::{Ident, TokenStream};
 use proc_macro2::TokenStream as TokenStream2;
-use quote::quote;
-use syn::{Attribute, DeriveInput, Expr, ExprLit, Lit, LitStr, Meta, MetaNameValue};
+use quote::{quote, quote_spanned};
+use syn::{
+    Attribute, DeriveInput, Expr, ExprLit, Field, Lit, LitStr, Meta, MetaNameValue,
+    spanned::Spanned,
+};
 
 fn extract_docs(attrs: &[Attribute]) -> Option<TokenStream> {
     let docs = attrs
@@ -70,19 +73,44 @@ fn extract_deprecated(attrs: &[Attribute]) -> Option<TokenStream> {
         })
 }
 
-pub fn extract(input: &DeriveInput) -> TokenStream {
-    let id = input.ident.to_string();
-    let docs: Option<TokenStream2> = extract_docs(&input.attrs).map(Into::into);
-    let deprecated: Option<TokenStream2> = extract_deprecated(&input.attrs).map(Into::into);
+fn extract_attrs(attrs: &[Attribute]) -> TokenStream {
+    let docs: Option<TokenStream2> = extract_docs(&attrs).map(Into::into);
+    let deprecated: Option<TokenStream2> = extract_deprecated(&attrs).map(Into::into);
 
     quote! {
         {
             let mut metadata = ronky::MetadataSchema::new();
-            metadata.set_id(#id);
             #deprecated;
             #docs
             metadata
         }
     }
     .into()
+}
+
+pub fn extract(ident: impl ToString, attrs: &[Attribute]) -> TokenStream {
+    let id = ident.to_string();
+    let base: proc_macro2::TokenStream = extract_attrs(attrs).into();
+
+    quote! {
+        {
+            let mut metadata = #base;
+            metadata.set_id(#id);
+            metadata
+        }
+    }
+    .into()
+}
+
+pub fn extract_from_field(field: &Field) -> Option<TokenStream> {
+    if field.attrs.is_empty() {
+        return None;
+    }
+
+    Some(match &field.ident {
+        Some(ident) => extract_attrs(&field.attrs),
+        None => {
+            quote_spanned!(field.span() => compile_error!("Field must have an identifier")).into()
+        }
+    })
 }
