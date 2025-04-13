@@ -38,12 +38,11 @@ pub fn export_stream(input: TokenStream) -> TokenStream {
         Err(stream) => Some(stream.into()),
     };
 
-    // TODO: find out way to prevent the duplication here
-    let properties = fields
-        .iter()
-        .map(parse_field)
-        .filter_map(|field| match field {
-            ParsedField::Required(field, stream) => {
+    let mut properties = Vec::new();
+    for field in fields.iter().map(parse_field) {
+        match field {
+            // TODO: find out way to prevent the duplication here
+            Ok(ParsedField::Required(field, stream)) => {
                 let field_name = field.ident.as_ref().unwrap().to_string();
                 let stream: proc_macro2::TokenStream = stream.into();
                 let field_metadata: Option<proc_macro2::TokenStream> =
@@ -54,7 +53,7 @@ pub fn export_stream(input: TokenStream) -> TokenStream {
                         }
                         .into()
                     });
-                Some(quote! {
+                properties.push(quote! {
                     schema.set_property(#field_name, Box::new({
                         let mut ty = #stream;
                         #field_metadata;
@@ -62,7 +61,7 @@ pub fn export_stream(input: TokenStream) -> TokenStream {
                     }));
                 })
             }
-            ParsedField::Optional(field, stream) => {
+            Ok(ParsedField::Optional(field, stream)) => {
                 let field_name = field.ident.as_ref().unwrap().to_string();
                 let stream: proc_macro2::TokenStream = stream.into();
                 let field_metadata: Option<proc_macro2::TokenStream> =
@@ -73,7 +72,7 @@ pub fn export_stream(input: TokenStream) -> TokenStream {
                         }
                         .into()
                     });
-                Some(quote! {
+                properties.push(quote! {
                     schema.set_optional_property(#field_name, Box::new({
                         let mut ty = #stream;
                         #field_metadata;
@@ -81,7 +80,9 @@ pub fn export_stream(input: TokenStream) -> TokenStream {
                     }));
                 })
             }
-        });
+            Err(stream) => return stream.into(),
+        }
+    }
 
     quote! {
         let mut schema = ronky::PropertiesSchema::new();

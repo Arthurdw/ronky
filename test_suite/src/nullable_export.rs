@@ -7,18 +7,18 @@ mod tests {
     fn test_export() {
         #[derive(Exported)]
         struct PropsStruct {
-            value: String,
+            value: Option<String>,
         }
 
         let export = PropsStruct::export();
         let expected = {
             let mut prop = PropertiesSchema::new();
-            prop.set_property("value", Box::new(TypeSchema::new(Types::String)));
+            prop.set_optional_property("value", Box::new(TypeSchema::new(Types::String)));
 
             prop
         };
 
-        assert_eq!(export.properties, expected.properties);
+        assert_eq!(export.optional_properties, expected.optional_properties);
     }
 
     #[test]
@@ -26,13 +26,13 @@ mod tests {
         #[derive(Exported)]
         struct NullablePropsStruct {
             #[arri(nullable)]
-            value: String,
+            value: Option<String>,
         }
 
         let export = NullablePropsStruct::export();
         let expected = {
             let mut prop = PropertiesSchema::new();
-            prop.set_property(
+            prop.set_optional_property(
                 "value",
                 Box::new({
                     let mut ty = TypeSchema::new(Types::String);
@@ -44,7 +44,7 @@ mod tests {
             prop
         };
 
-        assert_eq!(export.properties, expected.properties);
+        assert_eq!(export.optional_properties, expected.optional_properties);
     }
 
     #[test]
@@ -52,13 +52,13 @@ mod tests {
         #[derive(Exported)]
         struct NullablePropsStruct {
             #[arri(nullable = true)]
-            value: String,
+            value: Option<String>,
         }
 
         let export = NullablePropsStruct::export();
         let expected = {
             let mut prop = PropertiesSchema::new();
-            prop.set_property(
+            prop.set_optional_property(
                 "value",
                 Box::new({
                     let mut ty = TypeSchema::new(Types::String);
@@ -70,7 +70,7 @@ mod tests {
             prop
         };
 
-        assert_eq!(export.properties, expected.properties);
+        assert_eq!(export.optional_properties, expected.optional_properties);
     }
 
     #[test]
@@ -78,13 +78,13 @@ mod tests {
         #[derive(Exported)]
         struct NullablePropsStruct {
             #[arri(nullable = false)]
-            value: String,
+            value: Option<String>,
         }
 
         let export = NullablePropsStruct::export();
         let expected = {
             let mut prop = PropertiesSchema::new();
-            prop.set_property(
+            prop.set_optional_property(
                 "value",
                 Box::new({
                     let mut ty = TypeSchema::new(Types::String);
@@ -96,6 +96,6 @@ mod tests {
             prop
         };
 
-        assert_eq!(export.properties, expected.properties);
+        assert_eq!(export.optional_properties, expected.optional_properties);
     }
 }

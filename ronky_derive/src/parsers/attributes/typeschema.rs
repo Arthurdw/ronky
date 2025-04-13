@@ -9,7 +9,7 @@ use super::parse_arri_attrs;
 
 #[derive(Debug, Default)]
 pub(crate) struct TypeSchemaArguments {
-    pub(crate) nullable: bool,
+    pub(crate) is_nullable: bool,
 }
 
 impl Parse for TypeSchemaArguments {
@@ -25,9 +25,9 @@ impl Parse for TypeSchemaArguments {
                     if input.peek(Token![=]) {
                         input.parse::<Token![=]>()?;
                         let value: LitBool = input.parse()?;
-                        args.nullable = value.value();
+                        args.is_nullable = value.value();
                     } else {
-                        args.nullable = true;
+                        args.is_nullable = true;
                     }
                 }
                 _ => Err(input.error(format!("Unknown property: {}", key_str)))?,
