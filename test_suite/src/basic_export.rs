@@ -2,15 +2,15 @@
 mod tests {
     use ronky::{Exportable, Exported, MetadataSchema, PropertiesSchema, TypeSchema, Types};
 
-    #[allow(dead_code)]
-    #[derive(Exported)]
-    struct TestStruct {
-        field1: String,
-        field2: i32,
-    }
-
     #[test]
     fn test_export() {
+        #[allow(dead_code)]
+        #[derive(Exported)]
+        struct TestStruct {
+            field1: String,
+            field2: i32,
+        }
+
         let export = TestStruct::export();
         let mut expected = PropertiesSchema::new();
         expected

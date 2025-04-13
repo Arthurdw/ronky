@@ -2,11 +2,11 @@ mod arri_types;
 
 use arri_types::ArriTypesParser;
 use proc_macro::TokenStream;
-use quote::{quote, quote_spanned};
+use quote::quote_spanned;
 use syn::{Path, Type, spanned::Spanned};
 
 pub(crate) trait TypeParser {
-    fn parse(field: &Path) -> TokenStream;
+    fn parse(ty: &Type, field: &Path) -> TokenStream;
 }
 
 /// Retrieves the `Path` from the given `Field`.
@@ -29,8 +29,8 @@ fn get_path<'a>(ty: &'a Type) -> Result<&'a Path, TokenStream> {
     }
 }
 
-pub(crate) fn is_option_type(field: &Type) -> bool {
-    if let Type::Path(type_path) = field {
+pub(crate) fn is_option_type(ty: &Type) -> bool {
+    if let Type::Path(type_path) = ty {
         if let Some(segment) = type_path.path.segments.last() {
             return segment.ident == "Option";
         }
@@ -43,8 +43,5 @@ pub(crate) fn parse_type(ty: &Type) -> TokenStream {
         Ok(path) => path,
         Err(stream) => return stream,
     };
-    let arri_type = ArriTypesParser::parse(path);
-    let stream: proc_macro2::TokenStream = arri_type.into();
-
-    quote!(ronky::TypeSchema::new(#stream)).into()
+    ArriTypesParser::parse(ty, path)
 }
