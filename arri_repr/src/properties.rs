@@ -1,14 +1,14 @@
 // TODO: docs
 use std::collections::HashMap;
 
-use crate::{Serializable, serializer::Serializer};
+use crate::{MetadataSchema, Serializable, serializer::Serializer};
 
 #[derive(Default, Debug, PartialEq, Eq)]
 pub struct PropertiesSchema {
     pub properties: HashMap<String, Box<dyn Serializable>>,
     pub optional_properties: HashMap<String, Box<dyn Serializable>>,
     pub strict: Option<bool>,
-    pub metadata: Option<Box<dyn Serializable>>,
+    pub metadata: Option<MetadataSchema>,
 }
 
 impl PropertiesSchema {
@@ -35,7 +35,7 @@ impl PropertiesSchema {
         self
     }
 
-    pub fn set_metadata(&mut self, metadata: Box<dyn Serializable>) -> &mut Self {
+    pub fn set_metadata(&mut self, metadata: MetadataSchema) -> &mut Self {
         self.metadata = Some(metadata);
         self
     }

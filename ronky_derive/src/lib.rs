@@ -43,7 +43,7 @@ pub fn export_stream(input: TokenStream) -> TokenStream {
 
     quote! {
         let mut schema = ronky::PropertiesSchema::new();
-        schema.set_metadata(Box::new(#metadata));
+        schema.set_metadata(#metadata);
         #(#properties)*
         schema
     }

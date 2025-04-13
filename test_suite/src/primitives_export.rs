@@ -31,11 +31,11 @@ mod tests {
         let export = TestStruct::export();
         let mut expected = PropertiesSchema::new();
         expected
-            .set_metadata(Box::new(
+            .set_metadata(
                 MetadataSchema::new()
                     .set_id("TestStruct".to_string())
                     .to_owned(),
-            ))
+            )
             .set_property("string", Box::new(TypeSchema::new(Types::String)))
             // .set_property("string_ref", Box::new(TypeSchema::new(Types::String)))
             .set_property("boolean", Box::new(TypeSchema::new(Types::Boolean)))

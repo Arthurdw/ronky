@@ -15,11 +15,11 @@ mod tests {
         let export = TestStruct::export();
         let mut expected = PropertiesSchema::new();
         expected
-            .set_metadata(Box::new(
+            .set_metadata(
                 MetadataSchema::new()
                     .set_id("TestStruct".to_string())
                     .to_owned(),
-            ))
+            )
             .set_property("field1", Box::new(TypeSchema::new(Types::String)))
             .set_property("field2", Box::new(TypeSchema::new(Types::Int32)));
 
