@@ -5,7 +5,7 @@ mod tests {
     #[test]
     fn test_export() {
         #[allow(dead_code)]
-        // #[derive(Exported)]
+        #[derive(Exported)]
         struct ChildExport {
             field: String,
         }
