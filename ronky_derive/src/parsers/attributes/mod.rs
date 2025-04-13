@@ -2,24 +2,13 @@ pub(crate) mod properties;
 
 use proc_macro::TokenStream;
 use quote::quote_spanned;
-use syn::{Attribute, Meta, meta::ParseNestedMeta, spanned::Spanned};
+use syn::{
+    Attribute, Meta, Token,
+    parse::{Parse, ParseStream},
+    spanned::Spanned,
+};
 
-fn concat_list(items: &[impl ToString]) -> String {
-    items
-        .iter()
-        .map(|arg| arg.to_string())
-        .collect::<Vec<String>>()
-        .join(", ")
-}
-
-fn parse_arri_attrs<'a, P>(
-    attrs: &'a [Attribute],
-    available_args: &[impl ToString],
-    mut parser: P,
-) -> Result<(), TokenStream>
-where
-    P: FnMut(String, ParseNestedMeta<'_>) -> syn::Result<()>,
-{
+fn parse_arri_attrs<'a, T: Parse>(attrs: &'a [Attribute]) -> Result<Option<T>, TokenStream> {
     let attrs: Vec<_> = attrs
         .iter()
         .filter(|attr| attr.path().is_ident("arri"))
@@ -29,32 +18,26 @@ where
         // We will only accept meta lists
         if let Meta::List(meta_list) = &attr.meta {
             if meta_list.tokens.is_empty() {
-                let available_args = concat_list(available_args);
-                return Err(quote_spanned!(
-                    meta_list.span() => compile_error!(concat!(
-                        "No arguments were provided for this. Available argument(s) are: ",
-                        #available_args
-                )))
-                .into());
+                return Err(quote_spanned!(meta_list.span() => compile_error!("No arguments were provided for this.")).into());
             }
 
-            if let Err(err) = meta_list.parse_nested_meta(|meta| {
-                for arg in available_args {
-                    if meta.path.is_ident(&arg.to_string()) {
-                        return parser(arg.to_string(), meta);
-                    }
-                }
-
-                Err(meta.error(format!(
-                    "Unrecognized argument, available argument(s) are: {}",
-                    concat_list(available_args)
-                )))
-            }) {
-                return Err(err.into_compile_error().into());
-            }
+            return match meta_list.parse_args_with(T::parse) {
+                Ok(res) => Ok(Some(res)),
+                Err(err) => Err(err.into_compile_error().into()),
+            };
         } else {
             return Err(quote_spanned!(attr.span() => compile_error!("The only supported attribute format for arri is with a list of arguments. Expected usage: `#[arri(...)]`")).into());
         }
+    }
+
+    Ok(None)
+}
+
+pub(crate) fn goto_next(input: ParseStream) -> syn::Result<()> {
+    if input.peek(Token![,]) {
+        input.parse::<Token![,]>()?;
+    } else if !input.is_empty() {
+        return Err(input.error("Expected ',' or end of input"));
     }
 
     Ok(())

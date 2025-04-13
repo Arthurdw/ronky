@@ -27,15 +27,14 @@ pub fn export_stream(input: TokenStream) -> TokenStream {
     };
     let metadata: proc_macro2::TokenStream = metadata::extract(&input.ident, &input.attrs).into();
     let attrs = match properties::extract(&input.attrs) {
-        Ok(attrs) => {
-            if attrs.strict {
-                Some(quote! {
-                    schema.set_strict(true);
-                })
-            } else {
-                None
-            }
+        Ok(Some(attrs)) => {
+            let strict = attrs.strict;
+
+            Some(quote! {
+                schema.set_strict(#strict);
+            })
         }
+        Ok(None) => None,
         Err(stream) => Some(stream.into()),
     };
 
