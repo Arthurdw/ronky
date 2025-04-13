@@ -1,7 +1,7 @@
 mod metadata;
 mod parsers;
 
-use parsers::{ParsedField, parse_field};
+use parsers::{ParsedField, attributes::properties, parse_field};
 use proc_macro::TokenStream;
 use quote::{quote, quote_spanned};
 use syn::{DeriveInput, parse_macro_input, spanned::Spanned};
@@ -26,6 +26,18 @@ pub fn export_stream(input: TokenStream) -> TokenStream {
         }
     };
     let metadata: proc_macro2::TokenStream = metadata::extract(&input.ident, &input.attrs).into();
+    let attrs = match properties::extract(&input.attrs) {
+        Ok(attrs) => {
+            if attrs.strict {
+                Some(quote! {
+                    schema.set_strict(true);
+                })
+            } else {
+                None
+            }
+        }
+        Err(stream) => Some(stream.into()),
+    };
 
     // TODO: find out way to prevent the duplication here
     let properties = fields
@@ -75,15 +87,16 @@ pub fn export_stream(input: TokenStream) -> TokenStream {
     quote! {
         let mut schema = ronky::PropertiesSchema::new();
         schema.set_metadata(#metadata);
+        #attrs
         #(#properties)*
         schema
     }
     .into()
 }
 
-#[proc_macro_derive(Exported)]
+#[proc_macro_derive(Exported, attributes(arri))]
 pub fn exported_derive(input: TokenStream) -> TokenStream {
-    let quotable_result: proc_macro2::TokenStream = export_stream(input.clone()).into();
+    let export: proc_macro2::TokenStream = export_stream(input.clone()).into();
 
     let input = parse_macro_input!(input as DeriveInput);
     let struct_name = input.ident.clone();
@@ -91,7 +104,7 @@ pub fn exported_derive(input: TokenStream) -> TokenStream {
     quote! {
         impl ronky::Exportable for #struct_name {
             fn export() -> ronky::PropertiesSchema {
-                #quotable_result
+                #export
             }
         }
     }

@@ -1,10 +1,7 @@
-use proc_macro::{Ident, TokenStream};
+use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
-use quote::{quote, quote_spanned};
-use syn::{
-    Attribute, DeriveInput, Expr, ExprLit, Field, Lit, LitStr, Meta, MetaNameValue,
-    spanned::Spanned,
-};
+use quote::quote;
+use syn::{Attribute, Expr, ExprLit, Field, Lit, LitStr, Meta, MetaNameValue};
 
 fn extract_docs(attrs: &[Attribute]) -> Option<TokenStream> {
     let docs = attrs
@@ -107,10 +104,5 @@ pub fn extract_from_field(field: &Field) -> Option<TokenStream> {
         return None;
     }
 
-    Some(match &field.ident {
-        Some(ident) => extract_attrs(&field.attrs),
-        None => {
-            quote_spanned!(field.span() => compile_error!("Field must have an identifier")).into()
-        }
-    })
+    Some(extract_attrs(&field.attrs))
 }

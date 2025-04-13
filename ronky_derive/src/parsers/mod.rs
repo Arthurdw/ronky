@@ -1,3 +1,4 @@
+pub(crate) mod attributes;
 mod fields;
 mod types;
 
