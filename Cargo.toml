@@ -15,8 +15,6 @@ categories = ["development-tools"]
 keywords = ["arri"]
 
 [workspace.lints.clippy]
-multiple_crate_versions = "allow"
-
 style = "deny"
 complexity = "deny"
 perf = "deny"
@@ -25,5 +23,6 @@ correctness = "deny"
 use_self = "deny"
 
 [workspace.dependencies]
+ronky = { path = "ronky", version = "1.0.0-alpha.1" }
 arri_repr = { path = "arri_repr", version = "1.0.0-alpha.1" }
 ronky_derive = { path = "ronky_derive/", version = "1.0.0-alpha.1" }

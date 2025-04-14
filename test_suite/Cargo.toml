@@ -13,7 +13,7 @@ categories.workspace = true
 keywords.workspace = true
 
 [dependencies]
-ronky = { path = "../ronky", features = ["derive"] }
+ronky = { workspace = true, features = ["derive"] }
 
 [lints]
 workspace = true
