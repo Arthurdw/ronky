@@ -27,6 +27,8 @@ impl Serializable for ElementSchema {
     fn serialize(&self) -> Option<String> {
         Serializer::builder()
             .set("elements", &self.elements)
+            .set("metadata", &self.metadata)
+            .set("nullable", &self.nullable)
             .build()
             .into()
     }
@@ -56,5 +58,24 @@ mod tests {
             serialized,
             serde_json::json!({ "elements": { "type": "string" } })
         );
+    }
+
+    #[test]
+    fn test_vec_metadata() {
+        let mut type_schema = ElementSchema::new(Box::new(TypeSchema::new(Types::String)));
+        type_schema.set_metadata(MetadataSchema::new().set_id("test").to_owned());
+
+        assert_eq!(
+            type_schema.metadata,
+            Some(MetadataSchema::new().set_id("test").to_owned())
+        );
+    }
+
+    #[test]
+    fn test_vec_nullable() {
+        let mut type_schema = ElementSchema::new(Box::new(TypeSchema::new(Types::String)));
+        type_schema.set_nullable(true);
+
+        assert_eq!(type_schema.nullable, Some(true));
     }
 }
