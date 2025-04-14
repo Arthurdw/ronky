@@ -113,6 +113,16 @@ exportable! {
                     DateTime<Utc> => Timestamp,
                 }
             }
+
+            #[test]
+            fn test_serialize_datetime() {
+                let fixed_offset = DateTime::<FixedOffset>::export().serialize();
+                let utc = DateTime::<Utc>::export().serialize();
+                let expected = TypeSchema::new(Types::Timestamp).serialize();
+
+                assert_eq!(fixed_offset, expected);
+                assert_eq!(utc, expected);
+            }
         }
     }
 }
