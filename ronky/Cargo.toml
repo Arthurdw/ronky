@@ -15,7 +15,7 @@ repository.workspace = true
 workspace = true
 
 [dependencies]
-arri_repr = { path = "../arri_repr/" }
+arri_repr = { path = "../arri_repr/", features = [] }
 ronky_derive = { path = "../ronky_derive/", optional = true }
 
 [dev-dependencies]
@@ -24,3 +24,4 @@ ronky_derive = { path = "../ronky_derive/" }
 [features]
 default = []
 derive = ["ronky_derive"]
+chrono = ["arri_repr/chrono"]
