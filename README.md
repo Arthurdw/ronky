@@ -2,7 +2,9 @@
 
 [![Crates.io Version](https://img.shields.io/crates/v/ronky)](https://crates.io/crates/ronky)
 
-TODO: write this description
+This library allows you to extract Rust types and serialize them into [Arri](https://github.com/modiimedia/arri) types.
+
+> 🚧 This is still under heavy construction, see [the status board](https://github.com/users/Arthurdw/projects/6/views/2) for the current status.
 
 ## In memory of Ronky
 
