@@ -54,6 +54,14 @@ jobs:
             echo "bump_type=major" >> $GITHUB_ENV
           elif echo "$PR_LABELS" | grep -q "release:minor"; then
             echo "bump_type=minor" >> $GITHUB_ENV
+          elif echo "$PR_LABELS" | grep -q "release:alpha"; then
+            echo "bump_type=alpha" >> $GITHUB_ENV
+          elif echo "$PR_LABELS" | grep -q "release:beta"; then
+            echo "bump_type=beta" >> $GITHUB_ENV
+          elif echo "$PR_LABELS" | grep -q "release:rc"; then
+            echo "bump_type=rc" >> $GITHUB_ENV
+          elif echo "$PR_LABELS" | grep -q "release:release"; then
+            echo "bump_type=release" >> $GITHUB_ENV
           fi
 
       - name: Bump version
