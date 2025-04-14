@@ -64,7 +64,7 @@ jobs:
           cargo release version $bump_type --execute --no-confirm
 
       - name: Extract version from Cargo.toml
-        run: echo "VERSION=$(cargo pkgid | cut -d '@' -f 2)" >> $GITHUB_ENV
+        run: echo "VERSION=$(grep -m 1 '^version =' crates/ronky/Cargo.toml | cut -d '"' -f 2)" >> $GITHUB_ENV
 
       - name: Commit version bump
         run: |
