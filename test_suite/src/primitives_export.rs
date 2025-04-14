@@ -8,11 +8,8 @@ mod tests {
     #[derive(Exported)]
     struct TestStruct {
         string: String,
-        // TODO: add support for string_ref
-        // string_ref: &'static str,
+        string_ref: &'static str,
         boolean: bool,
-        // TODO: figure out how to do timestamps
-        // timestamp: DateTime<Utc>,
         float32: f32,
         float64: f64,
         int8: i8,
@@ -36,7 +33,7 @@ mod tests {
                     .to_owned(),
             )
             .set_property("string", Box::new(TypeSchema::new(Types::String)))
-            // .set_property("string_ref", Box::new(TypeSchema::new(Types::String)))
+            .set_property("string_ref", Box::new(TypeSchema::new(Types::String)))
             .set_property("boolean", Box::new(TypeSchema::new(Types::Boolean)))
             .set_property("float32", Box::new(TypeSchema::new(Types::Float32)))
             .set_property("float64", Box::new(TypeSchema::new(Types::Float64)))
@@ -48,7 +45,6 @@ mod tests {
             .set_property("uint32", Box::new(TypeSchema::new(Types::Uint32)))
             .set_property("int64", Box::new(TypeSchema::new(Types::Int64)))
             .set_property("uint64", Box::new(TypeSchema::new(Types::Uint64)))
-            // .set_property("timestamp", Box::new(TypeSchema::new(Types::Timestamp)))
             .serialize();
 
         assert_eq!(export, expected);

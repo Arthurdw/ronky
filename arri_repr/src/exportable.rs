@@ -88,6 +88,7 @@ macro_rules! exportable {
 exportable! {
     typeschema: {
         String => String,
+        &str => String,
         bool => Boolean,
         f32 => Float32,
         f64 => Float64,
