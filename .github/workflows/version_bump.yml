@@ -1,6 +1,6 @@
 ---
-name: Deploy to crates.io
-run-name: Deploying to crates.io
+name: Bump version based on PR tag
+run-name: version-bump
 
 on:
   pull_request:
@@ -28,8 +28,6 @@ jobs:
 
       - name: Determine version bump
         id: version_bump
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # Set default version bump to patch
           echo "bump_type=patch" >> $GITHUB_ENV
@@ -38,16 +36,18 @@ jobs:
           PR_NUMBER=$(echo "${{ github.event.pull_request.number }}")
 
           if [ -z "$PR_NUMBER" ]; then
-            echo "No PR number found, defaulting to path"
+            echo "No PR number found, defaulting to patch"
             exit 0
           fi
 
           # Fetch the last pull request's labels
-          PR_LABELS=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
+          PR_LABELS=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
               -H "Accept: application/vnd.github+json" \
               https://api.github.com/repos/$REPO/pulls/$PR_NUMBER)
 
-          PR_LABELS=$($PR_LABELS  | jq -r '.labels | .[].name')
+          PR_LABELS=$(echo "$PR_LABELS"  | jq -r '.labels | .[].name')
+
+          echo "$PR_LABELS"
 
           # Check for labels and determine the bump type
           if echo "$PR_LABELS" | grep -q "release:major"; then
@@ -58,24 +58,24 @@ jobs:
 
       - name: Bump version
         run: |
-          bump_type=${{ env.bump_type }}
+          bump_type="${{ env.bump_type }}"
           echo "Bumping version using: $bump_type"
           cargo release version $bump_type --execute --no-confirm
+
+      - name: Extract version from Cargo.toml
+        run: echo "VERSION=$(cargo pkgid | cut -d '@' -f 2)" >> $GITHUB_ENV
 
       - name: Commit version bump
         run: |
           git config --local user.name "github-actions[bot]"
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add Cargo.toml Cargo.lock
-          git commit -m "chore(release): version bump to $(grep '^version = ' Cargo.toml | sed -E 's/version = \"([^\"]+)\"/\1/')"
+          git commit -m "chore(release): version bump to ${{ env.VERSION }}"
+          git tag "v${{ env.VERSION}}"
 
       - name: Push changes
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ github.ref }}
-
-      - name: Publish to crates.io
-        uses: katyo/publish-crates@v2
-        with:
-          registry-token: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+          tags: true
