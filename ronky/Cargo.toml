@@ -15,11 +15,11 @@ repository.workspace = true
 workspace = true
 
 [dependencies]
-arri_repr = { path = "../arri_repr/", features = [] }
-ronky_derive = { path = "../ronky_derive/", optional = true }
+arri_repr = { workspace = true, features = [] }
+ronky_derive = { workspace = true, optional = true }
 
 [dev-dependencies]
-ronky_derive = { path = "../ronky_derive/" }
+ronky_derive.workspace = true
 
 [features]
 default = []
