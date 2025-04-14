@@ -16,16 +16,6 @@ impl TypeSchema {
             nullable: None,
         }
     }
-
-    pub fn set_metadata(&mut self, metadata: MetadataSchema) -> &mut Self {
-        self.metadata = Some(metadata);
-        self
-    }
-
-    pub fn set_nullable(&mut self, nullable: bool) -> &mut Self {
-        self.nullable = Some(nullable);
-        self
-    }
 }
 
 impl Serializable for TypeSchema {
@@ -36,6 +26,14 @@ impl Serializable for TypeSchema {
             .set("nullable", &self.nullable)
             .build()
             .into()
+    }
+
+    fn set_metadata(&mut self, metadata: MetadataSchema) {
+        self.metadata = Some(metadata);
+    }
+
+    fn set_nullable(&mut self, nullable: bool) {
+        self.nullable = Some(nullable);
     }
 }
 

@@ -35,6 +35,7 @@ mod tests {
             prop.set_optional_property(
                 "value",
                 Box::new({
+                    use ronky::Serializable;
                     let mut ty = TypeSchema::new(Types::String);
                     ty.set_nullable(true);
                     ty
@@ -61,6 +62,7 @@ mod tests {
             prop.set_optional_property(
                 "value",
                 Box::new({
+                    use ronky::Serializable;
                     let mut ty = TypeSchema::new(Types::String);
                     ty.set_nullable(true);
                     ty
@@ -87,6 +89,7 @@ mod tests {
             prop.set_optional_property(
                 "value",
                 Box::new({
+                    use ronky::Serializable;
                     let mut ty = TypeSchema::new(Types::String);
                     ty.set_nullable(false);
                     ty

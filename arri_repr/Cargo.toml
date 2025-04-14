@@ -17,3 +17,9 @@ workspace = true
 [dev-dependencies]
 # TODO: be able to remove this dev dependency
 serde_json = "1.0.140"
+
+[features]
+chrono = []
+
+[dependencies]
+chrono = "0.4.40"

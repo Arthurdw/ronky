@@ -49,6 +49,7 @@ pub fn export_stream(input: TokenStream) -> TokenStream {
                     metadata::extract_from_field(&field).map(|ts| {
                         let ts: proc_macro2::TokenStream = ts.into();
                         quote! {
+                            use ronky::Serializable;
                             ty.set_metadata(#ts);
                         }
                         .into()
@@ -68,6 +69,7 @@ pub fn export_stream(input: TokenStream) -> TokenStream {
                     metadata::extract_from_field(&field).map(|ts| {
                         let ts: proc_macro2::TokenStream = ts.into();
                         quote! {
+                            use ronky::Serializable;
                             ty.set_metadata(#ts);
                         }
                         .into()
@@ -85,6 +87,7 @@ pub fn export_stream(input: TokenStream) -> TokenStream {
     }
 
     quote! {
+        use ronky::Serializable;
         let mut schema = ronky::PropertiesSchema::new();
         schema.set_metadata(#metadata);
         #attrs

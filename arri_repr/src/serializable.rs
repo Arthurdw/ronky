@@ -1,11 +1,33 @@
 // TODO: docs
 use std::{collections::HashMap, fmt::Debug};
 
-use crate::serializer::Serializer;
+use crate::{MetadataSchema, serializer::Serializer};
 
 // TODO: create a macro which automatically generates this implementation with a derive
 pub trait Serializable {
     fn serialize(&self) -> Option<String>;
+
+    fn set_metadata(&mut self, metadata: MetadataSchema) {
+        panic!(
+            "set_metadata is not implemented for this type!\n
+            This is a bug, please report it @ <https://github.com/Arthurdw/ronky/issues>\n
+            Serialized: {:?}\n
+            Metadata: {:?}",
+            self.serialize(),
+            metadata
+        );
+    }
+
+    fn set_nullable(&mut self, nullable: bool) {
+        panic!(
+            "set_nullable is not implemented for this type!\n
+            This is a bug, please report it @ <https://github.com/Arthurdw/ronky/issues>\n
+            Serialized: {:?}\n
+            nullable: {:?}",
+            self.serialize(),
+            nullable
+        );
+    }
 }
 
 impl Debug for dyn Serializable {
@@ -30,7 +52,7 @@ impl Serializable for &str {
 
 impl Serializable for String {
     fn serialize(&self) -> Option<String> {
-        format!("\"{}\"", self).into()
+        self.as_str().serialize()
     }
 }
 

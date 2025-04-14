@@ -106,6 +106,7 @@ mod tests {
             .set_property(
                 "field1",
                 Box::new({
+                    use ronky::Serializable;
                     let mut ty = TypeSchema::new(Types::String);
                     ty.set_metadata(
                         MetadataSchema::new()
@@ -120,6 +121,7 @@ mod tests {
             .set_optional_property(
                 "field2",
                 Box::new({
+                    use ronky::Serializable;
                     let mut ty = TypeSchema::new(Types::String);
                     ty.set_metadata(
                         MetadataSchema::new()

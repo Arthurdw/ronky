@@ -2,10 +2,7 @@ use proc_macro::TokenStream;
 use quote::{ToTokens, quote, quote_spanned};
 use syn::{Field, spanned::Spanned};
 
-use crate::parsers::{
-    attributes::typeschema,
-    types::{is_option_type, parse_type},
-};
+use crate::parsers::{attributes::typeschema, types::is_option_type};
 
 use super::{FieldParser, ParsedField};
 
@@ -13,7 +10,8 @@ pub struct BaseParser;
 
 impl FieldParser for BaseParser {
     fn parse<'a>(field: &'a Field) -> Result<ParsedField<'a>, TokenStream> {
-        let typeschema: proc_macro2::TokenStream = parse_type(&field.ty).into();
+        let ty = &field.ty;
+        let export = quote!(<#ty as ronky::Exportable>::export());
         let is_optional = is_option_type(&field.ty);
         let attrs = match typeschema::extract(&field.attrs) {
             Ok(Some(attrs)) => {
@@ -25,6 +23,7 @@ impl FieldParser for BaseParser {
                 }
 
                 Some(quote! {
+                    use ronky::Serializable;
                     ty.set_nullable(#is_nullable);
                 })
             }
@@ -34,7 +33,7 @@ impl FieldParser for BaseParser {
 
         let typeschema = quote! {
             {
-                let mut ty = #typeschema;
+                let mut ty = #export;
                 #attrs
                 ty
             }
