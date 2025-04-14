@@ -99,6 +99,22 @@ impl Serializable for Box<dyn Serializable> {
     }
 }
 
+#[cfg(feature = "chrono")]
+impl Serializable for chrono::DateTime<chrono::FixedOffset> {
+    fn serialize(&self) -> Option<String> {
+        self.to_rfc3339_opts(chrono::SecondsFormat::Millis, true)
+            .serialize()
+    }
+}
+
+#[cfg(feature = "chrono")]
+impl Serializable for chrono::DateTime<chrono::Utc> {
+    fn serialize(&self) -> Option<String> {
+        self.to_rfc3339_opts(chrono::SecondsFormat::Millis, true)
+            .serialize()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -302,6 +318,34 @@ mod tests {
         assert_eq!(
             boxed_value.serialize(),
             Some("\"boxed_dyn_value\"".to_string())
+        );
+    }
+
+    #[cfg(feature = "chrono")]
+    #[test]
+    fn test_serialize_chrono_fixed_offset() {
+        use chrono::{DateTime, FixedOffset};
+
+        let datetime =
+            DateTime::<FixedOffset>::parse_from_rfc3339("1985-04-12T23:20:50.520Z").unwrap();
+
+        assert_eq!(
+            datetime.serialize(),
+            Some("\"1985-04-12T23:20:50.520Z\"".to_string())
+        );
+    }
+
+    #[cfg(feature = "chrono")]
+    #[test]
+    fn test_serialize_chrono_utc() {
+        use chrono::{DateTime, FixedOffset, Utc};
+        let datetime =
+            DateTime::<FixedOffset>::parse_from_rfc3339("1985-04-12T23:20:50.520Z").unwrap();
+        let datetime_utc = datetime.with_timezone(&Utc);
+
+        assert_eq!(
+            datetime_utc.serialize(),
+            Some("\"1985-04-12T23:20:50.520Z\"".to_string())
         );
     }
 }
