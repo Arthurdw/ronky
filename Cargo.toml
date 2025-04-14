@@ -1,41 +1,20 @@
-[package]
-name = "ronky"
-description = "Export a part of the Rust AST to JSON"
-readme = "README.md"
-
-version.workspace = true
-authors.workspace = true
-categories.workspace = true
-edition.workspace = true
-keywords.workspace = true
-license.workspace = true
-repository.workspace = true
-
-[dependencies]
-ronky_proc = { path = "crates/proc", version = "0.0.36" }
-ronky_exported = { path = "crates/exported", version = "0.0.36" }
-
-
-serde_json.workspace = true
-
-[lints]
-workspace = true
+[patch.crates-io]
+ronky = { path = "ronky" }
 
 [workspace]
-members = ["crates/*"]
+resolver = "2"
+members = ["arri_repr", "ronky", "ronky_derive", "test_suite"]
 
 [workspace.package]
-version = "0.0.36"
-edition = "2021"
+version = "1.0.0-alpha.1"
+edition = "2024"
 license = "GPL-3.0-or-later"
 authors = ["Arthur De Witte <dev@arthurdw.com>"]
 repository = "https://github.com/Arthurdw/ronky"
 categories = ["development-tools"]
-keywords = ["rust", "ast", "exporter", "json", "development-tools"]
+keywords = ["arri"]
 
 [workspace.lints.clippy]
-multiple_crate_versions = "allow"
-
 style = "deny"
 complexity = "deny"
 perf = "deny"
@@ -44,4 +23,6 @@ correctness = "deny"
 use_self = "deny"
 
 [workspace.dependencies]
-serde_json = "1.0"
+ronky = { path = "ronky", version = "1.0.0-alpha.1" }
+arri_repr = { path = "arri_repr", version = "1.0.0-alpha.1" }
+ronky_derive = { path = "ronky_derive/", version = "1.0.0-alpha.1" }

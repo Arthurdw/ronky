@@ -1,91 +1,10 @@
-# Ronky - A simple way to export Rust definitions to other languages
+# Ronky - A simple way to export Rust definitions to Arri types
 
 [![Crates.io Version](https://img.shields.io/crates/v/ronky)](https://crates.io/crates/ronky)
 
-## Example
+This library allows you to extract Rust types and serialize them into [Arri](https://github.com/modiimedia/arri) types.
 
-There is still a lot of work to be done, but here is a simple example of what I
-have in mind.
-
-The following code and it's output:
-
-```rs
-#[derive(Export)]
-struct Human {
-    name: String,
-    age: u32,
-    friends: Vec<Human>,
-    pets: Vec<Pet>,
-}
-
-#[derive(Export)]
-struct Pet {
-    name: String,
-    species: String,
-}
-```
-
-Which results in the following JSON:
-
-```json
-{
-  "types": [
-    {
-      "name": "Human",
-      "fields": [
-        {
-          "name": "name",
-          "type": "String"
-        },
-        {
-          "name": "age",
-          "type": "u32"
-        },
-        {
-          "name": "friends",
-          "type": "list"
-          "of": ["Human"],
-        },
-        {
-          "name": "pets",
-          "type": "list"
-          "of": ["Pet"],
-        }
-      ]
-    },
-    {
-      "name": "Pet",
-      "fields": [
-        {
-          "name": "name",
-          "type": "String"
-        },
-        {
-          "name": "species",
-          "type": "String"
-        }
-      ]
-    }
-  ]
-}
-```
-
-That can then be converted to the following typescript (any supported language,
-or create your own):
-
-```ts
-interface Human {
-  name: string;
-  age: number;
-  friends: Human[];
-  pets: Pet[];
-}
-
-interface Pet {
-  name: string;
-  species: string;
-}
-```
+> 🚧 This is still under heavy construction, see [the status board](https://github.com/users/Arthurdw/projects/6/views/2) for the current status.
 
 ## In memory of Ronky
 

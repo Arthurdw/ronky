@@ -1,0 +1,27 @@
+[package]
+name = "ronky"
+description = "A simple way to export Rust definitions to Arri types"
+readme = "README.md"
+
+version.workspace = true
+authors.workspace = true
+categories.workspace = true
+edition.workspace = true
+keywords.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+arri_repr = { workspace = true, features = [] }
+ronky_derive = { workspace = true, optional = true }
+
+[dev-dependencies]
+ronky_derive.workspace = true
+
+[features]
+default = []
+derive = ["ronky_derive"]
+chrono = ["arri_repr/chrono"]
