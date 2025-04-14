@@ -1,4 +1,4 @@
-use crate::{Serializable, TypeSchema, Types};
+use crate::{Serializable, TypeSchema, Types, elements::ElementSchema};
 
 pub trait Exportable {
     fn export() -> impl Serializable;
@@ -66,7 +66,7 @@ macro_rules! exportable {
     // --- Generic implementation parsers ---
     // Generic implementation with expression
     (@parse_impls $type:ident < $($type_params:ident),* > => $implementation:expr, $($rest:tt)*) => {
-        impl<$($type_params: Exportable),*> Exportable for $type<$($type_params),*> {
+        impl<$($type_params: 'static + Exportable),*> Exportable for $type<$($type_params),*> {
             fn export() -> impl Serializable {
                 $implementation
             }
@@ -102,6 +102,7 @@ exportable! {
     },
     generic: {
         Option<T> => T::export(),
+        Vec<T> => ElementSchema::new(Box::new(T::export())),
     },
     features: {
         "chrono" => {
