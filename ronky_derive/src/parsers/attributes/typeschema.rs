@@ -14,7 +14,7 @@ pub(crate) struct TypeSchemaArguments {
 
 impl Parse for TypeSchemaArguments {
     fn parse(input: ParseStream) -> syn::Result<Self> {
-        let mut args = TypeSchemaArguments::default();
+        let mut args = Self::default();
 
         while !input.is_empty() {
             let key: Ident = input.parse()?;

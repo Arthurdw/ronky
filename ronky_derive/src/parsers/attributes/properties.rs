@@ -15,7 +15,7 @@ pub(crate) struct PropertiesArguments {
 
 impl Parse for PropertiesArguments {
     fn parse(input: ParseStream) -> syn::Result<Self> {
-        let mut args = PropertiesArguments::default();
+        let mut args = Self::default();
 
         while !input.is_empty() {
             let key: Ident = input.parse()?;

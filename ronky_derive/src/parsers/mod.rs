@@ -9,6 +9,6 @@ use syn::Field;
 pub(crate) use fields::ParsedField;
 
 // TODO: docs
-pub fn parse_field<'a>(field: &'a Field) -> Result<ParsedField<'a>, TokenStream> {
+pub fn parse_field(field: &Field) -> Result<ParsedField<'_>, TokenStream> {
     BaseParser::parse(field)
 }

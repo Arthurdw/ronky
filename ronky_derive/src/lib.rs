@@ -46,13 +46,12 @@ pub fn export_stream(input: TokenStream) -> TokenStream {
                 let field_name = field.ident.as_ref().unwrap().to_string();
                 let stream: proc_macro2::TokenStream = stream.into();
                 let field_metadata: Option<proc_macro2::TokenStream> =
-                    metadata::extract_from_field(&field).map(|ts| {
+                    metadata::extract_from_field(field).map(|ts| {
                         let ts: proc_macro2::TokenStream = ts.into();
                         quote! {
                             use ronky::Serializable;
                             ty.set_metadata(#ts);
                         }
-                        .into()
                     });
                 properties.push(quote! {
                     schema.set_property(#field_name, Box::new({
@@ -66,13 +65,12 @@ pub fn export_stream(input: TokenStream) -> TokenStream {
                 let field_name = field.ident.as_ref().unwrap().to_string();
                 let stream: proc_macro2::TokenStream = stream.into();
                 let field_metadata: Option<proc_macro2::TokenStream> =
-                    metadata::extract_from_field(&field).map(|ts| {
+                    metadata::extract_from_field(field).map(|ts| {
                         let ts: proc_macro2::TokenStream = ts.into();
                         quote! {
                             use ronky::Serializable;
                             ty.set_metadata(#ts);
                         }
-                        .into()
                     });
                 properties.push(quote! {
                     schema.set_optional_property(#field_name, Box::new({
@@ -82,7 +80,7 @@ pub fn export_stream(input: TokenStream) -> TokenStream {
                     }));
                 })
             }
-            Err(stream) => return stream.into(),
+            Err(stream) => return stream,
         }
     }
 
