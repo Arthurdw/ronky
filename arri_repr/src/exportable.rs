@@ -102,8 +102,13 @@ exportable! {
         u64 => Uint64,
     },
     generic: {
-        Option<T> => T::export(),
+        Option<T> =>  T::export(),
         Vec<T> => ElementSchema::new(Box::new(T::export())),
+        Box<T> =>  {
+            // TODO: find way to compare current name with parent
+            // std::any::type_name::<T>().split("::").last().unwrap().to_string()
+            T::export()
+        },
     },
     features: {
         "chrono" => {

@@ -4,27 +4,23 @@ mod parsers;
 use parsers::{ParsedField, attributes::properties, parse_field};
 use proc_macro::TokenStream;
 use quote::{quote, quote_spanned};
-use syn::{DeriveInput, parse_macro_input, spanned::Spanned};
+use syn::{Data, DataStruct, DeriveInput, Fields, parse_macro_input, spanned::Spanned};
 
 #[proc_macro]
 pub fn export_stream(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
 
-    let data = match input.data {
-        syn::Data::Struct(ref data) => data,
-        _ => {
-            return quote_spanned!(input.span() => compile_error!("Only structs are supported"))
-                .into();
-        }
-    };
-
-    let fields = match &data.fields {
-        syn::Fields::Named(fields) => &fields.named,
+    let fields = match input.data {
+        Data::Struct(DataStruct {
+            fields: Fields::Named(ref fields),
+            ..
+        }) => &fields.named,
         _ => {
             return quote_spanned!(input.span() => compile_error!("Only named structs are exportable for now"))
                 .into();
         }
     };
+
     let metadata: proc_macro2::TokenStream = metadata::extract(&input.ident, &input.attrs).into();
     let attrs = match properties::extract(&input.attrs) {
         Ok(Some(attrs)) => {
@@ -38,8 +34,10 @@ pub fn export_stream(input: TokenStream) -> TokenStream {
         Err(stream) => Some(stream.into()),
     };
 
+    let ident_name = &input.ident.to_string();
     let mut properties = Vec::new();
-    for field in fields.iter().map(parse_field) {
+    for field in fields.iter() {
+        let field = parse_field(ident_name, field);
         match field {
             // TODO: find out way to prevent the duplication here
             Ok(ParsedField::Required(field, stream)) => {
