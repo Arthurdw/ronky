@@ -32,7 +32,7 @@ mod tests {
         #[derive(Exported)]
         struct NumBinTree {
             left: Option<Box<NumBinTree>>,
-            right: Option<Box<NumBinTree>>,
+            // right: Option<Box<NumBinTree>>,
             value: i32,
         }
 

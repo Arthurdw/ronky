@@ -1,18 +1,21 @@
 use crate::RefSchema;
+use crate::r#ref::BoxOption;
 use crate::{Serializable, TypeSchema, Types, elements::ElementSchema};
 use std::cell::RefCell;
 use std::collections::HashSet;
 
 thread_local! {
+    // Track which types we've started exporting (even if not completed)
     static RECURSION_TRACKER: RefCell<HashSet<String>> = RefCell::new(HashSet::new());
 }
 
 pub trait Exportable {
-    fn export() -> Box<dyn Serializable>;
+    fn export() -> impl Serializable;
 
-    fn export_with_recursion_check() -> Box<dyn Serializable> {
+    fn export_with_recursion_check() -> impl Serializable {
+        eprintln!("Exporting with recursion check");
+
         let type_name = std::any::type_name::<Self>().to_string();
-
         let is_recursive = RECURSION_TRACKER.with(|tracker| {
             let mut tracker = tracker.borrow_mut();
             if tracker.contains(&type_name) {
@@ -22,22 +25,20 @@ pub trait Exportable {
                 false
             }
         });
-
         if is_recursive {
             eprintln!("Recursive type detected: {}", type_name);
             let name = type_name.split("::").last().unwrap_or(&type_name);
-            return Box::new(RefSchema::new(name));
+            return BoxOption::Ref(RefSchema::new(name));
         }
-
         let result = Self::export();
+        eprintln!("Exported: {:?}", result.serialize());
 
         // Remove our type from the set when done
         RECURSION_TRACKER.with(|tracker| {
             let mut tracker = tracker.borrow_mut();
             tracker.remove(&type_name);
         });
-
-        Box::new(result)
+        BoxOption::Boxed(result)
     }
 }
 
@@ -90,8 +91,9 @@ macro_rules! exportable {
     // TypeSchema with block
     (@parse_typeschema $ty:ty => $implementation:block, $($rest:tt)*) => {
         impl Exportable for $ty {
-            fn export() -> Box<dyn Serializable> {
-                Box::new($implementation)
+            fn export() -> impl Serializable {
+                eprintln!("Running exportable for {}", std::any::type_name::<Self>());
+                $implementation
             }
         }
         exportable!(@parse_typeschema $($rest)*);
@@ -104,8 +106,9 @@ macro_rules! exportable {
     // Generic implementation with expression
     (@parse_impls $type:ident < $($type_params:ident),* > => $implementation:expr, $($rest:tt)*) => {
         impl<$($type_params: 'static + Exportable),*> Exportable for $type<$($type_params),*> {
-            fn export() -> Box<dyn Serializable> {
-                Box::new($implementation)
+            fn export() -> impl Serializable {
+                eprintln!("Running exportable for {}", std::any::type_name::<Self>());
+                $implementation
             }
         }
         exportable!(@parse_impls $($rest)*);
@@ -139,7 +142,7 @@ exportable! {
         u64 => Uint64,
     },
     generic: {
-        Option<T> =>  T::export(),
+        Option<T> => T::export(), // Option is a special case, this gets handled in the proc macro
         Vec<T> => ElementSchema::new(Box::new(T::export())),
         Box<T> => T::export_with_recursion_check(),
     },

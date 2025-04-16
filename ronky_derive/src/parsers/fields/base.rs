@@ -48,21 +48,9 @@ impl BaseParser {
 }
 
 impl FieldParser for BaseParser {
-    fn parse<'a>(parent: &str, field: &'a Field) -> Result<ParsedField<'a>, TokenStream> {
+    // TODO: remove parent field
+    fn parse<'a>(_: &str, field: &'a Field) -> Result<ParsedField<'a>, TokenStream> {
         let ty = &field.ty;
-
-        // if Self::contains_recursive_type(parent, ty) {
-        //     let type_str = ty.to_token_stream().to_string();
-        // return Err(quote_spanned!(
-        //     ty.span() => compile_error!(concat!("Recursive type definition detected: ", #type_str, " contains parent type ", #parent))
-        // ).into());
-        // }
-        eprintln!(
-            "Got parent {:?} for type {:?}",
-            parent,
-            ty.to_token_stream().to_string()
-        );
-
         let export = quote!(<#ty as ronky::Exportable>::export());
         let is_optional = is_option_type(&field.ty);
         let attrs = match typeschema::extract(&field.attrs) {
