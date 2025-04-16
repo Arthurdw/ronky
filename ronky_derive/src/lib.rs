@@ -102,8 +102,8 @@ pub fn exported_derive(input: TokenStream) -> TokenStream {
 
     quote! {
         impl ronky::Exportable for #struct_name {
-            fn export() -> ronky::PropertiesSchema {
-                #export
+            fn export() -> Box<dyn ronky::Serializable> {
+                Box::new({#export})
             }
         }
     }
