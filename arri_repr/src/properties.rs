@@ -7,7 +7,7 @@ use crate::{MetadataSchema, Serializable, serializer::Serializer};
 pub struct PropertiesSchema {
     pub properties: HashMap<String, Box<dyn Serializable>>,
     pub optional_properties: HashMap<String, Box<dyn Serializable>>,
-    pub strict: Option<bool>,
+    pub is_strict: Option<bool>,
     pub metadata: Option<MetadataSchema>,
 }
 
@@ -31,7 +31,7 @@ impl PropertiesSchema {
     }
 
     pub fn set_strict(&mut self, strict: bool) -> &mut Self {
-        self.strict = Some(strict);
+        self.is_strict = Some(strict);
         self
     }
 
@@ -46,7 +46,7 @@ impl Serializable for PropertiesSchema {
         Serializer::builder()
             .set("properties", &self.properties)
             .set("optionalProperties", &self.optional_properties)
-            .set("strict", &self.strict)
+            .set("isStrict", &self.is_strict)
             .set("metadata", &self.metadata)
             .build()
             .into()
