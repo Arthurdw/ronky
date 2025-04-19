@@ -1,13 +1,15 @@
 #[cfg(test)]
 mod tests {
     use ronky::{
-        Exportable, Exported, MetadataSchema, PropertiesSchema, Serializable, TaggedUnionSchema,
+        EnumTransformation, Exportable, Exported, MetadataSchema, PropertiesSchema, Serializable,
+        TaggedUnionSchema,
     };
 
     #[test]
     fn test_export() {
         #[allow(dead_code)]
         #[derive(Exported)]
+        #[arri(transform = "uppercase", discriminator = "myDiscriminator")]
         enum Shape {
             Circle { radius: f64 },
         }
@@ -15,9 +17,9 @@ mod tests {
         let export = Shape::export();
         let mut expected = TaggedUnionSchema::new();
         expected.set_metadata(MetadataSchema::new().set_id("Shape").to_owned());
-        expected.set_discriminator("type");
+        expected.set_discriminator("myDiscriminator");
         expected.add_mapping(
-            "Circle",
+            "CIRCLE",
             Box::new({
                 let mut props = PropertiesSchema::new();
 
@@ -29,6 +31,7 @@ mod tests {
                 props
             }),
         );
+        expected.set_transforms(&[EnumTransformation::Uppercase]);
 
         assert!(export.is::<TaggedUnionSchema>());
         let export = export.downcast_ref::<TaggedUnionSchema>().unwrap();

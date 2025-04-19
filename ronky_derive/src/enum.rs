@@ -10,21 +10,6 @@ use crate::{
 
 pub fn export_enum(input: &DeriveInput, variants: &Punctuated<Variant, Comma>) -> TokenStream {
     let metadata: proc_macro2::TokenStream = metadata::extract(&input.ident, &input.attrs).into();
-    let attrs = match enum_variants::extract(&input.attrs) {
-        Ok(Some(attrs)) => {
-            let transform = attrs
-                .transform
-                .iter()
-                .map(enum_transformation_to_tokens)
-                .collect::<Vec<proc_macro2::TokenStream>>();
-
-            Some(quote! {
-                schema.set_transforms(&[#(#transform),*]);
-            })
-        }
-        Ok(None) => None,
-        Err(stream) => Some(stream.into()),
-    };
 
     let mut is_tagged_union = false;
     let mut exported = Vec::new();
@@ -81,6 +66,36 @@ pub fn export_enum(input: &DeriveInput, variants: &Punctuated<Variant, Comma>) -
             });
         }
     }
+
+    let attrs = match enum_variants::extract(&input.attrs) {
+        Ok(Some(attrs)) => {
+            let transform = attrs
+                .transform
+                .iter()
+                .map(enum_transformation_to_tokens)
+                .collect::<Vec<proc_macro2::TokenStream>>();
+
+            let discriminator = match attrs.discriminator {
+                Some(discriminator) if !is_tagged_union => {
+                    return quote_spanned!(discriminator.span() =>
+                        compile_error!("Discriminator can only be used with tagged unions.");
+                    )
+                    .into();
+                }
+                Some(discriminator) => Some(quote! {
+                    schema.set_discriminator(#discriminator);
+                }),
+                None => None,
+            };
+
+            Some(quote! {
+                schema.set_transforms(&[#(#transform),*]);
+                #discriminator
+            })
+        }
+        Ok(None) => None,
+        Err(stream) => Some(stream.into()),
+    };
 
     let schema = if is_tagged_union {
         quote!(ronky::TaggedUnionSchema::new())
