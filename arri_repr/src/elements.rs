@@ -4,7 +4,7 @@ use crate::{MetadataSchema, Serializable, serializer::Serializer};
 pub struct ElementSchema {
     pub elements: Box<dyn Serializable>,
     pub metadata: Option<MetadataSchema>,
-    pub nullable: Option<bool>,
+    pub is_nullable: Option<bool>,
 }
 
 impl ElementSchema {
@@ -12,7 +12,7 @@ impl ElementSchema {
         Self {
             elements,
             metadata: None,
-            nullable: None,
+            is_nullable: None,
         }
     }
 }
@@ -28,7 +28,7 @@ impl Serializable for ElementSchema {
         Serializer::builder()
             .set("elements", &self.elements)
             .set("metadata", &self.metadata)
-            .set("nullable", &self.nullable)
+            .set("isNullable", &self.is_nullable)
             .build()
             .into()
     }
@@ -38,7 +38,7 @@ impl Serializable for ElementSchema {
     }
 
     fn set_nullable(&mut self, nullable: bool) {
-        self.nullable = Some(nullable);
+        self.is_nullable = Some(nullable);
     }
 }
 
@@ -76,6 +76,6 @@ mod tests {
         let mut type_schema = ElementSchema::new(Box::new(TypeSchema::new(Types::String)));
         type_schema.set_nullable(true);
 
-        assert_eq!(type_schema.nullable, Some(true));
+        assert_eq!(type_schema.is_nullable, Some(true));
     }
 }

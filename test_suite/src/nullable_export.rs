@@ -18,6 +18,8 @@ mod tests {
             prop
         };
 
+        assert!(export.is::<PropertiesSchema>());
+        let export = export.downcast_ref::<PropertiesSchema>().unwrap();
         assert_eq!(export.optional_properties, expected.optional_properties);
     }
 
@@ -45,6 +47,8 @@ mod tests {
             prop
         };
 
+        assert!(export.is::<PropertiesSchema>());
+        let export = export.downcast_ref::<PropertiesSchema>().unwrap();
         assert_eq!(export.optional_properties, expected.optional_properties);
     }
 
@@ -72,6 +76,8 @@ mod tests {
             prop
         };
 
+        assert!(export.is::<PropertiesSchema>());
+        let export = export.downcast_ref::<PropertiesSchema>().unwrap();
         assert_eq!(export.optional_properties, expected.optional_properties);
     }
 
@@ -99,6 +105,8 @@ mod tests {
             prop
         };
 
+        assert!(export.is::<PropertiesSchema>());
+        let export = export.downcast_ref::<PropertiesSchema>().unwrap();
         assert_eq!(export.optional_properties, expected.optional_properties);
     }
 }

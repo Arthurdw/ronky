@@ -11,5 +11,5 @@ pub(crate) enum ParsedField<'a> {
 }
 
 pub(crate) trait FieldParser {
-    fn parse(field: &Field) -> Result<ParsedField, TokenStream>;
+    fn parse<'a>(parent: &str, field: &'a Field) -> Result<ParsedField<'a>, TokenStream>;
 }

@@ -1,18 +1,22 @@
 // TODO: docs
-use std::{collections::HashMap, fmt::Debug};
+// TODO: create a macro which automatically generates this implementation with a derive
+use std::{any::type_name, collections::HashMap, fmt::Debug};
+
+use downcast_rs::{Downcast, impl_downcast};
 
 use crate::{MetadataSchema, serializer::Serializer};
 
-// TODO: create a macro which automatically generates this implementation with a derive
-pub trait Serializable {
+pub trait Serializable: Downcast {
     fn serialize(&self) -> Option<String>;
 
     fn set_metadata(&mut self, metadata: MetadataSchema) {
         panic!(
-            "set_metadata is not implemented for this type!\n
-            This is a bug, please report it @ <https://github.com/Arthurdw/ronky/issues>\n
-            Serialized: {:?}\n
-            Metadata: {:?}",
+            "set_metadata is not implemented for this type!\n\
+                This is a bug, please report it @ <https://github.com/Arthurdw/ronky/issues>\n\
+                Type: {:?}\n\
+                Serialized: {:?}\n\
+                Metadata: {:?}",
+            type_name::<Self>(),
             self.serialize(),
             metadata
         );
@@ -20,15 +24,19 @@ pub trait Serializable {
 
     fn set_nullable(&mut self, nullable: bool) {
         panic!(
-            "set_nullable is not implemented for this type!\n
-            This is a bug, please report it @ <https://github.com/Arthurdw/ronky/issues>\n
-            Serialized: {:?}\n
-            nullable: {:?}",
+            "set_nullable is not implemented for this type!\n\
+                This is a bug, please report it @ <https://github.com/Arthurdw/ronky/issues>\n\
+                Type: {:?}\n\
+                Serialized: {:?}\n\
+                nullable: {:?}",
+            type_name::<Self>(),
             self.serialize(),
             nullable
         );
     }
 }
+
+impl_downcast!(Serializable);
 
 impl Debug for dyn Serializable {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -44,7 +52,7 @@ impl PartialEq for dyn Serializable {
 
 impl Eq for dyn Serializable {}
 
-impl Serializable for &str {
+impl Serializable for &'static str {
     fn serialize(&self) -> Option<String> {
         format!("\"{}\"", self).into()
     }
@@ -52,7 +60,7 @@ impl Serializable for &str {
 
 impl Serializable for String {
     fn serialize(&self) -> Option<String> {
-        self.as_str().serialize()
+        format!("\"{}\"", self).into()
     }
 }
 
@@ -91,11 +99,27 @@ impl<T: Serializable> Serializable for Box<T> {
     fn serialize(&self) -> Option<String> {
         self.as_ref().serialize()
     }
+
+    fn set_metadata(&mut self, metadata: MetadataSchema) {
+        self.as_mut().set_metadata(metadata)
+    }
+
+    fn set_nullable(&mut self, nullable: bool) {
+        self.as_mut().set_nullable(nullable)
+    }
 }
 
 impl Serializable for Box<dyn Serializable> {
     fn serialize(&self) -> Option<String> {
         self.as_ref().serialize()
+    }
+
+    fn set_metadata(&mut self, metadata: MetadataSchema) {
+        self.as_mut().set_metadata(metadata)
+    }
+
+    fn set_nullable(&mut self, nullable: bool) {
+        self.as_mut().set_nullable(nullable)
     }
 }
 

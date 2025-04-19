@@ -73,8 +73,8 @@ fn extract_deprecated(attrs: &[Attribute]) -> Option<TokenStream> {
 }
 
 fn extract_attrs(attrs: &[Attribute]) -> Option<TokenStream> {
-    let docs: Option<TokenStream2> = extract_docs(&attrs).map(Into::into);
-    let deprecated: Option<TokenStream2> = extract_deprecated(&attrs).map(Into::into);
+    let docs: Option<TokenStream2> = extract_docs(attrs).map(Into::into);
+    let deprecated: Option<TokenStream2> = extract_deprecated(attrs).map(Into::into);
 
     if docs.is_none() && deprecated.is_none() {
         return None;

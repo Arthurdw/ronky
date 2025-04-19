@@ -22,6 +22,7 @@ name = "arri_repr"
 version = "1.0.0-alpha.4"
 dependencies = [
  "chrono",
+ "downcast-rs",
  "serde_json",
 ]
 
@@ -71,6 +72,12 @@ name = "core-foundation-sys"
 version = "0.8.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "773648b94d0e5d620f64f280777445740e61fe701025087ec8b57f45c791888b"
+
+[[package]]
+name = "downcast-rs"
+version = "2.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ea8a8b81cacc08888170eef4d13b775126db426d0b348bee9d18c2c1eaf123cf"
 
 [[package]]
 name = "iana-time-zone"

@@ -9,12 +9,13 @@ use syn::{
     spanned::Spanned,
 };
 
-fn parse_arri_attrs<'a, T: Parse>(attrs: &'a [Attribute]) -> Result<Option<T>, TokenStream> {
+fn parse_arri_attrs<T: Parse>(attrs: &[Attribute]) -> Result<Option<T>, TokenStream> {
     let attrs: Vec<_> = attrs
         .iter()
         .filter(|attr| attr.path().is_ident("arri"))
         .collect();
 
+    // TODO: we are never iterating, actually go over all
     for attr in attrs.iter() {
         // We will only accept meta lists
         if let Meta::List(meta_list) = &attr.meta {

@@ -4,27 +4,23 @@ mod parsers;
 use parsers::{ParsedField, attributes::properties, parse_field};
 use proc_macro::TokenStream;
 use quote::{quote, quote_spanned};
-use syn::{DeriveInput, parse_macro_input, spanned::Spanned};
+use syn::{Data, DataStruct, DeriveInput, Fields, parse_macro_input, spanned::Spanned};
 
 #[proc_macro]
 pub fn export_stream(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
 
-    let data = match input.data {
-        syn::Data::Struct(ref data) => data,
-        _ => {
-            return quote_spanned!(input.span() => compile_error!("Only structs are supported"))
-                .into();
-        }
-    };
-
-    let fields = match &data.fields {
-        syn::Fields::Named(fields) => &fields.named,
+    let fields = match input.data {
+        Data::Struct(DataStruct {
+            fields: Fields::Named(ref fields),
+            ..
+        }) => &fields.named,
         _ => {
             return quote_spanned!(input.span() => compile_error!("Only named structs are exportable for now"))
                 .into();
         }
     };
+
     let metadata: proc_macro2::TokenStream = metadata::extract(&input.ident, &input.attrs).into();
     let attrs = match properties::extract(&input.attrs) {
         Ok(Some(attrs)) => {
@@ -38,21 +34,22 @@ pub fn export_stream(input: TokenStream) -> TokenStream {
         Err(stream) => Some(stream.into()),
     };
 
+    let ident_name = &input.ident.to_string();
     let mut properties = Vec::new();
-    for field in fields.iter().map(parse_field) {
+    for field in fields.iter() {
+        let field = parse_field(ident_name, field);
         match field {
             // TODO: find out way to prevent the duplication here
             Ok(ParsedField::Required(field, stream)) => {
                 let field_name = field.ident.as_ref().unwrap().to_string();
                 let stream: proc_macro2::TokenStream = stream.into();
                 let field_metadata: Option<proc_macro2::TokenStream> =
-                    metadata::extract_from_field(&field).map(|ts| {
+                    metadata::extract_from_field(field).map(|ts| {
                         let ts: proc_macro2::TokenStream = ts.into();
                         quote! {
                             use ronky::Serializable;
                             ty.set_metadata(#ts);
                         }
-                        .into()
                     });
                 properties.push(quote! {
                     schema.set_property(#field_name, Box::new({
@@ -66,13 +63,12 @@ pub fn export_stream(input: TokenStream) -> TokenStream {
                 let field_name = field.ident.as_ref().unwrap().to_string();
                 let stream: proc_macro2::TokenStream = stream.into();
                 let field_metadata: Option<proc_macro2::TokenStream> =
-                    metadata::extract_from_field(&field).map(|ts| {
+                    metadata::extract_from_field(field).map(|ts| {
                         let ts: proc_macro2::TokenStream = ts.into();
                         quote! {
                             use ronky::Serializable;
                             ty.set_metadata(#ts);
                         }
-                        .into()
                     });
                 properties.push(quote! {
                     schema.set_optional_property(#field_name, Box::new({
@@ -82,7 +78,7 @@ pub fn export_stream(input: TokenStream) -> TokenStream {
                     }));
                 })
             }
-            Err(stream) => return stream.into(),
+            Err(stream) => return stream,
         }
     }
 
@@ -106,7 +102,7 @@ pub fn exported_derive(input: TokenStream) -> TokenStream {
 
     quote! {
         impl ronky::Exportable for #struct_name {
-            fn export() -> ronky::PropertiesSchema {
+            fn export_internal() -> ronky::PropertiesSchema {
                 #export
             }
         }

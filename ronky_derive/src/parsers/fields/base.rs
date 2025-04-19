@@ -9,7 +9,8 @@ use super::{FieldParser, ParsedField};
 pub struct BaseParser;
 
 impl FieldParser for BaseParser {
-    fn parse<'a>(field: &'a Field) -> Result<ParsedField<'a>, TokenStream> {
+    // TODO: remove parent field
+    fn parse<'a>(_: &str, field: &'a Field) -> Result<ParsedField<'a>, TokenStream> {
         let ty = &field.ty;
         let export = quote!(<#ty as ronky::Exportable>::export());
         let is_optional = is_option_type(&field.ty);
@@ -28,7 +29,7 @@ impl FieldParser for BaseParser {
                 })
             }
             Ok(None) => None,
-            Err(stream) => return Err(stream.into()),
+            Err(stream) => return Err(stream),
         };
 
         let typeschema = quote! {
