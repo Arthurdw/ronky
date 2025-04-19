@@ -35,6 +35,7 @@ pub fn export_enum(input: &DeriveInput, variants: &Punctuated<Variant, Comma>) -
                         metadata::extract_attrs(&variant.attrs).map(|ts| {
                             let ts: proc_macro2::TokenStream = ts.into();
                             quote! {
+                                use ronky::Serializable;
                                 export.set_metadata(#ts);
                             }
                         });
@@ -104,6 +105,7 @@ pub fn export_enum(input: &DeriveInput, variants: &Punctuated<Variant, Comma>) -
     };
 
     quote! {
+        use ronky::Serializable;
         let mut schema = #schema;
         schema.set_metadata(#metadata);
         #attrs
