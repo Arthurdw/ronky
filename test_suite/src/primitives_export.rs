@@ -47,6 +47,8 @@ mod tests {
             .set_property("uint64", Box::new(TypeSchema::new(Types::Uint64)))
             .serialize();
 
-        assert_eq!(export, expected);
+        assert!(export.is::<PropertiesSchema>());
+        let export = export.downcast_ref::<PropertiesSchema>().unwrap();
+        assert_eq!(*export, expected);
     }
 }

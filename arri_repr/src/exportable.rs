@@ -1,6 +1,6 @@
 use crate::RefSchema;
-use crate::r#ref::BoxOption;
 use crate::{Serializable, TypeSchema, Types, elements::ElementSchema};
+use std::any::type_name;
 use std::cell::RefCell;
 use std::collections::HashSet;
 
@@ -10,12 +10,14 @@ thread_local! {
 }
 
 pub trait Exportable {
-    fn export() -> impl Serializable;
+    fn export() -> Box<dyn Serializable> {
+        Self::export_with_recursion_check()
+    }
 
-    fn export_with_recursion_check() -> impl Serializable {
-        eprintln!("Exporting with recursion check");
+    fn export_internal() -> impl Serializable;
 
-        let type_name = std::any::type_name::<Self>().to_string();
+    fn export_with_recursion_check() -> Box<dyn Serializable> {
+        let type_name = type_name::<Self>().to_string();
         let is_recursive = RECURSION_TRACKER.with(|tracker| {
             let mut tracker = tracker.borrow_mut();
             if tracker.contains(&type_name) {
@@ -26,19 +28,17 @@ pub trait Exportable {
             }
         });
         if is_recursive {
-            eprintln!("Recursive type detected: {}", type_name);
             let name = type_name.split("::").last().unwrap_or(&type_name);
-            return BoxOption::Ref(RefSchema::new(name));
+            return Box::new(RefSchema::new(name));
         }
-        let result = Self::export();
-        eprintln!("Exported: {:?}", result.serialize());
+        let result = Self::export_internal();
 
         // Remove our type from the set when done
         RECURSION_TRACKER.with(|tracker| {
             let mut tracker = tracker.borrow_mut();
             tracker.remove(&type_name);
         });
-        BoxOption::Boxed(result)
+        Box::new(result)
     }
 }
 
@@ -91,8 +91,7 @@ macro_rules! exportable {
     // TypeSchema with block
     (@parse_typeschema $ty:ty => $implementation:block, $($rest:tt)*) => {
         impl Exportable for $ty {
-            fn export() -> impl Serializable {
-                eprintln!("Running exportable for {}", std::any::type_name::<Self>());
+            fn export_internal() -> impl Serializable {
                 $implementation
             }
         }
@@ -106,8 +105,7 @@ macro_rules! exportable {
     // Generic implementation with expression
     (@parse_impls $type:ident < $($type_params:ident),* > => $implementation:expr, $($rest:tt)*) => {
         impl<$($type_params: 'static + Exportable),*> Exportable for $type<$($type_params),*> {
-            fn export() -> impl Serializable {
-                eprintln!("Running exportable for {}", std::any::type_name::<Self>());
+            fn export_internal() -> impl Serializable {
                 $implementation
             }
         }

@@ -22,6 +22,8 @@ mod tests {
             .set_property("field1", Box::new(TypeSchema::new(Types::String)))
             .set_property("field2", Box::new(TypeSchema::new(Types::Int32)));
 
-        assert_eq!(export, expected);
+        assert!(export.is::<PropertiesSchema>());
+        let export = export.downcast_ref::<PropertiesSchema>().unwrap();
+        assert_eq!(*export, expected);
     }
 }

@@ -7,6 +7,7 @@ mod tests {
 
     #[test]
     fn test_box_export() {
+        #[allow(dead_code)]
         #[derive(Exported)]
         struct BoxExport {
             value: Box<String>,
@@ -29,10 +30,11 @@ mod tests {
 
     #[test]
     fn test_binary_tree_export() {
+        #[allow(dead_code)]
         #[derive(Exported)]
         struct NumBinTree {
             left: Option<Box<NumBinTree>>,
-            // right: Option<Box<NumBinTree>>,
+            right: Option<Box<NumBinTree>>,
             value: i32,
         }
 
@@ -49,6 +51,8 @@ mod tests {
             schema
         };
 
-        assert_eq!(export.serialize(), expected.serialize());
+        assert!(export.is::<PropertiesSchema>());
+        let export = export.downcast_ref::<PropertiesSchema>().unwrap();
+        assert_eq!(*export, expected);
     }
 }

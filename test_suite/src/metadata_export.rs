@@ -21,7 +21,9 @@ mod tests {
             )
             .set_optional_property("field1", Box::new(TypeSchema::new(Types::String)));
 
-        assert_eq!(export, expected);
+        assert!(export.is::<PropertiesSchema>());
+        let export = export.downcast_ref::<PropertiesSchema>().unwrap();
+        assert_eq!(*export, expected);
     }
 
     #[test]
@@ -41,7 +43,9 @@ mod tests {
                 .to_owned(),
         );
 
-        assert_eq!(export, expected);
+        assert!(export.is::<PropertiesSchema>());
+        let export = export.downcast_ref::<PropertiesSchema>().unwrap();
+        assert_eq!(*export, expected);
     }
 
     #[test]
@@ -61,7 +65,9 @@ mod tests {
                 .to_owned(),
         );
 
-        assert_eq!(export, expected);
+        assert!(export.is::<PropertiesSchema>());
+        let export = export.downcast_ref::<PropertiesSchema>().unwrap();
+        assert_eq!(*export, expected);
     }
 
     #[test]
@@ -80,7 +86,9 @@ mod tests {
                     .to_owned(),
             );
 
-        assert_eq!(export, expected);
+        assert!(export.is::<PropertiesSchema>());
+        let export = export.downcast_ref::<PropertiesSchema>().unwrap();
+        assert_eq!(*export, expected);
     }
 
     #[test]
@@ -132,6 +140,8 @@ mod tests {
                 }),
             );
 
-        assert_eq!(export, expected);
+        assert!(export.is::<PropertiesSchema>());
+        let export = export.downcast_ref::<PropertiesSchema>().unwrap();
+        assert_eq!(*export, expected);
     }
 }

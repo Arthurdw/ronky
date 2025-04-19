@@ -39,6 +39,8 @@ mod tests {
                 }),
             );
 
-        assert_eq!(export, expected);
+        assert!(export.is::<PropertiesSchema>());
+        let export = export.downcast_ref::<PropertiesSchema>().unwrap();
+        assert_eq!(*export, expected);
     }
 }

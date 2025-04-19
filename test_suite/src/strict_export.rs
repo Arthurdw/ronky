@@ -10,6 +10,8 @@ mod tests {
         let export = StrictStruct::export();
         let expected = PropertiesSchema::new();
 
+        assert!(export.is::<PropertiesSchema>());
+        let export = export.downcast_ref::<PropertiesSchema>().unwrap();
         assert_eq!(export.is_strict, expected.is_strict);
     }
 
@@ -23,6 +25,8 @@ mod tests {
         let mut expected = PropertiesSchema::new();
         expected.set_strict(true);
 
+        assert!(export.is::<PropertiesSchema>());
+        let export = export.downcast_ref::<PropertiesSchema>().unwrap();
         assert_eq!(export.is_strict, expected.is_strict);
     }
 
@@ -36,6 +40,8 @@ mod tests {
         let mut expected = PropertiesSchema::new();
         expected.set_strict(true);
 
+        assert!(export.is::<PropertiesSchema>());
+        let export = export.downcast_ref::<PropertiesSchema>().unwrap();
         assert_eq!(export.is_strict, expected.is_strict);
     }
 
@@ -49,6 +55,8 @@ mod tests {
         let mut expected = PropertiesSchema::new();
         expected.set_strict(false);
 
+        assert!(export.is::<PropertiesSchema>());
+        let export = export.downcast_ref::<PropertiesSchema>().unwrap();
         assert_eq!(export.is_strict, expected.is_strict);
     }
 }
