@@ -1,6 +1,6 @@
 use proc_macro::TokenStream;
-use quote::{ToTokens, quote, quote_spanned};
-use syn::{Field, spanned::Spanned};
+use quote::{quote, quote_spanned, ToTokens};
+use syn::{spanned::Spanned, Field};
 
 use crate::parsers::{attributes::typeschema, types::is_option_type};
 

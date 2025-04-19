@@ -1,3 +1,4 @@
+pub(crate) mod enum_variants;
 pub(crate) mod properties;
 pub(crate) mod typeschema;
 
