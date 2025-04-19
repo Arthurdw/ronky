@@ -6,3 +6,4 @@ mod nullable_export;
 mod primitives_export;
 mod ref_export;
 mod strict_export;
+mod tagged_union_export;

@@ -7,24 +7,10 @@ use crate::{
     parsers::{ParsedField, attributes::properties, parse_field},
 };
 
-pub fn export_named_struct(input: &DeriveInput, fields: &Punctuated<Field, Comma>) -> TokenStream {
-    let metadata: proc_macro2::TokenStream = metadata::extract(&input.ident, &input.attrs).into();
-    let attrs = match properties::extract(&input.attrs) {
-        Ok(Some(attrs)) => {
-            let strict = attrs.strict;
-
-            Some(quote! {
-                schema.set_strict(#strict);
-            })
-        }
-        Ok(None) => None,
-        Err(stream) => Some(stream.into()),
-    };
-
-    let ident_name = &input.ident.to_string();
+pub fn export_struct_fields(fields: &Punctuated<Field, Comma>) -> TokenStream {
     let mut properties = Vec::new();
     for field in fields.iter() {
-        let field = parse_field(ident_name, field);
+        let field = parse_field(field);
         match field {
             // TODO: find out way to prevent the duplication here
             Ok(ParsedField::Required(field, stream)) => {
@@ -71,9 +57,32 @@ pub fn export_named_struct(input: &DeriveInput, fields: &Punctuated<Field, Comma
 
     quote! {
         let mut schema = ronky::PropertiesSchema::new();
+        #(#properties)*
+        schema
+    }
+    .into()
+}
+
+pub fn export_named_struct(input: &DeriveInput, fields: &Punctuated<Field, Comma>) -> TokenStream {
+    let metadata: proc_macro2::TokenStream = metadata::extract(&input.ident, &input.attrs).into();
+    let attrs = match properties::extract(&input.attrs) {
+        Ok(Some(attrs)) => {
+            let strict = attrs.strict;
+
+            Some(quote! {
+                schema.set_strict(#strict);
+            })
+        }
+        Ok(None) => None,
+        Err(stream) => Some(stream.into()),
+    };
+
+    let base_export: proc_macro2::TokenStream = export_struct_fields(fields).into();
+
+    quote! {
+        let mut schema = { #base_export };
         schema.set_metadata(#metadata);
         #attrs
-        #(#properties)*
         schema
     }
     .into()

@@ -1,17 +1,21 @@
 mod elements;
 mod r#enum;
+mod enum_transformation;
 mod exportable;
 mod metadata;
 mod properties;
 mod r#ref;
 mod serializable;
 mod serializer;
+mod tagged_union;
 mod r#type;
 
-pub use r#enum::{EnumSchema, EnumTransformation};
+pub use r#enum::EnumSchema;
+pub use enum_transformation::EnumTransformation;
 pub use exportable::Exportable;
 pub use metadata::MetadataSchema;
 pub use properties::PropertiesSchema;
 pub use r#ref::RefSchema;
 pub use serializable::Serializable;
+pub use tagged_union::TaggedUnionSchema;
 pub use r#type::{TypeSchema, Types};

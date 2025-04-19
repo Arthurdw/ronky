@@ -11,18 +11,20 @@ use syn::{
 use super::parse_arri_attrs;
 
 pub fn enum_transformation_to_tokens(transform: &EnumTransformation) -> proc_macro2::TokenStream {
+    // TODO: there should be a cleaner way to do this (probb a macro rules)
     match transform {
-        EnumTransformation::Uppercase => quote! { EnumTransformation::Uppercase },
-        EnumTransformation::Lowercase => quote! { EnumTransformation::Lowercase },
-        EnumTransformation::Snakecase => quote! { EnumTransformation::Snakecase },
-        EnumTransformation::Camelcase => quote! { EnumTransformation::Camelcase },
-        EnumTransformation::Pascalcase => quote! { EnumTransformation::Pascalcase },
+        EnumTransformation::Uppercase => quote! { ronky::EnumTransformation::Uppercase },
+        EnumTransformation::Lowercase => quote! { ronky::EnumTransformation::Lowercase },
+        EnumTransformation::Snakecase => quote! { ronky::EnumTransformation::Snakecase },
+        EnumTransformation::Camelcase => quote! { ronky::EnumTransformation::Camelcase },
+        EnumTransformation::Pascalcase => quote! { ronky::EnumTransformation::Pascalcase },
     }
 }
 
 #[derive(Debug, Default)]
 pub(crate) struct EnumVariants {
     pub(crate) transform: Vec<EnumTransformation>,
+    pub(crate) discriminator: Option<String>,
 }
 
 impl Parse for EnumVariants {
@@ -67,6 +69,16 @@ impl Parse for EnumVariants {
                         .collect::<Result<Vec<_>, _>>()?;
 
                     args.transform.extend(transforms);
+                }
+                "discriminator" => {
+                    if !input.peek(syn::token::Eq) {
+                        return Err(input.error("Expected '=' after 'discriminator'"));
+                    }
+
+                    input.parse::<syn::token::Eq>()?;
+
+                    let discriminator_lit = input.parse::<LitStr>()?;
+                    args.discriminator = Some(discriminator_lit.value());
                 }
                 _ => Err(input.error(format!("Unknown property: {}", key_str)))?,
             }
