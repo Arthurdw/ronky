@@ -1,6 +1,6 @@
 use proc_macro::TokenStream;
-use quote::{quote, quote_spanned, ToTokens};
-use syn::{spanned::Spanned, Field};
+use quote::{ToTokens, quote, quote_spanned};
+use syn::{Field, spanned::Spanned};
 
 use crate::parsers::{attributes::typeschema, types::is_option_type};
 
@@ -10,7 +10,7 @@ pub struct BaseParser;
 
 impl FieldParser for BaseParser {
     // TODO: remove parent field
-    fn parse<'a>(_: &str, field: &'a Field) -> Result<ParsedField<'a>, TokenStream> {
+    fn parse(field: &Field) -> Result<ParsedField<'_>, TokenStream> {
         let ty = &field.ty;
         let export = quote!(<#ty as ronky::Exportable>::export());
         let is_optional = is_option_type(&field.ty);
