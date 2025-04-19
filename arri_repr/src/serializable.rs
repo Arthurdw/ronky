@@ -1,21 +1,21 @@
 // TODO: docs
+// TODO: create a macro which automatically generates this implementation with a derive
 use std::{any::type_name, collections::HashMap, fmt::Debug};
 
 use downcast_rs::{Downcast, impl_downcast};
 
 use crate::{MetadataSchema, serializer::Serializer};
 
-// TODO: create a macro which automatically generates this implementation with a derive
 pub trait Serializable: Downcast {
     fn serialize(&self) -> Option<String>;
 
     fn set_metadata(&mut self, metadata: MetadataSchema) {
         panic!(
             "set_metadata is not implemented for this type!\n\
-            This is a bug, please report it @ <https://github.com/Arthurdw/ronky/issues>\n\
-            Type: {:?}\n\
-            Serialized: {:?}\n\
-            Metadata: {:?}",
+                This is a bug, please report it @ <https://github.com/Arthurdw/ronky/issues>\n\
+                Type: {:?}\n\
+                Serialized: {:?}\n\
+                Metadata: {:?}",
             type_name::<Self>(),
             self.serialize(),
             metadata
@@ -25,10 +25,10 @@ pub trait Serializable: Downcast {
     fn set_nullable(&mut self, nullable: bool) {
         panic!(
             "set_nullable is not implemented for this type!\n\
-            This is a bug, please report it @ <https://github.com/Arthurdw/ronky/issues>\n\
-            Type: {:?}\n\
-            Serialized: {:?}\n\
-            nullable: {:?}",
+                This is a bug, please report it @ <https://github.com/Arthurdw/ronky/issues>\n\
+                Type: {:?}\n\
+                Serialized: {:?}\n\
+                nullable: {:?}",
             type_name::<Self>(),
             self.serialize(),
             nullable
