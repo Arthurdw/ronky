@@ -5,6 +5,7 @@ pub struct EnumSchema {
     pub r#enum: Vec<String>,
     pub metadata: Option<MetadataSchema>,
     pub transformations: Vec<EnumTransformation>,
+    pub is_nullable: Option<bool>,
 }
 
 impl EnumSchema {
@@ -31,12 +32,17 @@ impl Serializable for EnumSchema {
         Serializer::builder()
             .set("enum", &self.r#enum)
             .set("metadata", &self.metadata)
+            .set("isNullable", &self.is_nullable)
             .build()
             .into()
     }
 
     fn set_metadata(&mut self, metadata: MetadataSchema) {
         self.metadata = Some(metadata);
+    }
+
+    fn set_nullable(&mut self, is_nullable: bool) {
+        self.is_nullable = Some(is_nullable);
     }
 }
 

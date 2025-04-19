@@ -80,6 +80,7 @@ pub fn export_named_struct(input: &DeriveInput, fields: &Punctuated<Field, Comma
     let base_export: proc_macro2::TokenStream = export_struct_fields(fields).into();
 
     quote! {
+        use ronky::Serializable;
         let mut schema = { #base_export };
         schema.set_metadata(#metadata);
         #attrs

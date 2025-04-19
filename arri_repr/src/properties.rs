@@ -9,6 +9,7 @@ pub struct PropertiesSchema {
     pub optional_properties: HashMap<String, Box<dyn Serializable>>,
     pub is_strict: Option<bool>,
     pub metadata: Option<MetadataSchema>,
+    pub is_nullable: Option<bool>,
 }
 
 impl PropertiesSchema {
@@ -34,11 +35,6 @@ impl PropertiesSchema {
         self.is_strict = Some(strict);
         self
     }
-
-    pub fn set_metadata(&mut self, metadata: MetadataSchema) -> &mut Self {
-        self.metadata = Some(metadata);
-        self
-    }
 }
 
 impl Serializable for PropertiesSchema {
@@ -48,7 +44,16 @@ impl Serializable for PropertiesSchema {
             .set("optionalProperties", &self.optional_properties)
             .set("isStrict", &self.is_strict)
             .set("metadata", &self.metadata)
+            .set("isNullable", &self.is_nullable)
             .build()
             .into()
+    }
+
+    fn set_metadata(&mut self, metadata: MetadataSchema) {
+        self.metadata = Some(metadata);
+    }
+
+    fn set_nullable(&mut self, is_nullable: bool) {
+        self.is_nullable = Some(is_nullable);
     }
 }
