@@ -1,6 +1,8 @@
 #[cfg(test)]
 mod tests {
-    use ronky::{Exportable, Exported, MetadataSchema, PropertiesSchema, TypeSchema, Types};
+    use ronky::{
+        Exportable, Exported, MetadataSchema, PropertiesSchema, Serializable, TypeSchema, Types,
+    };
 
     #[test]
     fn test_type_export() {
@@ -14,9 +16,8 @@ mod tests {
 
         let export = Bar::export();
         let mut expected = PropertiesSchema::new();
-        expected
-            .set_metadata(MetadataSchema::new().set_id("Foo".to_string()).to_owned())
-            .set_property("a", Box::new(TypeSchema::new(Types::String)));
+        expected.set_metadata(MetadataSchema::new().set_id("Foo".to_string()).to_owned());
+        expected.set_property("a", Box::new(TypeSchema::new(Types::String)));
 
         assert!(export.is::<PropertiesSchema>());
         let export = export.downcast_ref::<PropertiesSchema>().unwrap();
@@ -41,27 +42,25 @@ mod tests {
 
         let export = MyType::export();
         let mut expected = PropertiesSchema::new();
-        expected
-            .set_metadata(
-                MetadataSchema::new()
-                    .set_id("OuterExample".to_string())
-                    .to_owned(),
-            )
-            .set_property(
-                "a",
-                Box::new({
-                    let mut inner = PropertiesSchema::new();
-                    inner
-                        .set_metadata(
-                            MetadataSchema::new()
-                                .set_id("InnerExample".to_string())
-                                .to_owned(),
-                        )
-                        .set_property("b", Box::new(TypeSchema::new(Types::String)));
+        expected.set_metadata(
+            MetadataSchema::new()
+                .set_id("OuterExample".to_string())
+                .to_owned(),
+        );
+        expected.set_property(
+            "a",
+            Box::new({
+                let mut inner = PropertiesSchema::new();
+                inner.set_metadata(
+                    MetadataSchema::new()
+                        .set_id("InnerExample".to_string())
+                        .to_owned(),
+                );
+                inner.set_property("b", Box::new(TypeSchema::new(Types::String)));
 
-                    inner
-                }),
-            );
+                inner
+            }),
+        );
 
         assert!(export.is::<PropertiesSchema>());
         let export = export.downcast_ref::<PropertiesSchema>().unwrap();

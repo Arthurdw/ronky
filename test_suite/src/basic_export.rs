@@ -1,6 +1,8 @@
 #[cfg(test)]
 mod tests {
-    use ronky::{Exportable, Exported, MetadataSchema, PropertiesSchema, TypeSchema, Types};
+    use ronky::{
+        Exportable, Exported, MetadataSchema, PropertiesSchema, Serializable, TypeSchema, Types,
+    };
 
     #[test]
     fn test_export() {
@@ -13,14 +15,13 @@ mod tests {
 
         let export = TestStruct::export();
         let mut expected = PropertiesSchema::new();
-        expected
-            .set_metadata(
-                MetadataSchema::new()
-                    .set_id("TestStruct".to_string())
-                    .to_owned(),
-            )
-            .set_property("field1", Box::new(TypeSchema::new(Types::String)))
-            .set_property("field2", Box::new(TypeSchema::new(Types::Int32)));
+        expected.set_metadata(
+            MetadataSchema::new()
+                .set_id("TestStruct".to_string())
+                .to_owned(),
+        );
+        expected.set_property("field1", Box::new(TypeSchema::new(Types::String)));
+        expected.set_property("field2", Box::new(TypeSchema::new(Types::Int32)));
 
         assert!(export.is::<PropertiesSchema>());
         let export = export.downcast_ref::<PropertiesSchema>().unwrap();
