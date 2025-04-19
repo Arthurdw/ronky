@@ -23,12 +23,14 @@ pub fn export_stream(input: TokenStream) -> TokenStream {
 #[proc_macro_derive(Exported, attributes(arri))]
 pub fn exported_derive(input: TokenStream) -> TokenStream {
     let export: proc_macro2::TokenStream = export_stream(input.clone()).into();
-
     let input = parse_macro_input!(input as DeriveInput);
     let struct_name = input.ident.clone();
 
+    let generics = input.generics;
+    let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
+
     quote! {
-        impl ronky::Exportable for #struct_name {
+        impl #impl_generics ronky::Exportable for #struct_name #ty_generics #where_clause {
             fn export_internal() -> impl ronky::Serializable {
                 #export
             }
