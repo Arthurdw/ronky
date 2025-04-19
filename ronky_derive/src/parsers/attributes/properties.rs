@@ -1,8 +1,9 @@
 use super::goto_next;
 use proc_macro::TokenStream;
 use syn::{
-    Attribute, Ident, LitBool, Token,
+    Attribute, Ident, LitBool,
     parse::{Parse, ParseStream},
+    token,
 };
 
 use super::parse_arri_attrs;
@@ -23,8 +24,8 @@ impl Parse for PropertiesArguments {
 
             match key_str.as_str() {
                 "strict" => {
-                    if input.peek(Token![=]) {
-                        input.parse::<Token![=]>()?;
+                    if input.peek(token::Eq) {
+                        input.parse::<token::Eq>()?;
                         let value: LitBool = input.parse()?;
                         args.strict = value.value();
                     } else {

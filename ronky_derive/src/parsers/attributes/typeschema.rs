@@ -1,8 +1,9 @@
 use super::goto_next;
 use proc_macro::TokenStream;
 use syn::{
-    Attribute, Ident, LitBool, Token,
+    Attribute, Ident, LitBool,
     parse::{Parse, ParseStream},
+    token,
 };
 
 use super::parse_arri_attrs;
@@ -22,8 +23,8 @@ impl Parse for TypeSchemaArguments {
 
             match key_str.as_str() {
                 "nullable" => {
-                    if input.peek(Token![=]) {
-                        input.parse::<Token![=]>()?;
+                    if input.peek(token::Eq) {
+                        input.parse::<token::Eq>()?;
                         let value: LitBool = input.parse()?;
                         args.is_nullable = value.value();
                     } else {

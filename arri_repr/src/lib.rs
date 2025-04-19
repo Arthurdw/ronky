@@ -1,4 +1,5 @@
 mod elements;
+mod r#enum;
 mod exportable;
 mod metadata;
 mod properties;
@@ -7,6 +8,7 @@ mod serializable;
 mod serializer;
 mod r#type;
 
+pub use r#enum::{EnumSchema, EnumTransformation};
 pub use exportable::Exportable;
 pub use metadata::MetadataSchema;
 pub use properties::PropertiesSchema;
