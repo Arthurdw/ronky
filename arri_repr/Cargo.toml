@@ -21,9 +21,17 @@ serde_json = "1.0.140"
 [features]
 chrono = ["dep:chrono"]
 uuid = ["dep:uuid"]
+bigdecimal = ["dep:bigdecimal"]
+num-bigint = ["dep:num-bigint"]
+num-bigfloat = ["dep:num-bigfloat"]
+rust_decimal = ["dep:rust_decimal"]
 
 [dependencies]
 # TODO: see if we can make downcast also a feature flag
 downcast-rs = "2.0.1"
 chrono = { version = "0.4.40", optional = true }
 uuid = { version = "1.16.0", optional = true }
+bigdecimal = { version = "0.4.8", optional = true }
+num-bigint = { version = "0.4.6", optional = true }
+num-bigfloat = { version = "1.7.2", optional = true }
+rust_decimal = { version = "1.37.1", optional = true }

@@ -266,20 +266,78 @@ exportable! {
             }
         },
         "uuid" => {
-            use uuid::Uuid;
-
             exportable! {
                 typeschema: {
-                    Uuid => String,
+                    uuid::Uuid => String,
                 }
             }
 
             #[test]
             fn test_serialize_uuid() {
-                let uuid = Uuid::export().serialize();
+                let uuid = uuid::Uuid::export().serialize();
                 let expected = TypeSchema::new(Types::String).serialize();
 
                 assert_eq!(uuid, expected);
+            }
+        },
+        "bigdecimal" => {
+            exportable! {
+                typeschema: {
+                    bigdecimal::BigDecimal => String,
+                }
+            }
+
+            #[test]
+            fn test_serialize_decimal() {
+                let decimal = bigdecimal::BigDecimal::export().serialize();
+                let expected = TypeSchema::new(Types::String).serialize();
+
+                assert_eq!(decimal, expected);
+            }
+        },
+        "num-bigint" => {
+            exportable! {
+                typeschema: {
+                    num_bigint::BigInt => String,
+                }
+            }
+
+            #[test]
+            fn test_serialize_bigint() {
+                let bigint = num_bigint::BigInt::export().serialize();
+                let expected = TypeSchema::new(Types::String).serialize();
+
+                assert_eq!(bigint, expected);
+            }
+        },
+        "num-bigfloat" => {
+            exportable! {
+                typeschema: {
+                    num_bigfloat::BigFloat => String,
+                }
+            }
+
+            #[test]
+            fn test_serialize_bigfloat() {
+                let bigfloat = num_bigfloat::BigFloat::export().serialize();
+                let expected = TypeSchema::new(Types::String).serialize();
+
+                assert_eq!(bigfloat, expected);
+            }
+        },
+        "rust_decimal" => {
+            exportable! {
+                typeschema: {
+                    rust_decimal::Decimal => String,
+                }
+            }
+
+            #[test]
+            fn test_serialize_rust_decimal() {
+                let decimal = rust_decimal::Decimal::export().serialize();
+                let expected = TypeSchema::new(Types::String).serialize();
+
+                assert_eq!(decimal, expected);
             }
         }
     }
