@@ -9,3 +9,4 @@ mod static_export;
 mod static_generic_export;
 mod strict_export;
 mod tagged_union_export;
+mod values_export;

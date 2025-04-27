@@ -9,6 +9,7 @@ mod serializable;
 mod serializer;
 mod tagged_union;
 mod r#type;
+mod values;
 
 pub use elements::ElementsSchema;
 pub use r#enum::EnumSchema;
@@ -20,6 +21,7 @@ pub use r#ref::RefSchema;
 pub use serializable::Serializable;
 pub use tagged_union::TaggedUnionSchema;
 pub use r#type::{TypeSchema, Types};
+pub use values::ValuesSchema;
 
 pub mod type_utils {
     pub fn get_type_name_from(repr: impl ToString) -> String {
