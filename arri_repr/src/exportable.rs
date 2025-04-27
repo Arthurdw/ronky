@@ -1,6 +1,5 @@
-use crate::RefSchema;
-use crate::{Serializable, TypeSchema, Types, elements::ElementSchema};
-use std::any::type_name;
+use crate::{RefSchema, type_utils};
+use crate::{Serializable, TypeSchema, Types, elements::ElementsSchema};
 use std::cell::RefCell;
 use std::collections::HashSet;
 
@@ -10,6 +9,10 @@ thread_local! {
 }
 
 pub trait Exportable {
+    fn get_type_name() -> String {
+        type_utils::get_type_name::<Self>()
+    }
+
     fn export() -> Box<dyn Serializable> {
         Self::export_with_recursion_check()
     }
@@ -17,20 +20,24 @@ pub trait Exportable {
     fn export_internal() -> impl Serializable;
 
     fn export_with_recursion_check() -> Box<dyn Serializable> {
-        let type_name = type_name::<Self>().to_string();
+        let type_name = Self::get_type_name();
+
         let is_recursive = RECURSION_TRACKER.with(|tracker| {
             let mut tracker = tracker.borrow_mut();
-            if tracker.contains(&type_name) {
-                true
-            } else {
+            let is_recursive = tracker.contains(&type_name);
+
+            if !is_recursive {
+                // Add our type to the set
                 tracker.insert(type_name.clone());
-                false
             }
+
+            is_recursive
         });
+
         if is_recursive {
-            let name = type_name.split("::").last().unwrap_or(&type_name);
-            return Box::new(RefSchema::new(name));
+            return Box::new(RefSchema::new(type_utils::get_type_name_from(type_name)));
         }
+
         let result = Self::export_internal();
 
         // Remove our type from the set when done
@@ -38,6 +45,7 @@ pub trait Exportable {
             let mut tracker = tracker.borrow_mut();
             tracker.remove(&type_name);
         });
+
         Box::new(result)
     }
 }
@@ -108,6 +116,13 @@ macro_rules! exportable {
             fn export_internal() -> impl Serializable {
                 $implementation
             }
+
+            fn get_type_name() -> String {
+                format!(
+                    "::ronky::--virtual--::generic::{}",
+                    vec![$($type_params::get_type_name()),*].join("")
+                )
+            }
         }
         exportable!(@parse_impls $($rest)*);
     };
@@ -141,7 +156,7 @@ exportable! {
     },
     generic: {
         Option<T> => T::export(), // Option is a special case, this gets handled in the proc macro
-        Vec<T> => ElementSchema::new(Box::new(T::export())),
+        Vec<T> => ElementsSchema::new(Box::new(T::export())),
         Box<T> => T::export_with_recursion_check(),
     },
     features: {

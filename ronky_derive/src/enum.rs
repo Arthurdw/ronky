@@ -9,7 +9,7 @@ use crate::{
 };
 
 pub fn export_enum(input: &DeriveInput, variants: &Punctuated<Variant, Comma>) -> TokenStream {
-    let metadata: proc_macro2::TokenStream = metadata::extract(&input.ident, &input.attrs).into();
+    let metadata: proc_macro2::TokenStream = metadata::extract(&input.attrs).into();
 
     let mut is_tagged_union = false;
     let mut exported = Vec::new();

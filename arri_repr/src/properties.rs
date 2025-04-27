@@ -50,7 +50,11 @@ impl Serializable for PropertiesSchema {
     }
 
     fn set_metadata(&mut self, metadata: MetadataSchema) {
-        self.metadata = Some(metadata);
+        self.metadata = Some(if let Some(current) = &self.metadata {
+            current.clone() | metadata
+        } else {
+            metadata
+        });
     }
 
     fn set_nullable(&mut self, is_nullable: bool) {

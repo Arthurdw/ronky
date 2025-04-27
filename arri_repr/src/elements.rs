@@ -1,13 +1,13 @@
 use crate::{MetadataSchema, Serializable, serializer::Serializer};
 
 #[derive(Debug, Eq)]
-pub struct ElementSchema {
+pub struct ElementsSchema {
     pub elements: Box<dyn Serializable>,
     pub metadata: Option<MetadataSchema>,
     pub is_nullable: Option<bool>,
 }
 
-impl ElementSchema {
+impl ElementsSchema {
     pub fn new(elements: Box<dyn Serializable>) -> Self {
         Self {
             elements,
@@ -17,13 +17,13 @@ impl ElementSchema {
     }
 }
 
-impl PartialEq for ElementSchema {
+impl PartialEq for ElementsSchema {
     fn eq(&self, other: &Self) -> bool {
         self.elements.eq(&other.elements)
     }
 }
 
-impl Serializable for ElementSchema {
+impl Serializable for ElementsSchema {
     fn serialize(&self) -> Option<String> {
         Serializer::builder()
             .set("elements", &self.elements)
@@ -50,7 +50,7 @@ mod tests {
 
     #[test]
     fn test_vec_serialize() {
-        let type_schema = ElementSchema::new(Box::new(TypeSchema::new(Types::String)));
+        let type_schema = ElementsSchema::new(Box::new(TypeSchema::new(Types::String)));
         let serialized: serde_json::Value =
             serde_json::from_str(&type_schema.serialize().unwrap()).unwrap();
 
@@ -62,7 +62,7 @@ mod tests {
 
     #[test]
     fn test_vec_metadata() {
-        let mut type_schema = ElementSchema::new(Box::new(TypeSchema::new(Types::String)));
+        let mut type_schema = ElementsSchema::new(Box::new(TypeSchema::new(Types::String)));
         type_schema.set_metadata(MetadataSchema::new().set_id("test").to_owned());
 
         assert_eq!(
@@ -73,7 +73,7 @@ mod tests {
 
     #[test]
     fn test_vec_nullable() {
-        let mut type_schema = ElementSchema::new(Box::new(TypeSchema::new(Types::String)));
+        let mut type_schema = ElementsSchema::new(Box::new(TypeSchema::new(Types::String)));
         type_schema.set_nullable(true);
 
         assert_eq!(type_schema.is_nullable, Some(true));

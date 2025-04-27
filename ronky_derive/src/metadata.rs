@@ -93,19 +93,14 @@ pub fn extract_attrs(attrs: &[Attribute]) -> Option<TokenStream> {
     )
 }
 
-pub fn extract(ident: impl ToString, attrs: &[Attribute]) -> TokenStream {
-    let id = ident.to_string();
-    let base: proc_macro2::TokenStream = extract_attrs(attrs).map_or(
-        quote! {
-            ronky::MetadataSchema::new()
-        },
-        Into::into,
-    );
+pub fn extract(attrs: &[Attribute]) -> TokenStream {
+    let base: proc_macro2::TokenStream =
+        extract_attrs(attrs).map_or(quote!(ronky::MetadataSchema::new()), Into::into);
 
     quote! {
         {
             let mut metadata = #base;
-            metadata.set_id(#id);
+            metadata.set_id(ronky::type_utils::get_type_name_from(Self::get_type_name()));
             metadata
         }
     }

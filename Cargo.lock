@@ -3,6 +3,14 @@
 version = 4
 
 [[package]]
+name = "about"
+version = "1.0.0-beta.1"
+dependencies = [
+ "ronky",
+ "serde_json",
+]
+
+[[package]]
 name = "android-tzdata"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -251,7 +259,7 @@ dependencies = [
 
 [[package]]
 name = "test_suite"
-version = "0.0.1-beta.1"
+version = "0.0.0"
 dependencies = [
  "ronky",
 ]

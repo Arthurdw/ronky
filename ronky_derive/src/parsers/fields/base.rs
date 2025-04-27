@@ -9,7 +9,6 @@ use super::{FieldParser, ParsedField};
 pub struct BaseParser;
 
 impl FieldParser for BaseParser {
-    // TODO: remove parent field
     fn parse(field: &Field) -> Result<ParsedField<'_>, TokenStream> {
         let ty = &field.ty;
         let export = quote!(<#ty as ronky::Exportable>::export());

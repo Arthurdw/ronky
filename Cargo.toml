@@ -3,7 +3,7 @@ ronky = { path = "ronky" }
 
 [workspace]
 resolver = "2"
-members = ["arri_repr", "ronky", "ronky_derive", "test_suite"]
+members = ["arri_repr", "ronky", "ronky_derive", "test_suite", "examples/*"]
 
 [workspace.package]
 version = "1.0.0-beta.1"
