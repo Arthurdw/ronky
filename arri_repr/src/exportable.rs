@@ -1,5 +1,5 @@
 use crate::{RefSchema, type_utils};
-use crate::{Serializable, TypeSchema, Types, elements::ElementSchema};
+use crate::{Serializable, TypeSchema, Types, elements::ElementsSchema};
 use std::cell::RefCell;
 use std::collections::HashSet;
 
@@ -156,7 +156,7 @@ exportable! {
     },
     generic: {
         Option<T> => T::export(), // Option is a special case, this gets handled in the proc macro
-        Vec<T> => ElementSchema::new(Box::new(T::export())),
+        Vec<T> => ElementsSchema::new(Box::new(T::export())),
         Box<T> => T::export_with_recursion_check(),
     },
     features: {

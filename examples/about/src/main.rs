@@ -24,12 +24,12 @@ struct About<T: Exportable> {
 /// Represents a human being with personal details and relationships.
 #[allow(dead_code)]
 #[derive(Exported)]
+#[arri(strict)]
 struct Human {
     /// A list of the human's friends, represented as other `Human` instances.
     friends: Vec<Human>,
-
-    /// A list of the human's pets.
-    pets: Vec<About<Pet>>,
+    ///// A list of the human's pets.
+    //pets: Vec<About<Pet>>,
 }
 
 /// Available cat colors

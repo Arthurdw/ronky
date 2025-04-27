@@ -5,6 +5,7 @@ mod nested_export;
 mod nullable_export;
 mod primitives_export;
 mod ref_export;
+mod static_export;
 mod static_generic_export;
 mod strict_export;
 mod tagged_union_export;

@@ -94,12 +94,8 @@ pub fn extract_attrs(attrs: &[Attribute]) -> Option<TokenStream> {
 }
 
 pub fn extract(attrs: &[Attribute]) -> TokenStream {
-    let base: proc_macro2::TokenStream = extract_attrs(attrs).map_or(
-        quote! {
-            ronky::MetadataSchema::new()
-        },
-        Into::into,
-    );
+    let base: proc_macro2::TokenStream =
+        extract_attrs(attrs).map_or(quote!(ronky::MetadataSchema::new()), Into::into);
 
     quote! {
         {

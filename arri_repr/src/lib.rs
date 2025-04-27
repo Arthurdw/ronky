@@ -10,6 +10,7 @@ mod serializer;
 mod tagged_union;
 mod r#type;
 
+pub use elements::ElementsSchema;
 pub use r#enum::EnumSchema;
 pub use enum_transformation::EnumTransformation;
 pub use exportable::Exportable;

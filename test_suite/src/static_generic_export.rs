@@ -1,8 +1,8 @@
 #[cfg(test)]
 mod tests {
     use ronky::{
-        Exportable, Exported, MetadataSchema, PropertiesSchema, RefSchema, Serializable,
-        TypeSchema, Types,
+        ElementsSchema, Exportable, Exported, MetadataSchema, PropertiesSchema, RefSchema,
+        Serializable, TypeSchema, Types,
     };
 
     #[test]
@@ -191,6 +191,58 @@ mod tests {
                     }),
                 );
 
+                foo
+            }),
+        );
+
+        assert!(export.is::<PropertiesSchema>());
+        let export = export.downcast_ref::<PropertiesSchema>().unwrap();
+        assert_eq!(*export, expected);
+    }
+
+    #[test]
+    fn test_ref_generic_metadata_id_present() {
+        #[allow(dead_code)]
+        #[derive(Exported)]
+        struct Human {
+            /// Example
+            friends: Vec<Human>,
+        }
+
+        #[allow(dead_code)]
+        #[derive(Exported)]
+        struct About<T: Exportable> {
+            /// More example
+            of: T,
+        }
+
+        let export = About::<Human>::export();
+        let mut expected = PropertiesSchema::new();
+        expected.set_metadata(
+            MetadataSchema::new()
+                .set_id("AboutHuman".to_string())
+                .to_owned(),
+        );
+        expected.set_property(
+            "of",
+            Box::new({
+                let mut foo = PropertiesSchema::new();
+                foo.set_metadata(
+                    MetadataSchema::new()
+                        .set_id("Human")
+                        .set_description("More example")
+                        .to_owned(),
+                );
+                foo.set_property(
+                    "friends",
+                    Box::new({
+                        let mut el = ElementsSchema::new(Box::new(RefSchema::new("Human")));
+                        el.set_metadata(
+                            MetadataSchema::new().set_description("Example").to_owned(),
+                        );
+                        el
+                    }),
+                );
                 foo
             }),
         );
