@@ -16,7 +16,11 @@ mod tests {
 
         let export = Bar::export();
         let mut expected = PropertiesSchema::new();
-        expected.set_metadata(MetadataSchema::new().set_id("Foo".to_string()).to_owned());
+        expected.set_metadata(
+            MetadataSchema::new()
+                .set_id("FooString".to_string())
+                .to_owned(),
+        );
         expected.set_property("a", Box::new(TypeSchema::new(Types::String)));
 
         assert!(export.is::<PropertiesSchema>());
@@ -44,7 +48,7 @@ mod tests {
         let mut expected = PropertiesSchema::new();
         expected.set_metadata(
             MetadataSchema::new()
-                .set_id("OuterExample".to_string())
+                .set_id("OuterExampleInnerExampleString".to_string())
                 .to_owned(),
         );
         expected.set_property(
@@ -53,7 +57,7 @@ mod tests {
                 let mut inner = PropertiesSchema::new();
                 inner.set_metadata(
                     MetadataSchema::new()
-                        .set_id("InnerExample".to_string())
+                        .set_id("InnerExampleString".to_string())
                         .to_owned(),
                 );
                 inner.set_property("b", Box::new(TypeSchema::new(Types::String)));

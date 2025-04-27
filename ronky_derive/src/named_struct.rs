@@ -64,7 +64,7 @@ pub fn export_struct_fields(fields: &Punctuated<Field, Comma>) -> TokenStream {
 }
 
 pub fn export_named_struct(input: &DeriveInput, fields: &Punctuated<Field, Comma>) -> TokenStream {
-    let metadata: proc_macro2::TokenStream = metadata::extract(&input.ident, &input.attrs).into();
+    let metadata: proc_macro2::TokenStream = metadata::extract(&input.attrs).into();
     let attrs = match properties::extract(&input.attrs) {
         Ok(Some(attrs)) => {
             let strict = attrs.strict;
