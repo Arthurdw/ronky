@@ -1,7 +1,7 @@
-use crate::{RefSchema, type_utils};
+use crate::{RefSchema, ValuesSchema, type_utils};
 use crate::{Serializable, TypeSchema, Types, elements::ElementsSchema};
 use std::cell::RefCell;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 thread_local! {
     // Track which types we've started exporting (even if not completed)
@@ -110,17 +110,16 @@ macro_rules! exportable {
     (@parse_typeschema) => {};
 
     // --- Generic implementation parsers ---
-    // Generic implementation with expression
-    (@parse_impls $type:ident < $($type_params:ident),* > => $implementation:expr, $($rest:tt)*) => {
-        impl<$($type_params: 'static + Exportable),*> Exportable for $type<$($type_params),*> {
+    // Generic implementation with expression - with trait bounds
+    (@parse_impls $type:ident < $($type_param:ident $(: $trait_bound:path)?),* $(,)? > => $implementation:expr, $($rest:tt)*) => {
+        impl<$($type_param: 'static + Exportable $(+ $trait_bound)?),*> Exportable for $type<$($type_param),*> {
             fn export_internal() -> impl Serializable {
                 $implementation
             }
-
             fn get_type_name() -> String {
                 format!(
                     "::ronky::--virtual--::generic::{}",
-                    vec![$($type_params::get_type_name()),*].join("")
+                    vec![$($type_param::get_type_name()),*].join("")
                 )
             }
         }
@@ -128,8 +127,8 @@ macro_rules! exportable {
     };
 
     // Generic implementation with block
-    (@parse_impls $type:ident < $($type_params:ident),* > => $implementation:block, $($rest:tt)*) => {
-        exportable!(@parse_impls $type < $($type_params),* > => {
+    (@parse_impls $type:ident < $($type_param:ident $(: $trait_bound:path)?),* $(,)? > => $implementation:block, $($rest:tt)*) => {
+        exportable!(@parse_impls $type < $($type_param $(: $trait_bound)?),* > => {
             $implementation
         }, $($rest)*);
     };
@@ -158,6 +157,7 @@ exportable! {
         Option<T> => T::export(), // Option is a special case, this gets handled in the proc macro
         Vec<T> => ElementsSchema::new(Box::new(T::export())),
         Box<T> => T::export_with_recursion_check(),
+        HashMap<K: ToString, V> => ValuesSchema::new(Box::new(V::export())),
     },
     features: {
         "chrono" => {
