@@ -1,4 +1,4 @@
-use ronky::{Exportable, Exported};
+use ronky::{Exportable, Exported, SCHEMA_VERSION};
 
 /// General representation of something
 #[allow(dead_code)]
@@ -72,6 +72,11 @@ enum Pet {
 }
 
 fn main() {
+    println!(
+        "Serializing struct to a Arri {} JSON schema.",
+        SCHEMA_VERSION
+    );
+
     let serialized = About::<Human>::export().serialize().unwrap();
     println!("{}", serialized);
     // Format the serialized JSON string and write it to out.json
