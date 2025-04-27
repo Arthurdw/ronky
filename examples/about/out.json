@@ -1,0 +1,146 @@
+{
+  "metadata": {
+    "description": "General representation of something",
+    "id": "AboutHuman"
+  },
+  "optionalProperties": {
+    "last_name": {
+      "metadata": {
+        "description": "The last name of the entity."
+      },
+      "type": "string"
+    }
+  },
+  "properties": {
+    "age": {
+      "metadata": {
+        "description": "The age of the entity in years."
+      },
+      "type": "uint32"
+    },
+    "first_name": {
+      "metadata": {
+        "description": "The first name of the entity."
+      },
+      "type": "string"
+    },
+    "name": {
+      "metadata": {
+        "deprecatedNote": "Use `firstName` and `lastName` instead",
+        "deprecatedSince": "1.0.0",
+        "description": "The full name of the entity",
+        "isDeprecated": true
+      },
+      "type": "string"
+    },
+    "of": {
+      "metadata": {
+        "description": "Of what this about is"
+      },
+      "optionalProperties": {},
+      "properties": {
+        "friends": {
+          "elements": {
+            "ref": "AboutHuman"
+          },
+          "metadata": {
+            "description": "A list of the human's friends, represented as other `Human` instances."
+          }
+        },
+        "pets": {
+          "elements": {
+            "metadata": {
+              "description": "General representation of something",
+              "id": "AboutPet"
+            },
+            "optionalProperties": {
+              "last_name": {
+                "metadata": {
+                  "description": "The last name of the entity."
+                },
+                "type": "string"
+              }
+            },
+            "properties": {
+              "age": {
+                "metadata": {
+                  "description": "The age of the entity in years."
+                },
+                "type": "uint32"
+              },
+              "first_name": {
+                "metadata": {
+                  "description": "The first name of the entity."
+                },
+                "type": "string"
+              },
+              "name": {
+                "metadata": {
+                  "deprecatedNote": "Use `firstName` and `lastName` instead",
+                  "deprecatedSince": "1.0.0",
+                  "description": "The full name of the entity",
+                  "isDeprecated": true
+                },
+                "type": "string"
+              },
+              "of": {
+                "discriminator": "species",
+                "mapping": {
+                  "CAT": {
+                    "optionalProperties": {
+                      "color": {
+                        "enum": [
+                          "BLACK",
+                          "WHITE",
+                          "GRAY",
+                          "MIXED_GRAY_WHITE"
+                        ],
+                        "isNullable": true,
+                        "metadata": {
+                          "description": "The color of the pet."
+                        }
+                      }
+                    },
+                    "properties": {
+                      "name": {
+                        "metadata": {
+                          "description": "The name of the pet."
+                        },
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "DOG": {
+                    "optionalProperties": {
+                      "breed": {
+                        "isNullable": true,
+                        "metadata": {
+                          "description": "The breed of the pet."
+                        },
+                        "type": "string"
+                      }
+                    },
+                    "properties": {
+                      "name": {
+                        "metadata": {
+                          "description": "The name of the pet."
+                        },
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "metadata": {
+                  "description": "Of what this about is"
+                }
+              }
+            }
+          },
+          "metadata": {
+            "description": "A list of the human's pets."
+          }
+        }
+      }
+    }
+  }
+}

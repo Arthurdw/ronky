@@ -6,13 +6,10 @@ use std::collections::HashSet;
 thread_local! {
     // Track which types we've started exporting (even if not completed)
     static RECURSION_TRACKER: RefCell<HashSet<String>> = RefCell::new(HashSet::new());
-    // Track the first type that caused recursion
-    static FIRST_RECURSIVE_TYPE: RefCell<Option<String>> = const { RefCell::new(None) };
 }
 
 pub trait Exportable {
     fn get_type_name() -> String {
-        println!("Default export type {}", std::any::type_name::<Self>());
         type_utils::get_type_name::<Self>()
     }
 
@@ -23,7 +20,6 @@ pub trait Exportable {
     fn export_internal() -> impl Serializable;
 
     fn export_with_recursion_check() -> Box<dyn Serializable> {
-        // let type_name = type_name::<Self>().to_string();
         let type_name = Self::get_type_name();
 
         let is_recursive = RECURSION_TRACKER.with(|tracker| {
@@ -33,33 +29,13 @@ pub trait Exportable {
             if !is_recursive {
                 // Add our type to the set
                 tracker.insert(type_name.clone());
-
-                // If this is the first type in the recursion chain, record it
-                FIRST_RECURSIVE_TYPE.with(|first| {
-                    if first.borrow().is_none() {
-                        *first.borrow_mut() = Some(type_name.clone());
-                    }
-                });
             }
 
             is_recursive
         });
 
         if is_recursive {
-            let first_type = FIRST_RECURSIVE_TYPE
-                .with(|first| first.borrow().clone())
-                .unwrap_or(type_name);
-
-            RECURSION_TRACKER.with(|tracker| {
-                let tracker = tracker.borrow_mut();
-                println!("Got recrusion types:");
-
-                for type_name in tracker.iter() {
-                    println!("  - {}", type_name);
-                }
-            });
-
-            return Box::new(RefSchema::new(type_utils::get_type_name_from(first_type)));
+            return Box::new(RefSchema::new(type_utils::get_type_name_from(type_name)));
         }
 
         let result = Self::export_internal();
@@ -68,11 +44,6 @@ pub trait Exportable {
         RECURSION_TRACKER.with(|tracker| {
             let mut tracker = tracker.borrow_mut();
             tracker.remove(&type_name);
-
-            // If the tracker is now empty, reset the first recursive type as well
-            if tracker.is_empty() {
-                FIRST_RECURSIVE_TYPE.with(|first| *first.borrow_mut() = None);
-            }
         });
 
         Box::new(result)
