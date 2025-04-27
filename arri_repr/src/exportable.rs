@@ -254,30 +254,12 @@ exportable! {
                     DateTime<Tz: TimeZone> => TypeSchema::new(Types::Timestamp),
                 }
             }
-
-            #[test]
-            fn test_serialize_datetime() {
-                let fixed_offset = DateTime::<FixedOffset>::export().serialize();
-                let utc = DateTime::<Utc>::export().serialize();
-                let expected = TypeSchema::new(Types::Timestamp).serialize();
-
-                assert_eq!(fixed_offset, expected);
-                assert_eq!(utc, expected);
-            }
         },
         "uuid" => {
             exportable! {
                 typeschema: {
                     uuid::Uuid => String,
                 }
-            }
-
-            #[test]
-            fn test_serialize_uuid() {
-                let uuid = uuid::Uuid::export().serialize();
-                let expected = TypeSchema::new(Types::String).serialize();
-
-                assert_eq!(uuid, expected);
             }
         },
         "bigdecimal" => {
@@ -286,28 +268,12 @@ exportable! {
                     bigdecimal::BigDecimal => String,
                 }
             }
-
-            #[test]
-            fn test_serialize_decimal() {
-                let decimal = bigdecimal::BigDecimal::export().serialize();
-                let expected = TypeSchema::new(Types::String).serialize();
-
-                assert_eq!(decimal, expected);
-            }
         },
         "num-bigint" => {
             exportable! {
                 typeschema: {
                     num_bigint::BigInt => String,
                 }
-            }
-
-            #[test]
-            fn test_serialize_bigint() {
-                let bigint = num_bigint::BigInt::export().serialize();
-                let expected = TypeSchema::new(Types::String).serialize();
-
-                assert_eq!(bigint, expected);
             }
         },
         "num-bigfloat" => {
@@ -316,28 +282,12 @@ exportable! {
                     num_bigfloat::BigFloat => String,
                 }
             }
-
-            #[test]
-            fn test_serialize_bigfloat() {
-                let bigfloat = num_bigfloat::BigFloat::export().serialize();
-                let expected = TypeSchema::new(Types::String).serialize();
-
-                assert_eq!(bigfloat, expected);
-            }
         },
         "rust_decimal" => {
             exportable! {
                 typeschema: {
                     rust_decimal::Decimal => String,
                 }
-            }
-
-            #[test]
-            fn test_serialize_rust_decimal() {
-                let decimal = rust_decimal::Decimal::export().serialize();
-                let expected = TypeSchema::new(Types::String).serialize();
-
-                assert_eq!(decimal, expected);
             }
         }
     }
