@@ -104,11 +104,7 @@ pub fn extract(attrs: &[Attribute]) -> TokenStream {
     quote! {
         {
             let mut metadata = #base;
-            metadata.set_id(
-                std::any::type_name::<Self>()
-                    .split(|c: char| !c.is_alphanumeric() && c != '_')
-                    .filter(|word| !word.is_empty() && word.chars().next().unwrap().is_uppercase())
-                    .collect::<String>());
+            metadata.set_id(ronky::type_utils::get_type_name_from(Self::get_type_name()));
             metadata
         }
     }

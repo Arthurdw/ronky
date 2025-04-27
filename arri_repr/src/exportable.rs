@@ -1,15 +1,21 @@
-use crate::RefSchema;
+use crate::{RefSchema, type_utils};
 use crate::{Serializable, TypeSchema, Types, elements::ElementSchema};
-use std::any::type_name;
 use std::cell::RefCell;
 use std::collections::HashSet;
 
 thread_local! {
     // Track which types we've started exporting (even if not completed)
     static RECURSION_TRACKER: RefCell<HashSet<String>> = RefCell::new(HashSet::new());
+    // Track the first type that caused recursion
+    static FIRST_RECURSIVE_TYPE: RefCell<Option<String>> = const { RefCell::new(None) };
 }
 
 pub trait Exportable {
+    fn get_type_name() -> String {
+        println!("Default export type {}", std::any::type_name::<Self>());
+        type_utils::get_type_name::<Self>()
+    }
+
     fn export() -> Box<dyn Serializable> {
         Self::export_with_recursion_check()
     }
@@ -17,27 +23,58 @@ pub trait Exportable {
     fn export_internal() -> impl Serializable;
 
     fn export_with_recursion_check() -> Box<dyn Serializable> {
-        let type_name = type_name::<Self>().to_string();
+        // let type_name = type_name::<Self>().to_string();
+        let type_name = Self::get_type_name();
+
         let is_recursive = RECURSION_TRACKER.with(|tracker| {
             let mut tracker = tracker.borrow_mut();
-            if tracker.contains(&type_name) {
-                true
-            } else {
+            let is_recursive = tracker.contains(&type_name);
+
+            if !is_recursive {
+                // Add our type to the set
                 tracker.insert(type_name.clone());
-                false
+
+                // If this is the first type in the recursion chain, record it
+                FIRST_RECURSIVE_TYPE.with(|first| {
+                    if first.borrow().is_none() {
+                        *first.borrow_mut() = Some(type_name.clone());
+                    }
+                });
             }
+
+            is_recursive
         });
+
         if is_recursive {
-            let name = type_name.split("::").last().unwrap_or(&type_name);
-            return Box::new(RefSchema::new(name));
+            let first_type = FIRST_RECURSIVE_TYPE
+                .with(|first| first.borrow().clone())
+                .unwrap_or(type_name);
+
+            RECURSION_TRACKER.with(|tracker| {
+                let tracker = tracker.borrow_mut();
+                println!("Got recrusion types:");
+
+                for type_name in tracker.iter() {
+                    println!("  - {}", type_name);
+                }
+            });
+
+            return Box::new(RefSchema::new(type_utils::get_type_name_from(first_type)));
         }
+
         let result = Self::export_internal();
 
         // Remove our type from the set when done
         RECURSION_TRACKER.with(|tracker| {
             let mut tracker = tracker.borrow_mut();
             tracker.remove(&type_name);
+
+            // If the tracker is now empty, reset the first recursive type as well
+            if tracker.is_empty() {
+                FIRST_RECURSIVE_TYPE.with(|first| *first.borrow_mut() = None);
+            }
         });
+
         Box::new(result)
     }
 }
@@ -107,6 +144,13 @@ macro_rules! exportable {
         impl<$($type_params: 'static + Exportable),*> Exportable for $type<$($type_params),*> {
             fn export_internal() -> impl Serializable {
                 $implementation
+            }
+
+            fn get_type_name() -> String {
+                format!(
+                    "::ronky::--virtual--::generic::{}",
+                    vec![$($type_params::get_type_name()),*].join("")
+                )
             }
         }
         exportable!(@parse_impls $($rest)*);

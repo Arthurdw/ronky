@@ -29,11 +29,33 @@ pub fn exported_derive(input: TokenStream) -> TokenStream {
     let generics = input.generics;
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
 
+    // Extract the type parameters from generics
+    let type_params = generics
+        .type_params()
+        .map(|param| param.ident.clone())
+        .collect::<Vec<_>>();
+
+    // Only generate the specialized get_type_name implementation if there are generic arguments
+    let get_type_name_impl = if !type_params.is_empty() {
+        quote! {
+            fn get_type_name() -> String {
+                format!(
+                    "::ronky::--virtual--::external::{}",
+                    vec![stringify!(#struct_name).to_string(), #(#type_params::get_type_name()),*].join("")
+                )
+            }
+        }
+    } else {
+        // For non-generic types, use the default implementation
+        quote! {}
+    };
+
     quote! {
         impl #impl_generics ronky::Exportable for #struct_name #ty_generics #where_clause {
             fn export_internal() -> impl ronky::Serializable {
                 #export
             }
+            #get_type_name_impl
         }
     }
     .into()

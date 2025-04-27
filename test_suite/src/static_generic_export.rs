@@ -1,7 +1,8 @@
 #[cfg(test)]
 mod tests {
     use ronky::{
-        Exportable, Exported, MetadataSchema, PropertiesSchema, Serializable, TypeSchema, Types,
+        Exportable, Exported, MetadataSchema, PropertiesSchema, RefSchema, Serializable,
+        TypeSchema, Types,
     };
 
     #[test]
@@ -63,6 +64,56 @@ mod tests {
                 inner.set_property("b", Box::new(TypeSchema::new(Types::String)));
 
                 inner
+            }),
+        );
+
+        assert!(export.is::<PropertiesSchema>());
+        let export = export.downcast_ref::<PropertiesSchema>().unwrap();
+        assert_eq!(*export, expected);
+    }
+
+    #[test]
+    fn test_ref_generic() {
+        #[allow(dead_code)]
+        #[derive(Exported)]
+        struct Foo {
+            nested: Option<Bar<Box<Self>>>,
+        }
+
+        #[allow(dead_code)]
+        #[derive(Exported)]
+        struct Bar<T: Exportable> {
+            of: T,
+        }
+
+        let export = Bar::<Foo>::export();
+        let mut expected = PropertiesSchema::new();
+        expected.set_metadata(
+            MetadataSchema::new()
+                .set_id("BarFoo".to_string())
+                .to_owned(),
+        );
+        expected.set_property(
+            "of",
+            Box::new({
+                let mut foo = PropertiesSchema::new();
+                foo.set_metadata(MetadataSchema::new().set_id("Foo".to_string()).to_owned());
+                foo.set_optional_property(
+                    "nested",
+                    Box::new({
+                        let mut nested = PropertiesSchema::new();
+                        nested.set_metadata(
+                            MetadataSchema::new()
+                                .set_id("BarFoo".to_string())
+                                .to_owned(),
+                        );
+                        nested.set_property("of", Box::new(RefSchema::new("BarFoo")));
+
+                        nested
+                    }),
+                );
+
+                foo
             }),
         );
 
