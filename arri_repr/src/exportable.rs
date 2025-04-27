@@ -1,5 +1,3 @@
-use chrono::{Date, Local, NaiveDate, NaiveDateTime, NaiveTime, TimeZone};
-
 use crate::{RefSchema, ValuesSchema, type_utils};
 use crate::{Serializable, TypeSchema, Types, elements::ElementsSchema};
 use std::cell::{Cell, RefCell};
@@ -240,7 +238,7 @@ exportable! {
     },
     features: {
         "chrono" => {
-            use chrono::{DateTime, FixedOffset, Utc};
+            use chrono::{DateTime, FixedOffset, Utc, Local, NaiveTime, NaiveDate, NaiveDateTime, TimeZone};
 
             exportable! {
                 typeschema: {
@@ -265,6 +263,23 @@ exportable! {
 
                 assert_eq!(fixed_offset, expected);
                 assert_eq!(utc, expected);
+            }
+        },
+        "uuid" => {
+            use uuid::Uuid;
+
+            exportable! {
+                typeschema: {
+                    Uuid => String,
+                }
+            }
+
+            #[test]
+            fn test_serialize_uuid() {
+                let uuid = Uuid::export().serialize();
+                let expected = TypeSchema::new(Types::String).serialize();
+
+                assert_eq!(uuid, expected);
             }
         }
     }

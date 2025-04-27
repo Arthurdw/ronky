@@ -25,3 +25,4 @@ ronky_derive.workspace = true
 default = []
 derive = ["ronky_derive"]
 chrono = ["arri_repr/chrono"]
+uuid = ["arri_repr/uuid"]
