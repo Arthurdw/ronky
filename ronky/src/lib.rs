@@ -7,6 +7,8 @@ pub use ronky_derive::Exported;
 extern crate arri_repr;
 pub use arri_repr::*;
 
+pub static SCHEMA_VERSION: &str = "v0.0.8";
+
 // TODO: implement conversion from ATD to Rust types
 // | ATD Type | Rust Type |
 // |---|---|
