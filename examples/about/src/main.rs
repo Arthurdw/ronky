@@ -28,8 +28,9 @@ struct About<T: Exportable> {
 struct Human {
     /// A list of the human's friends, represented as other `Human` instances.
     friends: Vec<Human>,
+
     ///// A list of the human's pets.
-    //pets: Vec<About<Pet>>,
+    pets: Vec<About<Pet>>,
 }
 
 /// Available cat colors
