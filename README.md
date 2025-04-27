@@ -12,6 +12,7 @@ This library allows you to extract Rust types and serialize them into
 
 - [Ronky - A simple way to export Rust definitions](#ronky-a-simple-way-to-export-rust-definitions)
   - [Features (exporting only for now)](#features-exporting-only-for-now)
+    - [Popular compatible crates](#popular-compatible-crates)
   - [Feature(s) that will never be implemented](#features-that-will-never-be-implemented)
   - [Example Usage](#example-usage)
   - [In memory of Ronky](#in-memory-of-ronky)
