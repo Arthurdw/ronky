@@ -1,4 +1,4 @@
-use crate::{RefSchema, ValuesSchema, type_utils};
+use crate::{RefSchema, TaggedUnionSchema, ValuesSchema, type_utils};
 use crate::{Serializable, TypeSchema, Types, elements::ElementsSchema};
 use std::cell::{Cell, RefCell};
 use std::collections::{BTreeMap, BTreeSet, BinaryHeap, HashMap, HashSet, LinkedList, VecDeque};
@@ -222,6 +222,12 @@ exportable! {
 
         // General exports
         Box<T> => T::export_with_recursion_check(),
+        Result<T, E> => {
+            let mut schema = TaggedUnionSchema::new();
+            schema.add_mapping("Ok", T::export());
+            schema.add_mapping("Err", E::export());
+            schema
+        },
 
         // Element Schema's
         SliceOf<T> => ElementsSchema::new(Box::new(T::export())),
