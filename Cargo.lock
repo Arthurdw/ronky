@@ -4,7 +4,7 @@ version = 4
 
 [[package]]
 name = "about"
-version = "1.0.0-beta.2"
+version = "1.0.0-beta.3"
 dependencies = [
  "ronky",
  "serde_json",
@@ -27,7 +27,7 @@ dependencies = [
 
 [[package]]
 name = "arri_repr"
-version = "1.0.0-beta.2"
+version = "1.0.0-beta.3"
 dependencies = [
  "chrono",
  "downcast-rs",
@@ -180,7 +180,7 @@ dependencies = [
 
 [[package]]
 name = "ronky"
-version = "1.0.0-beta.2"
+version = "1.0.0-beta.3"
 dependencies = [
  "arri_repr",
  "ronky_derive",
@@ -188,7 +188,7 @@ dependencies = [
 
 [[package]]
 name = "ronky_derive"
-version = "1.0.0-beta.2"
+version = "1.0.0-beta.3"
 dependencies = [
  "arri_repr",
  "proc-macro2",
