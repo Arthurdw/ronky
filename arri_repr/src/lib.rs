@@ -1,4 +1,5 @@
 mod elements;
+mod empty;
 mod r#enum;
 mod enum_transformation;
 mod exportable;
@@ -12,6 +13,7 @@ mod r#type;
 mod values;
 
 pub use elements::ElementsSchema;
+pub use empty::EmptySchema;
 pub use r#enum::EnumSchema;
 pub use enum_transformation::EnumTransformation;
 pub use exportable::Exportable;

@@ -52,11 +52,6 @@ Missing a popular crate? Check if a issue for this exists, and if not create one
 - [x] `indexmap`
 - [x] `smallvec`
 
-## Feature(s) that will never be implemented
-
-- Empty schema form, this is something that should never be used in Rust code
-  anyway and is greatly a sign of bad code and a common source for bugs.
-
 ## Example Usage
 
 You can find examples in the `./examples/` directory.

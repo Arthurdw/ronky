@@ -1,4 +1,6 @@
-use crate::{RefSchema, TaggedUnionSchema, ValuesSchema, type_utils};
+use crate::{
+    EmptySchema, PropertiesSchema, RefSchema, TaggedUnionSchema, ValuesSchema, type_utils,
+};
 use crate::{Serializable, TypeSchema, Types, elements::ElementsSchema};
 use std::cell::{Cell, RefCell};
 use std::collections::{BTreeMap, BTreeSet, BinaryHeap, HashMap, HashSet, LinkedList, VecDeque};
@@ -119,6 +121,10 @@ macro_rules! exportable {
         }, $($rest)*);
     };
 
+    (@parse_typeschema static $ty:ty => $to:expr, $($rest:tt)*) => {
+        exportable!(@parse_typeschema $ty => { $to }, $($rest)*);
+    };
+
     // TypeSchema with block
     (@parse_typeschema $ty:ty => $implementation:block, $($rest:tt)*) => {
         impl Exportable for $ty {
@@ -164,6 +170,7 @@ type SliceOf<T> = [T]; // This way of interacting with slices allows us to keep 
 
 exportable! {
     typeschema: {
+        static () => EmptySchema::new(),
         char => String,
         String => String,
         &str => String,
@@ -224,8 +231,14 @@ exportable! {
         Box<T> => T::export_with_recursion_check(),
         Result<T, E> => {
             let mut schema = TaggedUnionSchema::new();
-            schema.add_mapping("Ok", T::export());
-            schema.add_mapping("Err", E::export());
+            let mut ok_props = PropertiesSchema::new();
+            let mut err_props = PropertiesSchema::new();
+
+            ok_props.set_property("value", Box::new(T::export()));
+            err_props.set_property("value", Box::new(E::export()));
+
+            schema.add_mapping("Ok", Box::new(ok_props));
+            schema.add_mapping("Err", Box::new(err_props));
             schema
         },
 
