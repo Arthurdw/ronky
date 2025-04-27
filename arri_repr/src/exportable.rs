@@ -255,6 +255,17 @@ exportable! {
                 }
             }
         },
+        "time" => {
+            exportable! {
+                typeschema: {
+                    time::OffsetDateTime => Timestamp,
+                    time::PrimitiveDateTime => Timestamp,
+                    time::Date => Timestamp,
+                    time::Time => Timestamp,
+                    time::Duration => Int64,
+                }
+            }
+        },
         "uuid" => {
             exportable! {
                 typeschema: {
@@ -287,6 +298,57 @@ exportable! {
             exportable! {
                 typeschema: {
                     rust_decimal::Decimal => String,
+                }
+            }
+        },
+        "decimal" => {
+            exportable! {
+                typeschema: {
+                    decimal::d128 => String,
+                }
+            }
+        },
+        "url" => {
+            exportable! {
+                typeschema: {
+                    url::Url => String,
+                }
+            }
+        },
+        "bytes" => {
+            exportable! {
+                typeschema: {
+                    bytes::Bytes => String,
+                    bytes::BytesMut => String,
+                }
+            }
+        },
+        "dashmap" => {
+            use dashmap::{DashMap, DashSet};
+
+            exportable! {
+                generic: {
+                    DashMap<K: ToString, V> => ValuesSchema::new(Box::new(V::export())),
+                    DashSet<T> => ElementsSchema::new(Box::new(T::export())),
+                }
+            }
+        },
+        "indexmap" => {
+            use indexmap::{IndexMap, IndexSet};
+
+            exportable! {
+                generic: {
+                    IndexMap<K: ToString, V> => ValuesSchema::new(Box::new(V::export())),
+                    IndexSet<T> => ElementsSchema::new(Box::new(T::export())),
+                }
+            }
+        },
+        "smallvec" => {
+            use smallvec::SmallVec;
+
+            exportable! {
+                generic: {
+                    SmallVec<T: smallvec::Array> => ElementsSchema::new(Box::new(T::export())),
                 }
             }
         }
