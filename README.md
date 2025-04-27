@@ -30,8 +30,26 @@ This library allows you to extract Rust types and serialize them into
 - [x] isNullable keyword
 - [x] metadata keyword (includes: id, description, isDeprecated, deprecatedNote,
       deprecatedSince)
-- [ ] Values schema form (for maps)
-- [ ] See which Arri schema version is being used
+- [x] Values schema form (for maps)
+- [x] See which Arri schema version is being used
+
+### Popular compatible crates
+
+Missing a popular crate? Check if a issue for this exists, and if not create one!
+
+- [x] `chrono`
+- [x] `time`
+- [x] `uuid`
+- [x] `bigdecimal`
+- [x] `num-bigint`
+- [x] `num-bigfloat`
+- [x] `rust_decimal`
+- [x] `decimal`
+- [x] `url`
+- [x] `bytes`
+- [x] `dashmap`
+- [x] `indexmap`
+- [x] `smallvec`
 
 ## Feature(s) that will never be implemented
 
