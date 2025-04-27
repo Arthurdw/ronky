@@ -1,7 +1,24 @@
+use chrono::{Date, Local, NaiveDate, NaiveDateTime, NaiveTime, TimeZone};
+
 use crate::{RefSchema, ValuesSchema, type_utils};
 use crate::{Serializable, TypeSchema, Types, elements::ElementsSchema};
-use std::cell::RefCell;
-use std::collections::{HashMap, HashSet};
+use std::cell::{Cell, RefCell};
+use std::collections::{BTreeMap, BTreeSet, BinaryHeap, HashMap, HashSet, LinkedList, VecDeque};
+use std::ffi::{OsStr, OsString};
+use std::net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr};
+use std::num::{
+    NonZeroI8, NonZeroI16, NonZeroI32, NonZeroI64, NonZeroIsize, NonZeroU8, NonZeroU16, NonZeroU32,
+    NonZeroU64, NonZeroUsize,
+};
+use std::path::{Path, PathBuf};
+use std::ptr::NonNull;
+use std::rc::Rc;
+use std::sync::atomic::{
+    AtomicBool, AtomicI8, AtomicI16, AtomicI32, AtomicI64, AtomicU8, AtomicU16, AtomicU32,
+    AtomicU64,
+};
+use std::sync::{Arc, Mutex, RwLock};
+use std::time::{Duration, Instant, SystemTime};
 
 thread_local! {
     // Track which types we've started exporting (even if not completed)
@@ -75,6 +92,14 @@ macro_rules! exportable {
         exportable!(features: { $($feat)* });
     };
 
+    (
+        typeschema: { $($ty:tt)* },
+        generic: { $($gen:tt)* }
+    ) => {
+        exportable!(typeschema: { $($ty)* });
+        exportable!(generic: { $($gen)* });
+    };
+
     // --- Parse feature blocks ---
     (@parse_features $feature:literal => { $($body:item)* }, $($rest:tt)*) => {
         exportable!(@parse_features $feature => { $($body)* });
@@ -137,8 +162,11 @@ macro_rules! exportable {
     (@parse_impls) => {};
 }
 
+type SliceOf<T> = [T]; // This way of interacting with slices allows us to keep the same macro
+
 exportable! {
     typeschema: {
+        char => String,
         String => String,
         &str => String,
         bool => Boolean,
@@ -152,12 +180,63 @@ exportable! {
         u32 => Uint32,
         i64 => Int64,
         u64 => Uint64,
+        AtomicBool => Boolean,
+        AtomicI8 => Int8,
+        AtomicU8 => Uint8,
+        AtomicI16 => Int16,
+        AtomicU16 => Uint16,
+        AtomicI32 => Int32,
+        AtomicU32 => Uint32,
+        AtomicI64 => Int64,
+        AtomicU64 => Uint64,
+        NonZeroI8 => Int8,
+        NonZeroU8 => Uint8,
+        NonZeroI16 => Int16,
+        NonZeroU16 => Uint16,
+        NonZeroI32 => Int32,
+        NonZeroU32 => Uint32,
+        NonZeroI64 => Int64,
+        NonZeroU64 => Uint64,
+        NonZeroIsize => Int64,
+        NonZeroUsize => Uint64,
+        OsStr => String,
+        OsString => String,
+        PathBuf => String,
+        Path => String,
+        IpAddr => String,
+        Ipv4Addr => String,
+        Ipv6Addr => String,
+        SocketAddr => String,
+        Duration => Int64,
+        Instant => Int64,
+        SystemTime => Int64,
     },
     generic: {
+        // Ignored types
         Option<T> => T::export(), // Option is a special case, this gets handled in the proc macro
-        Vec<T> => ElementsSchema::new(Box::new(T::export())),
+        Rc<T> => T::export(),
+        Arc<T> => T::export(),
+        Cell<T> => T::export(),
+        RefCell<T> => T::export(),
+        Mutex<T> => T::export(),
+        RwLock<T> => T::export(),
+        NonNull<T> => T::export(),
+
+        // General exports
         Box<T> => T::export_with_recursion_check(),
+
+        // Element Schema's
+        SliceOf<T> => ElementsSchema::new(Box::new(T::export())),
+        Vec<T> => ElementsSchema::new(Box::new(T::export())),
+        VecDeque<T> => ElementsSchema::new(Box::new(T::export())),
+        LinkedList<T> => ElementsSchema::new(Box::new(T::export())),
+        HashSet<T> => ElementsSchema::new(Box::new(T::export())),
+        BTreeSet<T> => ElementsSchema::new(Box::new(T::export())),
+        BinaryHeap<T> => ElementsSchema::new(Box::new(T::export())),
+
+        // Values Schema's
         HashMap<K: ToString, V> => ValuesSchema::new(Box::new(V::export())),
+        BTreeMap<K: ToString, V> => ValuesSchema::new(Box::new(V::export())),
     },
     features: {
         "chrono" => {
@@ -165,8 +244,16 @@ exportable! {
 
             exportable! {
                 typeschema: {
-                    DateTime<FixedOffset> => Timestamp,
                     DateTime<Utc> => Timestamp,
+                    DateTime<Local> => Timestamp,
+                    DateTime<FixedOffset> => Timestamp,
+                    NaiveDate => Timestamp,
+                    NaiveTime => Timestamp,
+                    NaiveDateTime => Timestamp,
+                    chrono::Duration => Int64,
+                },
+                generic: {
+                    DateTime<Tz: TimeZone> => TypeSchema::new(Types::Timestamp),
                 }
             }
 
