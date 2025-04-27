@@ -5,7 +5,11 @@ use syn::{DeriveInput, Fields, Variant, punctuated::Punctuated, spanned::Spanned
 use crate::{
     metadata,
     named_struct::export_struct_fields,
-    parsers::attributes::enum_variants::{self, enum_transformation_to_tokens},
+    parsers::{
+        ParsedField,
+        attributes::enum_variants::{self, enum_transformation_to_tokens},
+        parse_field,
+    },
 };
 
 pub fn export_enum(input: &DeriveInput, variants: &Punctuated<Variant, Comma>) -> TokenStream {
@@ -50,10 +54,65 @@ pub fn export_enum(input: &DeriveInput, variants: &Punctuated<Variant, Comma>) -
                         }));
                     });
                 }
+                Fields::Unnamed(ref fields) => {
+                    if fields.unnamed.len() != 1 {
+                        return quote_spanned!(
+                            variant.span() =>
+                            compile_error!("Unamed tagged union variants must have exactly one field.");
+                        ).into();
+                    }
+
+                    let metadata: Option<proc_macro2::TokenStream> =
+                        metadata::extract_attrs(&variant.attrs).map(|ts| {
+                            let ts: proc_macro2::TokenStream = ts.into();
+                            quote! {
+                                use ronky::Serializable;
+                                export.set_metadata(#ts);
+                            }
+                        });
+
+                    let (field_stream, field_metadata) = match parse_field(
+                        fields.unnamed.first().unwrap(),
+                    ) {
+                        Ok(ParsedField::Required(field, stream)) => {
+                            let stream: proc_macro2::TokenStream = stream.into();
+                            let field_metadata: Option<proc_macro2::TokenStream> =
+                                metadata::extract_from_field(field).map(|ts| {
+                                    let ts: proc_macro2::TokenStream = ts.into();
+                                    quote! {
+                                        use ronky::Serializable;
+                                        ty.set_metadata(#ts);
+                                    }
+                                });
+                            (stream, field_metadata)
+                        }
+                        Ok(ParsedField::Optional(..)) => {
+                            return quote_spanned!(
+                                variant.span() =>
+                                compile_error!("Optional fields are not supported in tagged unions.")
+                            ).into();
+                        }
+                        Err(e) => return e,
+                    };
+
+                    exported.push(quote! {
+                        schema.add_mapping(#variant_name, Box::new({
+                            let mut export = ronky::PropertiesSchema::new();
+                            #metadata
+                            export.set_property("value", Box::new({
+                                let mut ty = #field_stream;
+                                #field_metadata
+                                ty
+                            }));
+                            export
+                        }));
+                    });
+                }
                 _ => {
+                    // TODO: implement
                     return quote_spanned!(
                         variant.span() =>
-                        compile_error!("Tagged union variants must have named fields.");
+                        compile_error!("No unit types are supported yet for tagged unions.");
                     )
                     .into();
                 }

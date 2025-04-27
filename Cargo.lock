@@ -211,6 +211,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d0a5c400df2834b80a4c3327b3aad3a4c4cd4de0629063962b03235697506a28"
 
 [[package]]
+name = "custom_result"
+version = "1.0.0-beta.4"
+dependencies = [
+ "ronky",
+ "serde_json",
+]
+
+[[package]]
 name = "dashmap"
 version = "6.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -928,7 +936,7 @@ checksum = "55937e1799185b12863d447f42597ed69d9928686b8d88a1df17376a097d8369"
 
 [[package]]
 name = "test_suite"
-version = "0.0.1-beta.1"
+version = "0.0.0"
 dependencies = [
  "ronky",
 ]

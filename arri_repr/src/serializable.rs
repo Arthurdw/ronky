@@ -70,6 +70,12 @@ impl Serializable for bool {
     }
 }
 
+impl Serializable for () {
+    fn serialize(&self) -> Option<String> {
+        "null".to_string().into()
+    }
+}
+
 impl<T: Serializable> Serializable for Vec<T> {
     fn serialize(&self) -> Option<String> {
         let serialized_elements: Vec<String> = self.iter().filter_map(|e| e.serialize()).collect();
@@ -138,6 +144,8 @@ impl Serializable for chrono::DateTime<chrono::Utc> {
             .serialize()
     }
 }
+
+// TODO: implement other features serialization and general object serialization
 
 #[cfg(test)]
 mod tests {
