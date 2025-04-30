@@ -36,7 +36,7 @@ smallvec = ["dep:smallvec"]
 [dependencies]
 # TODO: see if we can make downcast also a feature flag
 downcast-rs = "2.0.1"
-chrono = { version = "0.4.40", optional = true }
+chrono = { version = "0.4.41", optional = true }
 time = { version = "0.3.41", optional = true }
 uuid = { version = "1.16.0", optional = true }
 bigdecimal = { version = "0.4.8", optional = true }
