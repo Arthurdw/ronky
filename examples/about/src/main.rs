@@ -61,7 +61,8 @@ enum Pet {
         #[arri(nullable)]
         breed: Option<String>,
     },
-    Cat {
+    #[arri(rename = "cat")]
+    Lion {
         /// The name of the pet.
         name: String,
 
