@@ -10,11 +10,11 @@ use crate::{
 pub fn export_struct_fields(fields: &Punctuated<Field, Comma>) -> TokenStream {
     let mut properties = Vec::new();
     for field in fields.iter() {
-        let field = parse_field(field);
-        match field {
+        match parse_field(field) {
             // TODO: find out way to prevent the duplication here
-            Ok(ParsedField::Required(field, stream)) => {
-                let field_name = field.ident.as_ref().unwrap().to_string();
+            Ok(ParsedField::Required(field, stream, args)) => {
+                let default_field_name = field.ident.as_ref().unwrap().to_string();
+                let field_name = args.and_then(|a| a.rename).unwrap_or(default_field_name);
                 let stream: proc_macro2::TokenStream = stream.into();
                 let field_metadata: Option<proc_macro2::TokenStream> =
                     metadata::extract_from_field(field).map(|ts| {
@@ -24,6 +24,7 @@ pub fn export_struct_fields(fields: &Punctuated<Field, Comma>) -> TokenStream {
                             ty.set_metadata(#ts);
                         }
                     });
+
                 properties.push(quote! {
                     schema.set_property(#field_name, Box::new({
                         let mut ty = #stream;
@@ -32,8 +33,9 @@ pub fn export_struct_fields(fields: &Punctuated<Field, Comma>) -> TokenStream {
                     }));
                 })
             }
-            Ok(ParsedField::Optional(field, stream)) => {
-                let field_name = field.ident.as_ref().unwrap().to_string();
+            Ok(ParsedField::Optional(field, stream, args)) => {
+                let default_field_name = field.ident.as_ref().unwrap().to_string();
+                let field_name = args.and_then(|a| a.rename).unwrap_or(default_field_name);
                 let stream: proc_macro2::TokenStream = stream.into();
                 let field_metadata: Option<proc_macro2::TokenStream> =
                     metadata::extract_from_field(field).map(|ts| {

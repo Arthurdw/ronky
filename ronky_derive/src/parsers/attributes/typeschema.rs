@@ -1,4 +1,5 @@
 use super::goto_next;
+use super::parse_arri_attrs;
 use proc_macro::TokenStream;
 use syn::{
     Attribute, Ident, LitBool,
@@ -6,17 +7,14 @@ use syn::{
     token,
 };
 
-use super::parse_arri_attrs;
-
 #[derive(Debug, Default)]
 pub(crate) struct TypeSchemaArguments {
-    pub(crate) is_nullable: bool,
+    pub(crate) is_nullable: Option<bool>,
 }
 
 impl Parse for TypeSchemaArguments {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let mut args = Self::default();
-
         while !input.is_empty() {
             let key: Ident = input.parse()?;
             let key_str = key.to_string();
@@ -26,12 +24,26 @@ impl Parse for TypeSchemaArguments {
                     if input.peek(token::Eq) {
                         input.parse::<token::Eq>()?;
                         let value: LitBool = input.parse()?;
-                        args.is_nullable = value.value();
+                        args.is_nullable = Some(value.value());
                     } else {
-                        args.is_nullable = true;
+                        args.is_nullable = Some(true);
                     }
                 }
-                _ => Err(input.error(format!("Unknown property: {}", key_str)))?,
+                _ => {
+                    // TODO: create a simple trait or smth that auto implements this and makes it a lot easier
+                    // For unknown attributes, skip their values if present
+                    if input.peek(token::Eq) {
+                        input.parse::<token::Eq>()?;
+
+                        // Ignore all other content
+                        while !input.is_empty() && !input.peek(token::Comma) {
+                            let _: proc_macro2::TokenTree = input.parse()?;
+                        }
+                    }
+
+                    // Optionally, you could collect these for warnings
+                    // warnings.push((key.span(), format!("Unknown attribute: {}", key_str)));
+                }
             }
 
             goto_next(input)?;

@@ -74,7 +74,7 @@ pub fn export_enum(input: &DeriveInput, variants: &Punctuated<Variant, Comma>) -
                     let (field_stream, field_metadata) = match parse_field(
                         fields.unnamed.first().unwrap(),
                     ) {
-                        Ok(ParsedField::Required(field, stream)) => {
+                        Ok(ParsedField::Required(field, stream, ..)) => {
                             let stream: proc_macro2::TokenStream = stream.into();
                             let field_metadata: Option<proc_macro2::TokenStream> =
                                 metadata::extract_from_field(field).map(|ts| {
