@@ -1,14 +1,32 @@
-// TODO: docs
 use crate::{MetadataSchema, Serializable, serializer::Serializer};
 
+/// Represents a schema for a type in an Arri schema.
+///
+/// This struct defines the type, optional metadata, and nullability
+/// associated with the schema.
 #[derive(Debug, PartialEq, Eq)]
 pub struct TypeSchema {
+    /// The type of the schema.
     r#type: Types,
+
+    /// Optional metadata associated with the schema.
     metadata: Option<MetadataSchema>,
+
+    /// Indicates whether the schema allows null values. If `Some(true)`,
+    /// null values are permitted.
     is_nullable: Option<bool>,
 }
 
 impl TypeSchema {
+    /// Creates a new `TypeSchema` instance with the specified type.
+    ///
+    /// # Arguments
+    ///
+    /// * `r#type` - The type of the schema.
+    ///
+    /// # Returns
+    ///
+    /// A new `TypeSchema` instance with default values for metadata and nullability.
     pub fn new(r#type: Types) -> Self {
         Self {
             r#type,

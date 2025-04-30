@@ -2,6 +2,11 @@ use std::ops::BitOr;
 
 use crate::{Serializable, serializer::Serializer};
 
+/// Macro to merge fields from one struct into another.
+///
+/// This macro checks if a field in the source struct (`$other`) is `Some`
+/// and, if so, clones its value into the corresponding field of the target
+/// struct (`$self`).
 macro_rules! merge_fields {
     ($self:expr, $other:expr, $($field:ident),*) => {
         $(
@@ -12,46 +17,91 @@ macro_rules! merge_fields {
     };
 }
 
-// TODO: docs
+/// Represents metadata schema for Arri.
+///
+/// This struct defines the metadata schema, including optional fields
+/// such as `id`, `description`, and deprecation-related information.
 #[derive(Default, Debug, Clone, PartialEq, Eq)]
 pub struct MetadataSchema {
+    /// Unique identifier for the metadata schema.
     pub id: Option<String>,
+    /// Description of the metadata schema.
     pub description: Option<String>,
+    /// Indicates whether the schema is deprecated.
     pub is_deprecated: Option<bool>,
+    /// Version since which the schema is deprecated.
     pub deprecated_since: Option<String>,
+    /// Message explaining the deprecation.
     pub deprecated_message: Option<String>,
 }
 
 impl MetadataSchema {
+    /// Creates a new, empty `MetadataSchema`.
     pub fn new() -> Self {
         Self::default()
     }
 
+    /// Sets the `id` field of the metadata schema.
+    ///
+    /// # Arguments
+    ///
+    /// * `id` - A value that can be converted to a `String`.
     pub fn set_id(&mut self, id: impl ToString) -> &mut Self {
         self.id = Some(id.to_string());
         self
     }
 
+    /// Sets the `description` field of the metadata schema.
+    ///
+    /// # Arguments
+    ///
+    /// * `description` - A value that can be converted to a `String`.
     pub fn set_description(&mut self, description: impl ToString) -> &mut Self {
         self.description = Some(description.to_string());
         self
     }
 
+    /// Sets the `is_deprecated` field of the metadata schema.
+    ///
+    /// # Arguments
+    ///
+    /// * `flag` - A boolean indicating whether the schema is deprecated.
     pub fn set_deprecated(&mut self, flag: bool) -> &mut Self {
         self.is_deprecated = Some(flag);
         self
     }
 
+    /// Sets the `deprecated_since` field of the metadata schema.
+    ///
+    /// # Arguments
+    ///
+    /// * `version` - A value that can be converted to a `String` representing the version.
     pub fn set_deprecated_since(&mut self, version: impl ToString) -> &mut Self {
         self.deprecated_since = Some(version.to_string());
         self
     }
 
+    /// Sets the `deprecated_message` field of the metadata schema.
+    ///
+    /// # Arguments
+    ///
+    /// * `message` - A value that can be converted to a `String` explaining the deprecation.
     pub fn set_deprecated_message(&mut self, message: impl ToString) -> &mut Self {
         self.deprecated_message = Some(message.to_string());
         self
     }
 
+    /// Merges another `MetadataSchema` into this one.
+    ///
+    /// Fields in the other schema take precedence if they are `Some`.
+    ///
+    /// # Arguments
+    ///
+    /// * `other` - A reference to another `MetadataSchema` to merge.
+    ///
+    /// # Returns
+    ///
+    /// A new `MetadataSchema` with merged fields.
     pub fn merge(mut self, other: &Self) -> Self {
         merge_fields!(
             self,

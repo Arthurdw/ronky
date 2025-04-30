@@ -1,4 +1,3 @@
-// TODO: docs
 // TODO: create a macro which automatically generates this implementation with a derive
 use std::{any::type_name, collections::HashMap, fmt::Debug};
 
@@ -36,9 +35,24 @@ where
     );
 }
 
+/// A trait for types that can be serialized into a string representation.
+///
+/// This trait also provides default implementations for setting metadata,
+/// nullability, and renaming, which trigger a panic if not implemented.
 pub trait Serializable: Downcast {
+    /// Serializes the object into an optional string representation.
+    ///
+    /// # Returns
+    /// An `Option<String>` containing the serialized representation, or `None` if serialization fails.
     fn serialize(&self) -> Option<String>;
 
+    /// Sets metadata for the object.
+    ///
+    /// # Arguments
+    /// - `metadata`: The metadata to set.
+    ///
+    /// # Panics
+    /// This method panics if not implemented for the type.
     fn set_metadata(&mut self, metadata: MetadataSchema) {
         do_panic::<Self>(
             "set_metadata is not implemented for this type",
@@ -47,6 +61,13 @@ pub trait Serializable: Downcast {
         );
     }
 
+    /// Sets the nullability of the object.
+    ///
+    /// # Arguments
+    /// - `nullable`: A boolean indicating whether the object is nullable.
+    ///
+    /// # Panics
+    /// This method panics if not implemented for the type.
     fn set_nullable(&mut self, nullable: bool) {
         do_panic::<Self>(
             "set_nullable is not implemented for this type",
@@ -55,6 +76,13 @@ pub trait Serializable: Downcast {
         );
     }
 
+    /// Renames the object.
+    ///
+    /// # Arguments
+    /// - `new_name`: The new name to assign to the object.
+    ///
+    /// # Panics
+    /// This method panics if not implemented for the type.
     fn set_rename(&mut self, new_name: &str) {
         do_panic::<Self>(
             "set_rename is not implemented for this type",

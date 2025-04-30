@@ -1,13 +1,32 @@
+/// Enum representing various string transformation types.
+///
+/// These transformations can be applied to strings to convert them
+/// into different cases, such as uppercase, lowercase, snake case,
+/// camel case, or pascal case.
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum EnumTransformation {
+    /// Converts the string to uppercase.
     Uppercase,
+    /// Converts the string to lowercase.
     Lowercase,
+    /// Converts the string to snake case.
     Snakecase,
+    /// Converts the string to camel case.
     Camelcase,
+    /// Converts the string to pascal case.
     Pascalcase,
 }
 
 impl EnumTransformation {
+    /// Applies the transformation to the given string.
+    ///
+    /// # Arguments
+    ///
+    /// * `value` - The input string to transform.
+    ///
+    /// # Returns
+    ///
+    /// A new string with the transformation applied.
     pub fn apply(&self, value: &str) -> String {
         match self {
             Self::Uppercase => value.to_uppercase(),
@@ -19,11 +38,21 @@ impl EnumTransformation {
     }
 
     /// Converts a string to snake case.
-    /// Examples:
-    /// - "hello world" -> "hello_world"
-    /// - "hello_world" -> "hello_world"
-    /// - "helloWorld" -> "hello_world"
-    /// - "HelloWorld" -> "hello_world"
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// assert_eq!(EnumTransformation::to_snake_case("hello world"), "hello_world");
+    /// assert_eq!(EnumTransformation::to_snake_case("helloWorld"), "hello_world");
+    /// ```
+    ///
+    /// # Arguments
+    ///
+    /// * `value` - The input string to convert.
+    ///
+    /// # Returns
+    ///
+    /// A new string in snake case format.
     fn to_snake_case(&self, value: &str) -> String {
         value
             .replace(" ", "_")
@@ -42,11 +71,21 @@ impl EnumTransformation {
     }
 
     /// Converts a string to camel case.
-    /// Examples:
-    /// - "hello world" -> "helloWorld"
-    /// - "hello_world" -> "helloWorld"
-    /// - "helloWorld" -> "helloWorld"
-    /// - "HelloWorld" -> "helloWorld"
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// assert_eq!(EnumTransformation::to_camel_case("hello world"), "helloWorld");
+    /// assert_eq!(EnumTransformation::to_camel_case("hello_world"), "helloWorld");
+    /// ```
+    ///
+    /// # Arguments
+    ///
+    /// * `value` - The input string to convert.
+    ///
+    /// # Returns
+    ///
+    /// A new string in camel case format.
     fn to_camel_case(&self, value: &str) -> String {
         let mut result = String::new();
         let mut capitalize_next = false;
@@ -70,11 +109,21 @@ impl EnumTransformation {
     }
 
     /// Converts a string to pascal case.
-    /// Examples:
-    /// - "hello world" -> "HelloWorld"
-    /// - "hello_world" -> "HelloWorld"
-    /// - "helloWorld" -> "HelloWorld"
-    /// - "HelloWorld" -> "HelloWorld"
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// assert_eq!(EnumTransformation::to_pascal_case("hello world"), "HelloWorld");
+    /// assert_eq!(EnumTransformation::to_pascal_case("hello_world"), "HelloWorld");
+    /// ```
+    ///
+    /// # Arguments
+    ///
+    /// * `value` - The input string to convert.
+    ///
+    /// # Returns
+    ///
+    /// A new string in pascal case format.
     fn to_pascal_case(&self, value: &str) -> String {
         let mut result = String::new();
         let mut capitalize_next = true;
