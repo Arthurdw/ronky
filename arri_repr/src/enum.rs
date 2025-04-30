@@ -1,10 +1,18 @@
 use crate::{EnumTransformation, MetadataSchema, Serializable, serializer::Serializer};
 
+/// Represents a schema for enumerations in the Arri system.
+///
+/// This struct defines an enumeration schema, including the list of
+/// possible values, optional metadata, transformations, and nullability.
 #[derive(Debug, PartialEq, Eq, Default)]
 pub struct EnumSchema {
+    /// A list of possible values for the enumeration.
     pub r#enum: Vec<String>,
+    /// Optional metadata associated with the enumeration schema.
     pub metadata: Option<MetadataSchema>,
+    /// A list of transformations applicable to the enumeration.
     pub transformations: Vec<EnumTransformation>,
+    /// Indicates whether the enumeration can be null.
     pub is_nullable: Option<bool>,
 }
 

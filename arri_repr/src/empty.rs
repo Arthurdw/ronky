@@ -1,7 +1,13 @@
 use crate::{MetadataSchema, Serializable, serializer::Serializer};
 
+/// Represents an empty schema in the Arri system.
+///
+/// This struct is used as a placeholder or default schema
+/// when no specific schema is required. It includes optional
+/// metadata for additional context.
 #[derive(Debug, PartialEq, Eq, Default)]
 pub struct EmptySchema {
+    /// Optional metadata associated with the schema.
     metadata: Option<MetadataSchema>,
 }
 

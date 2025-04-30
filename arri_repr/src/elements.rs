@@ -1,5 +1,18 @@
 use crate::{MetadataSchema, Serializable, serializer::Serializer};
 
+/// Represents the schema for elements in arri
+///
+/// This struct defines the structure of elements, including their serializable
+/// representation, optional metadata, and nullability.
+///
+/// # Fields
+///
+/// * `elements` - A boxed trait object implementing the `Serializable` trait,
+///   representing the serializable content of the elements.
+/// * `metadata` - An optional `MetadataSchema` providing additional information
+///   about the elements.
+/// * `is_nullable` - An optional boolean indicating whether the elements can
+///   be null.
 #[derive(Debug, Eq)]
 pub struct ElementsSchema {
     pub elements: Box<dyn Serializable>,

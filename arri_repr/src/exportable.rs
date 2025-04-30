@@ -1,3 +1,8 @@
+/// Provides functionality for exporting types into Arri schemas.
+///
+/// This module defines the `Exportable` trait, which allows types to be
+/// converted into serializable schemas. It also includes macros and utilities
+/// for handling generic types, type schemas, and feature-specific schemas.
 use crate::{
     EmptySchema, PropertiesSchema, RefSchema, TaggedUnionSchema, ValuesSchema, type_utils,
 };
@@ -21,21 +26,31 @@ use std::sync::{Arc, Mutex, RwLock};
 use std::time::{Duration, Instant, SystemTime};
 
 thread_local! {
-    // Track which types we've started exporting (even if not completed)
+    /// Tracks types currently being exported to prevent infinite recursion.
     static RECURSION_TRACKER: RefCell<HashSet<String>> = RefCell::new(HashSet::new());
 }
 
+/// A trait for types that can be exported into Arri schemas.
 pub trait Exportable {
+    /// Retrieves the type name of the implementing type.
     fn get_type_name() -> String {
         type_utils::get_type_name::<Self>()
     }
 
+    /// Exports the type into a serializable schema.
+    ///
+    /// This method ensures that recursive types are handled correctly.
     fn export() -> Box<dyn Serializable> {
         Self::export_with_recursion_check()
     }
 
+    /// Internal method for exporting the type.
+    ///
+    /// This method should be implemented by types to define their specific
+    /// export logic.
     fn export_internal() -> impl Serializable;
 
+    /// Exports the type with recursion tracking to prevent infinite loops.
     fn export_with_recursion_check() -> Box<dyn Serializable> {
         let type_name = Self::get_type_name();
 
@@ -44,7 +59,7 @@ pub trait Exportable {
             let is_recursive = tracker.contains(&type_name);
 
             if !is_recursive {
-                // Add our type to the set
+                // Add the type to the recursion tracker.
                 tracker.insert(type_name.clone());
             }
 
@@ -57,7 +72,7 @@ pub trait Exportable {
 
         let result = Self::export_internal();
 
-        // Remove our type from the set when done
+        // Remove the type from the recursion tracker after exporting.
         RECURSION_TRACKER.with(|tracker| {
             let mut tracker = tracker.borrow_mut();
             tracker.remove(&type_name);
@@ -67,7 +82,10 @@ pub trait Exportable {
     }
 }
 
-// TODO: document this lol
+/// A macro for defining exportable types and schemas.
+///
+/// This macro provides a convenient way to define type schemas, generic
+/// implementations, and feature-specific schemas for types.
 macro_rules! exportable {
     // --- Main entry points ---
     // Handle individual blocks
@@ -166,7 +184,10 @@ macro_rules! exportable {
     (@parse_impls) => {};
 }
 
-type SliceOf<T> = [T]; // This way of interacting with slices allows us to keep the same macro
+/// A type alias for slices of a given type.
+///
+/// This alias is used to simplify the interaction with slices in the macro.
+type SliceOf<T> = [T];
 
 exportable! {
     typeschema: {
