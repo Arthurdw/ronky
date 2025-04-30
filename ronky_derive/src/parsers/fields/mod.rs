@@ -5,9 +5,11 @@ mod base;
 
 pub(crate) use base::BaseParser;
 
+use super::attributes::fields::FieldArguments;
+
 pub(crate) enum ParsedField<'a> {
-    Required(&'a Field, TokenStream),
-    Optional(&'a Field, TokenStream),
+    Required(&'a Field, TokenStream, Option<FieldArguments>),
+    Optional(&'a Field, TokenStream, Option<FieldArguments>),
 }
 
 pub(crate) trait FieldParser {

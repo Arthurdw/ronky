@@ -6,32 +6,60 @@ use downcast_rs::{Downcast, impl_downcast};
 
 use crate::{MetadataSchema, serializer::Serializer};
 
+/// Triggers a panic with a detailed error message, including the type, serialized data,
+/// and value that caused the issue. This function is intended to report bugs.
+///
+/// # Parameters
+/// - `message`: A message describing the context of the panic.
+/// - `serialized`: The serialized representation of the data.
+/// - `value`: The original value that caused the issue.
+///
+/// # Panics
+/// This function always panics with a formatted message containing the provided details.
+///
+/// # Note
+/// The panic message includes a link to report bugs, encouraging users to provide feedback.
+fn do_panic<T>(message: impl std::fmt::Display, serialized: impl Debug, value: impl Debug) -> !
+where
+    T: ?Sized,
+{
+    panic!(
+        "{}!\n\
+        This is a bug, please report it @ <https://github.com/Arthurdw/ronky/issues>\n\
+        Type: {:?}\n\
+        Serialized: {:?}\n\
+        Value: {:?}",
+        message,
+        type_name::<T>(),
+        serialized,
+        value
+    );
+}
+
 pub trait Serializable: Downcast {
     fn serialize(&self) -> Option<String>;
 
     fn set_metadata(&mut self, metadata: MetadataSchema) {
-        panic!(
-            "set_metadata is not implemented for this type!\n\
-                This is a bug, please report it @ <https://github.com/Arthurdw/ronky/issues>\n\
-                Type: {:?}\n\
-                Serialized: {:?}\n\
-                Metadata: {:?}",
-            type_name::<Self>(),
+        do_panic::<Self>(
+            "set_metadata is not implemented for this type",
             self.serialize(),
-            metadata
+            metadata,
         );
     }
 
     fn set_nullable(&mut self, nullable: bool) {
-        panic!(
-            "set_nullable is not implemented for this type!\n\
-                This is a bug, please report it @ <https://github.com/Arthurdw/ronky/issues>\n\
-                Type: {:?}\n\
-                Serialized: {:?}\n\
-                nullable: {:?}",
-            type_name::<Self>(),
+        do_panic::<Self>(
+            "set_nullable is not implemented for this type",
             self.serialize(),
-            nullable
+            nullable,
+        );
+    }
+
+    fn set_rename(&mut self, new_name: &str) {
+        do_panic::<Self>(
+            "set_rename is not implemented for this type",
+            self.serialize(),
+            new_name,
         );
     }
 }
@@ -113,6 +141,10 @@ impl<T: Serializable> Serializable for Box<T> {
     fn set_nullable(&mut self, nullable: bool) {
         self.as_mut().set_nullable(nullable)
     }
+
+    fn set_rename(&mut self, new_name: &str) {
+        self.as_mut().set_rename(new_name)
+    }
 }
 
 impl Serializable for Box<dyn Serializable> {
@@ -126,6 +158,10 @@ impl Serializable for Box<dyn Serializable> {
 
     fn set_nullable(&mut self, nullable: bool) {
         self.as_mut().set_nullable(nullable)
+    }
+
+    fn set_rename(&mut self, new_name: &str) {
+        self.as_mut().set_rename(new_name)
     }
 }
 

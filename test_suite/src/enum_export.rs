@@ -9,13 +9,14 @@ mod tests {
         #[allow(dead_code)]
         #[derive(Exported)]
         enum ExampleEnum {
+            #[arri(rename = "firstVariant")]
             Variant1,
             Variant2,
         }
 
         let export = ExampleEnum::export();
         let mut expected = EnumSchema::new();
-        expected.add_variant("Variant1".to_string());
+        expected.add_variant("firstVariant".to_string());
         expected.add_variant("Variant2".to_string());
         expected.set_metadata(MetadataSchema::new().set_id("ExampleEnum").to_owned());
 
@@ -30,13 +31,14 @@ mod tests {
         #[derive(Exported)]
         #[arri(transform = "uppercase")]
         enum ExampleEnum {
+            #[arri(rename = "firstVariant")]
             Variant1,
             Variant2,
         }
 
         let export = ExampleEnum::export();
         let mut expected = EnumSchema::new();
-        expected.add_variant("VARIANT1".to_string());
+        expected.add_variant("FIRSTVARIANT".to_string());
         expected.add_variant("VARIANT2".to_string());
         expected.set_metadata(MetadataSchema::new().set_id("ExampleEnum").to_owned());
         expected.set_transforms(&[EnumTransformation::Uppercase]);

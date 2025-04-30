@@ -7,7 +7,10 @@ use crate::{
     named_struct::export_struct_fields,
     parsers::{
         ParsedField,
-        attributes::enum_variants::{self, enum_transformation_to_tokens},
+        attributes::{
+            enum_variants::{self, enum_transformation_to_tokens},
+            fields,
+        },
         parse_field,
     },
 };
@@ -18,8 +21,6 @@ pub fn export_enum(input: &DeriveInput, variants: &Punctuated<Variant, Comma>) -
     let mut is_tagged_union = false;
     let mut exported = Vec::new();
     for (idx, variant) in variants.iter().enumerate() {
-        let variant_name = variant.ident.to_string();
-
         if idx != 0
             && ((variant.fields.is_empty() && is_tagged_union)
                 || (!variant.fields.is_empty() && !is_tagged_union))
@@ -29,6 +30,15 @@ pub fn export_enum(input: &DeriveInput, variants: &Punctuated<Variant, Comma>) -
                 compile_error!("Arri requires that Enums can only be all enum or all tagged union variants. This variant violates that rule.");
             ).into();
         }
+
+        let attrs = match fields::extract(&variant.attrs) {
+            Ok(attrs) => attrs,
+            Err(e) => return e,
+        };
+
+        let variant_name = attrs
+            .and_then(|a| a.rename)
+            .unwrap_or(variant.ident.to_string());
 
         is_tagged_union = !variant.fields.is_empty();
 
@@ -74,7 +84,7 @@ pub fn export_enum(input: &DeriveInput, variants: &Punctuated<Variant, Comma>) -
                     let (field_stream, field_metadata) = match parse_field(
                         fields.unnamed.first().unwrap(),
                     ) {
-                        Ok(ParsedField::Required(field, stream)) => {
+                        Ok(ParsedField::Required(field, stream, ..)) => {
                             let stream: proc_macro2::TokenStream = stream.into();
                             let field_metadata: Option<proc_macro2::TokenStream> =
                                 metadata::extract_from_field(field).map(|ts| {
