@@ -122,23 +122,22 @@
 //!     Err(E),
 //! }
 //!
-//! fn main() {
-//!     // Announce our intentions to the world
-//!     println!("🧪 Creating an Arri {} schema and hoping for the best...", SCHEMA_VERSION);
-//!     
-//!     // The cat-alchemy happens here
-//!     let schema_json = Result::<String, ()>::export()
-//!         .serialize()
-//!         .expect("this to work (please, I have deadlines)");
-//!         
-//!     // Humans like pretty things
-//!     let pretty_json = to_string_pretty(&from_str::<Value>(&schema_json).unwrap()).unwrap();
-//!     
-//!     // Admire our handiwork
-//!     println!("{}", pretty_json);
-//!     
-//!     // Now go make a cup of tea, you've earned it
-//! }
+//!
+//! // Announce our intentions to the world
+//! println!("🧪 Creating an Arri {} schema and hoping for the best...", SCHEMA_VERSION);
+//!
+//! // The cat-alchemy happens here
+//! let schema_json = Result::<String, ()>::export()
+//!     .serialize()
+//!     .expect("this to work (please, I have deadlines)");
+//!
+//! // Humans like pretty things
+//! let pretty_json = to_string_pretty(&from_str::<Value>(&schema_json).unwrap()).unwrap();
+//!
+//! // Admire our handiwork
+//! println!("{}", pretty_json);
+//!
+//! // Now go make a cup of tea, you've earned it
 //! ```
 //!
 //! ### 🧩 The Advanced Cat-egory: Building Complex Types
