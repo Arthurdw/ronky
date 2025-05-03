@@ -12,8 +12,9 @@ repository.workspace = true
 categories.workspace = true
 keywords.workspace = true
 
-[dependencies]
-ronky = { workspace = true, features = ["derive"] }
-
 [lints]
 workspace = true
+
+[dev-dependencies]
+ronky = { workspace = true, features = ["derive"] }
+trybuild = "1.0.104"
