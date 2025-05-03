@@ -1,0 +1,5 @@
+error: A rename cannot start with a number
+ --> tests/compile_fail/rename_start_with_number.rs:5:21
+  |
+5 |     #[arri(rename = "123invalid")]
+  |                     ^^^^^^^^^^^^

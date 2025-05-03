@@ -1,0 +1,5 @@
+error: unexpected end of input, Expected '=' after 'rename'
+ --> tests/compile_fail/rename_no_args.rs:5:18
+  |
+5 |     #[arri(rename)]
+  |                  ^
