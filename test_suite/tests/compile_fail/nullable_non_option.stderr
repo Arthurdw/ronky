@@ -1,0 +1,5 @@
+error: Only an optional type can be nullable. Use Option<u8> instead of u8
+ --> tests/compile_fail/nullable_non_option.rs:6:14
+  |
+6 |     example: u8,
+  |              ^^
