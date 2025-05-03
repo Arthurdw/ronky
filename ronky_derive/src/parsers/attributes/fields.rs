@@ -51,10 +51,13 @@ impl Parse for FieldArguments {
                                 value.span(),
                                 "A rename cannot start with a number",
                             ))?;
-                        } else if new_name.chars().any(|c| !c.is_ascii_alphanumeric()) {
+                        } else if new_name
+                            .chars()
+                            .any(|c| !c.is_ascii_alphanumeric() && c != '_')
+                        {
                             return Err(syn::Error::new(
                                 value.span(),
-                                "A rename can only contain a-z, A-Z and 0-9",
+                                "A rename can only contain a-z, A-Z and 0-9 or _",
                             ))?;
                         }
                         args.rename = Some(new_name);
