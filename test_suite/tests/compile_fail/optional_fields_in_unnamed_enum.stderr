@@ -1,4 +1,4 @@
-error: Optional fields are not supported in unnamed unions.
+error: Optional fields are not supported in unnamed enums.
  --> tests/compile_fail/optional_fields_in_unnamed_enum.rs:5:5
   |
 5 |     ThisRequiesAValue(Option<String>),
