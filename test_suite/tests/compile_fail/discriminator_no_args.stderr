@@ -1,0 +1,5 @@
+error: unexpected end of input, Expected '=' after 'discriminator'
+ --> tests/compile_fail/discriminator_no_args.rs:4:21
+  |
+4 | #[arri(discriminator)]
+  |                     ^
