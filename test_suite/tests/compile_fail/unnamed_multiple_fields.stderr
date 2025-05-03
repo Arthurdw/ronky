@@ -1,0 +1,5 @@
+error: Unamed enums variants must have exactly one field.
+ --> tests/compile_fail/unnamed_multiple_fields.rs:5:5
+  |
+5 |     OhNo(u32, u32),
+  |     ^^^^

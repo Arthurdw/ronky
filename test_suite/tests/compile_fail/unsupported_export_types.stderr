@@ -1,0 +1,5 @@
+error: Only named structs or enums are exportable for now
+ --> tests/compile_fail/unsupported_export_types.rs:4:1
+  |
+4 | union Test {
+  | ^^^^^

@@ -39,7 +39,7 @@ pub fn export_enum(input: &DeriveInput, variants: &Punctuated<Variant, Comma>) -
         {
             return quote_spanned!(
                 variant.span() =>
-                compile_error!("Arri requires that Enums can only be all enum or all tagged union variants. This variant violates that rule.");
+                compile_error!("Arri requires that enums can only be all enum or all tagged union variants. This variant violates that rule.");
             )
             .into();
         }
@@ -88,7 +88,7 @@ pub fn export_enum(input: &DeriveInput, variants: &Punctuated<Variant, Comma>) -
                     if fields.unnamed.len() != 1 {
                         return quote_spanned!(
                             variant.span() =>
-                            compile_error!("Unamed tagged union variants must have exactly one field.");
+                            compile_error!("Unamed enums variants must have exactly one field.");
                         )
                         .into();
                     }
@@ -120,7 +120,7 @@ pub fn export_enum(input: &DeriveInput, variants: &Punctuated<Variant, Comma>) -
                         Ok(ParsedField::Optional(..)) => {
                             return quote_spanned!(
                                 variant.span() =>
-                                compile_error!("Optional fields are not supported in tagged unions.")
+                                compile_error!("Optional fields are not supported in unnamed enums.")
                             )
                             .into();
                         }
@@ -140,14 +140,9 @@ pub fn export_enum(input: &DeriveInput, variants: &Punctuated<Variant, Comma>) -
                         }));
                     });
                 }
-                _ => {
-                    // TODO: implement
-                    return quote_spanned!(
-                        variant.span() =>
-                        compile_error!("No unit types are supported yet for tagged unions.");
-                    )
-                    .into();
-                }
+                _ => unreachable!(
+                    "This will never be reached, as we already checked for empty fields"
+                ),
             }
         } else {
             // TODO: followup on request of having a list of metadata as variants, as we can't provide
@@ -172,7 +167,7 @@ pub fn export_enum(input: &DeriveInput, variants: &Punctuated<Variant, Comma>) -
             let discriminator = match found_discriminator {
                 Some(discriminator) if !is_tagged_union => {
                     return quote_spanned!(discriminator.span() =>
-                        compile_error!("Discriminator can only be used with tagged unions.");
+                        compile_error!("Discriminator can only be used with tagged enums.");
                     )
                     .into();
                 }

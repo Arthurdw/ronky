@@ -1,0 +1,5 @@
+error: The only supported attribute format for arri is with a list of arguments. Expected usage: `#[arri(...)]`
+ --> tests/compile_fail/empty_arri_attribute.rs:5:5
+  |
+5 |     #[arri]
+  |     ^

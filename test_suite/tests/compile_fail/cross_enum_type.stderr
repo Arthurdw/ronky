@@ -1,0 +1,5 @@
+error: Arri requires that enums can only be all enum or all tagged union variants. This variant violates that rule.
+ --> tests/compile_fail/cross_enum_type.rs:6:5
+  |
+6 |     Tagged { name: String },
+  |     ^^^^^^
