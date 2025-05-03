@@ -140,14 +140,9 @@ pub fn export_enum(input: &DeriveInput, variants: &Punctuated<Variant, Comma>) -
                         }));
                     });
                 }
-                _ => {
-                    // TODO: implement
-                    return quote_spanned!(
-                        variant.span() =>
-                        compile_error!("No unit types are supported yet for tagged unions.");
-                    )
-                    .into();
-                }
+                _ => unreachable!(
+                    "This will never be reached, as we already checked for empty fields"
+                ),
             }
         } else {
             // TODO: followup on request of having a list of metadata as variants, as we can't provide
@@ -172,7 +167,7 @@ pub fn export_enum(input: &DeriveInput, variants: &Punctuated<Variant, Comma>) -
             let discriminator = match found_discriminator {
                 Some(discriminator) if !is_tagged_union => {
                     return quote_spanned!(discriminator.span() =>
-                        compile_error!("Discriminator can only be used with tagged unions.");
+                        compile_error!("Discriminator can only be used with tagged enums.");
                     )
                     .into();
                 }
