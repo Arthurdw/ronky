@@ -11,6 +11,19 @@ use syn::{
     spanned::Spanned,
 };
 
+/// Parses attributes with the `#[arri(...)]` format and extracts their arguments.
+///
+/// # Type Parameters
+///
+/// * `T` - A type that implements the `Parse` trait, representing the expected structure of the arguments.
+///
+/// # Arguments
+///
+/// * `attrs` - A slice of `Attribute` objects to parse.
+///
+/// # Returns
+///
+/// A `Result` containing an optional parsed value of type `T` or a `TokenStream` error.
 fn parse_arri_attrs<T: Parse>(attrs: &[Attribute]) -> Result<Option<T>, TokenStream> {
     let attrs: Vec<_> = attrs
         .iter()
@@ -37,6 +50,19 @@ fn parse_arri_attrs<T: Parse>(attrs: &[Attribute]) -> Result<Option<T>, TokenStr
     Ok(None)
 }
 
+/// Advances the parse stream to the next token, ensuring proper syntax.
+///
+/// # Arguments
+///
+/// * `input` - The input parse stream.
+///
+/// # Returns
+///
+/// A `syn::Result` indicating success or failure.
+///
+/// # Errors
+///
+/// Returns an error if the input does not contain a valid delimiter or is not empty.
 pub(crate) fn goto_next(input: ParseStream) -> syn::Result<()> {
     if input.peek(Token![,]) {
         input.parse::<Token![,]>()?;

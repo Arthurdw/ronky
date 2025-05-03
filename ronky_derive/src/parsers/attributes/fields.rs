@@ -8,12 +8,23 @@ use syn::{
 
 use super::parse_arri_attrs;
 
+/// Represents parsed attributes for struct fields.
 #[derive(Debug, Default)]
 pub(crate) struct FieldArguments {
+    /// Optional rename value for the field.
     pub(crate) rename: Option<String>,
 }
 
 impl Parse for FieldArguments {
+    /// Parses the input stream to extract `FieldArguments` attributes.
+    ///
+    /// # Arguments
+    ///
+    /// * `input` - The input parse stream.
+    ///
+    /// # Returns
+    ///
+    /// A `syn::Result` containing the parsed `FieldArguments` or an error.
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let mut args = Self::default();
 
@@ -75,6 +86,15 @@ impl Parse for FieldArguments {
     }
 }
 
+/// Extracts `FieldArguments` attributes from a list of attributes.
+///
+/// # Arguments
+///
+/// * `attrs` - A slice of `Attribute` objects to parse.
+///
+/// # Returns
+///
+/// A `Result` containing an optional `FieldArguments` or a `TokenStream` error.
 pub(crate) fn extract(attrs: &[Attribute]) -> Result<Option<FieldArguments>, TokenStream> {
     parse_arri_attrs(attrs)
 }

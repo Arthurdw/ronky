@@ -7,6 +7,15 @@ use crate::{
     parsers::{ParsedField, attributes::properties, parse_field},
 };
 
+/// Exports the fields of a struct as a `TokenStream` for use in schema generation.
+///
+/// # Arguments
+///
+/// * `fields` - A reference to a `Punctuated` collection of `Field` objects representing the struct's fields.
+///
+/// # Returns
+///
+/// Returns a `TokenStream` that defines the schema for the struct's fields.
 pub fn export_struct_fields(fields: &Punctuated<Field, Comma>) -> TokenStream {
     let mut properties = Vec::new();
     for field in fields.iter() {
@@ -65,6 +74,16 @@ pub fn export_struct_fields(fields: &Punctuated<Field, Comma>) -> TokenStream {
     .into()
 }
 
+/// Exports a named struct as a `TokenStream` for use in schema generation.
+///
+/// # Arguments
+///
+/// * `input` - A reference to the `DeriveInput` representing the struct.
+/// * `fields` - A reference to a `Punctuated` collection of `Field` objects representing the struct's fields.
+///
+/// # Returns
+///
+/// Returns a `TokenStream` that defines the schema for the named struct.
 pub fn export_named_struct(input: &DeriveInput, fields: &Punctuated<Field, Comma>) -> TokenStream {
     let metadata: proc_macro2::TokenStream = metadata::extract(&input.attrs).into();
     let attrs = match properties::extract(&input.attrs) {
