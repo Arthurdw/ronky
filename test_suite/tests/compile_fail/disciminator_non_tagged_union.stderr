@@ -1,0 +1,7 @@
+error: Discriminator can only be used with tagged enums.
+ --> tests/compile_fail/disciminator_non_tagged_union.rs:3:10
+  |
+3 | #[derive(Exported)]
+  |          ^^^^^^^^
+  |
+  = note: this error originates in the derive macro `Exported` (in Nightly builds, run with -Z macro-backtrace for more info)
