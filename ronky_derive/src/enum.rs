@@ -120,7 +120,7 @@ pub fn export_enum(input: &DeriveInput, variants: &Punctuated<Variant, Comma>) -
                         Ok(ParsedField::Optional(..)) => {
                             return quote_spanned!(
                                 variant.span() =>
-                                compile_error!("Optional fields are not supported in tagged unions.")
+                                compile_error!("Optional fields are not supported in unnamed unions.")
                             )
                             .into();
                         }
