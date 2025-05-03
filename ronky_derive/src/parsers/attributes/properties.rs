@@ -8,13 +8,25 @@ use syn::{
 
 use super::parse_arri_attrs;
 
-// TODO: provide method which outputs all available properties
+/// Represents parsed properties arguments.
+///
+/// This structure is used to store the parsed attributes for properties, such as the `strict` flag.
 #[derive(Debug, Default)]
 pub(crate) struct PropertiesArguments {
+    /// Indicates whether the `strict` property is enabled.
     pub(crate) strict: bool,
 }
 
 impl Parse for PropertiesArguments {
+    /// Parses the input stream to extract `PropertiesArguments` attributes.
+    ///
+    /// # Arguments
+    ///
+    /// * `input` - The input parse stream.
+    ///
+    /// # Returns
+    ///
+    /// A `syn::Result` containing the parsed `PropertiesArguments` or an error.
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let mut args = Self::default();
 
@@ -42,6 +54,15 @@ impl Parse for PropertiesArguments {
     }
 }
 
-pub(crate) fn extract(attrs: &[Attribute]) -> Result<Option<PropertiesArguments>, TokenStream> {
+/// Extracts `PropertiesArguments` attributes from a list of attributes.
+///
+/// # Arguments
+///
+/// * `attrs` - A slice of `Attribute` objects to parse.
+///
+/// # Returns
+///
+/// A `Result` containing an optional `PropertiesArguments` or a `TokenStream` error.
+pub(crate) fn extract(attrs: &[Attribute]) -> Result<Vec<PropertiesArguments>, TokenStream> {
     parse_arri_attrs(attrs)
 }

@@ -7,12 +7,25 @@ use syn::{
     token,
 };
 
+/// Represents parsed type schema arguments.
+///
+/// This structure is used to store the parsed attributes for type schemas, such as the `nullable` flag.
 #[derive(Debug, Default)]
 pub(crate) struct TypeSchemaArguments {
+    /// Indicates whether the type is nullable.
     pub(crate) is_nullable: Option<bool>,
 }
 
 impl Parse for TypeSchemaArguments {
+    /// Parses the input stream to extract `TypeSchemaArguments` attributes.
+    ///
+    /// # Arguments
+    ///
+    /// * `input` - The input parse stream.
+    ///
+    /// # Returns
+    ///
+    /// A `syn::Result` containing the parsed `TypeSchemaArguments` or an error.
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let mut args = Self::default();
         while !input.is_empty() {
@@ -53,6 +66,15 @@ impl Parse for TypeSchemaArguments {
     }
 }
 
-pub(crate) fn extract(attrs: &[Attribute]) -> Result<Option<TypeSchemaArguments>, TokenStream> {
+/// Extracts `TypeSchemaArguments` attributes from a list of attributes.
+///
+/// # Arguments
+///
+/// * `attrs` - A slice of `Attribute` objects to parse.
+///
+/// # Returns
+///
+/// A `Result` containing an optional `TypeSchemaArguments` or a `TokenStream` error.
+pub(crate) fn extract(attrs: &[Attribute]) -> Result<Vec<TypeSchemaArguments>, TokenStream> {
     parse_arri_attrs(attrs)
 }

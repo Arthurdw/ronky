@@ -1,10 +1,19 @@
-// Refactor move this (or applicable contents to the parsers(attributes) module)
+// TODO: Refactor move this (or applicable contents to the parsers(attributes) module)
 
 use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
 use syn::{Attribute, Expr, ExprLit, Field, Lit, LitStr, Meta, MetaNameValue};
 
+/// Extracts documentation comments from the given attributes and converts them into a `TokenStream`.
+///
+/// # Arguments
+///
+/// * `attrs` - A slice of `Attribute` objects to extract documentation from.
+///
+/// # Returns
+///
+/// Returns an `Option<TokenStream>` containing the extracted documentation, or `None` if no documentation is found.
 fn extract_docs(attrs: &[Attribute]) -> Option<TokenStream> {
     let docs = attrs
         .iter()
@@ -34,6 +43,15 @@ fn extract_docs(attrs: &[Attribute]) -> Option<TokenStream> {
     }
 }
 
+/// Extracts the `deprecated` attribute from the given attributes and converts it into a `TokenStream`.
+///
+/// # Arguments
+///
+/// * `attrs` - A slice of `Attribute` objects to extract the `deprecated` attribute from.
+///
+/// # Returns
+///
+/// Returns an `Option<TokenStream>` containing the extracted `deprecated` attribute, or `None` if not found.
 fn extract_deprecated(attrs: &[Attribute]) -> Option<TokenStream> {
     attrs
         .iter()
@@ -72,6 +90,15 @@ fn extract_deprecated(attrs: &[Attribute]) -> Option<TokenStream> {
         })
 }
 
+/// Combines the extracted documentation and `deprecated` attributes into a single `TokenStream`.
+///
+/// # Arguments
+///
+/// * `attrs` - A slice of `Attribute` objects to extract attributes from.
+///
+/// # Returns
+///
+/// Returns an `Option<TokenStream>` containing the combined attributes, or `None` if no attributes are found.
 pub fn extract_attrs(attrs: &[Attribute]) -> Option<TokenStream> {
     let docs: Option<TokenStream2> = extract_docs(attrs).map(Into::into);
     let deprecated: Option<TokenStream2> = extract_deprecated(attrs).map(Into::into);
@@ -93,6 +120,15 @@ pub fn extract_attrs(attrs: &[Attribute]) -> Option<TokenStream> {
     )
 }
 
+/// Extracts metadata from the given attributes and constructs a `MetadataSchema` object.
+///
+/// # Arguments
+///
+/// * `attrs` - A slice of `Attribute` objects to extract metadata from.
+///
+/// # Returns
+///
+/// Returns a `TokenStream` representing the constructed `MetadataSchema` object.
 pub fn extract(attrs: &[Attribute]) -> TokenStream {
     let base: proc_macro2::TokenStream =
         extract_attrs(attrs).map_or(quote!(ronky::MetadataSchema::new()), Into::into);
@@ -107,6 +143,15 @@ pub fn extract(attrs: &[Attribute]) -> TokenStream {
     .into()
 }
 
+/// Extracts metadata from the attributes of a given field.
+///
+/// # Arguments
+///
+/// * `field` - A reference to a `Field` object to extract metadata from.
+///
+/// # Returns
+///
+/// Returns an `Option<TokenStream>` containing the extracted metadata, or `None` if no attributes are present.
 pub fn extract_from_field(field: &Field) -> Option<TokenStream> {
     if field.attrs.is_empty() {
         return None;

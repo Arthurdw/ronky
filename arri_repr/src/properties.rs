@@ -1,4 +1,3 @@
-// TODO: docs
 use std::collections::HashMap;
 
 use crate::{MetadataSchema, Serializable, serializer::Serializer};
