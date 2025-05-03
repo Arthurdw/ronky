@@ -95,6 +95,6 @@ impl Parse for FieldArguments {
 /// # Returns
 ///
 /// A `Result` containing an optional `FieldArguments` or a `TokenStream` error.
-pub(crate) fn extract(attrs: &[Attribute]) -> Result<Option<FieldArguments>, TokenStream> {
+pub(crate) fn extract(attrs: &[Attribute]) -> Result<Vec<FieldArguments>, TokenStream> {
     parse_arri_attrs(attrs)
 }

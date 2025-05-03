@@ -15,8 +15,8 @@ use super::attributes::fields::FieldArguments;
 /// * `Required` - A required field with its `Field` definition, `TokenStream`, and optional `FieldArguments`.
 /// * `Optional` - An optional field with its `Field` definition, `TokenStream`, and optional `FieldArguments`.
 pub(crate) enum ParsedField<'a> {
-    Required(&'a Field, TokenStream, Option<FieldArguments>),
-    Optional(&'a Field, TokenStream, Option<FieldArguments>),
+    Required(&'a Field, TokenStream, Vec<FieldArguments>),
+    Optional(&'a Field, TokenStream, Vec<FieldArguments>),
 }
 
 /// Trait for parsing fields into a `ParsedField` representation.

@@ -10,6 +10,7 @@ mod tests {
         #[allow(dead_code)]
         #[derive(Exported)]
         struct BoxExport {
+            #[allow(clippy::box_collection)]
             value: Box<String>,
         }
 

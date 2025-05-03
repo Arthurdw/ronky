@@ -23,7 +23,13 @@ pub fn export_struct_fields(fields: &Punctuated<Field, Comma>) -> TokenStream {
             // TODO: find out way to prevent the duplication here
             Ok(ParsedField::Required(field, stream, args)) => {
                 let default_field_name = field.ident.as_ref().unwrap().to_string();
-                let field_name = args.and_then(|a| a.rename).unwrap_or(default_field_name);
+                let field_name = args
+                    .into_iter()
+                    .find(|a| a.rename.is_some())
+                    .and_then(|a| a.rename)
+                    .unwrap_or(default_field_name);
+
+                // let field_name = args.and_then(|a| a.rename).unwrap_or(default_field_name);
                 let stream: proc_macro2::TokenStream = stream.into();
                 let field_metadata: Option<proc_macro2::TokenStream> =
                     metadata::extract_from_field(field).map(|ts| {
@@ -44,7 +50,12 @@ pub fn export_struct_fields(fields: &Punctuated<Field, Comma>) -> TokenStream {
             }
             Ok(ParsedField::Optional(field, stream, args)) => {
                 let default_field_name = field.ident.as_ref().unwrap().to_string();
-                let field_name = args.and_then(|a| a.rename).unwrap_or(default_field_name);
+                let field_name = args
+                    .into_iter()
+                    .find(|a| a.rename.is_some())
+                    .and_then(|a| a.rename)
+                    .unwrap_or(default_field_name);
+
                 let stream: proc_macro2::TokenStream = stream.into();
                 let field_metadata: Option<proc_macro2::TokenStream> =
                     metadata::extract_from_field(field).map(|ts| {
@@ -87,14 +98,17 @@ pub fn export_struct_fields(fields: &Punctuated<Field, Comma>) -> TokenStream {
 pub fn export_named_struct(input: &DeriveInput, fields: &Punctuated<Field, Comma>) -> TokenStream {
     let metadata: proc_macro2::TokenStream = metadata::extract(&input.attrs).into();
     let attrs = match properties::extract(&input.attrs) {
-        Ok(Some(attrs)) => {
-            let strict = attrs.strict;
+        Ok(attrs) => {
+            if attrs.is_empty() {
+                None
+            } else {
+                let strict = attrs.iter().any(|a| a.strict);
 
-            Some(quote! {
-                schema.set_strict(#strict);
-            })
+                Some(quote! {
+                    schema.set_strict(#strict);
+                })
+            }
         }
-        Ok(None) => None,
         Err(stream) => Some(stream.into()),
     };
 

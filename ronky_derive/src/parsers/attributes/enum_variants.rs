@@ -126,6 +126,6 @@ impl Parse for EnumVariants {
 /// # Returns
 ///
 /// A `Result` containing an optional `EnumVariants` or a `TokenStream` error.
-pub(crate) fn extract(attrs: &[Attribute]) -> Result<Option<EnumVariants>, TokenStream> {
+pub(crate) fn extract(attrs: &[Attribute]) -> Result<Vec<EnumVariants>, TokenStream> {
     parse_arri_attrs(attrs)
 }

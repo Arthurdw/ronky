@@ -63,6 +63,6 @@ impl Parse for PropertiesArguments {
 /// # Returns
 ///
 /// A `Result` containing an optional `PropertiesArguments` or a `TokenStream` error.
-pub(crate) fn extract(attrs: &[Attribute]) -> Result<Option<PropertiesArguments>, TokenStream> {
+pub(crate) fn extract(attrs: &[Attribute]) -> Result<Vec<PropertiesArguments>, TokenStream> {
     parse_arri_attrs(attrs)
 }

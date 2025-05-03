@@ -75,6 +75,6 @@ impl Parse for TypeSchemaArguments {
 /// # Returns
 ///
 /// A `Result` containing an optional `TypeSchemaArguments` or a `TokenStream` error.
-pub(crate) fn extract(attrs: &[Attribute]) -> Result<Option<TypeSchemaArguments>, TokenStream> {
+pub(crate) fn extract(attrs: &[Attribute]) -> Result<Vec<TypeSchemaArguments>, TokenStream> {
     parse_arri_attrs(attrs)
 }

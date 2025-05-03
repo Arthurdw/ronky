@@ -51,8 +51,12 @@ pub fn export_enum(input: &DeriveInput, variants: &Punctuated<Variant, Comma>) -
         };
 
         let variant_name = attrs
-            .and_then(|a| a.rename)
-            .unwrap_or(variant.ident.to_string());
+            .iter()
+            .rev()
+            .find(|a| a.rename.is_some())
+            .and_then(|a| a.rename.as_ref())
+            .map(|s| s.to_string())
+            .unwrap_or_else(|| variant.ident.to_string());
 
         is_tagged_union = !variant.fields.is_empty();
 
@@ -157,14 +161,15 @@ pub fn export_enum(input: &DeriveInput, variants: &Punctuated<Variant, Comma>) -
 
     // Extract attributes for the enum
     let attrs = match enum_variants::extract(&input.attrs) {
-        Ok(Some(attrs)) => {
+        Ok(attrs) => {
             let transform = attrs
-                .transform
                 .iter()
-                .map(enum_transformation_to_tokens)
+                .flat_map(|attr| attr.transform.iter().map(enum_transformation_to_tokens))
                 .collect::<Vec<proc_macro2::TokenStream>>();
 
-            let discriminator = match attrs.discriminator {
+            let found_discriminator = attrs.into_iter().find_map(|attr| attr.discriminator);
+
+            let discriminator = match found_discriminator {
                 Some(discriminator) if !is_tagged_union => {
                     return quote_spanned!(discriminator.span() =>
                         compile_error!("Discriminator can only be used with tagged unions.");
@@ -182,7 +187,6 @@ pub fn export_enum(input: &DeriveInput, variants: &Punctuated<Variant, Comma>) -
                 #discriminator
             })
         }
-        Ok(None) => None,
         Err(stream) => Some(stream.into()),
     };
 

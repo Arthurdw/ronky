@@ -3,7 +3,10 @@ use quote::{ToTokens, quote, quote_spanned};
 use syn::{Field, spanned::Spanned};
 
 use crate::parsers::{
-    attributes::{fields, typeschema},
+    attributes::{
+        fields,
+        typeschema::{self, TypeSchemaArguments},
+    },
     types::is_option_type,
 };
 
@@ -39,32 +42,37 @@ impl FieldParser for BaseParser {
 
         // Extract and process the `typeschema` attributes.
         let attrs = match typeschema::extract(&field.attrs) {
-            Ok(Some(attrs)) => {
-                if let Some(is_nullable) = attrs.is_nullable {
-                    // Ensure only optional types can be nullable.
-                    if !is_optional && is_nullable {
-                        let type_name = field.ty.to_token_stream().to_string();
-                        return Err(quote_spanned!(field.ty.span() =>
-                            compile_error!(concat!(
-                                "Only an optional type can be nullable. Use Option<",
-                                #type_name,
-                                "> instead of ",
-                                #type_name
-                            ))
-                        )
-                        .into());
-                    }
+            Ok(attrs) => {
+                let mut actual = TypeSchemaArguments::default();
 
-                    // Generate nullable attribute code.
-                    Some(quote! {
+                for attr in attrs {
+                    if let Some(is_nullable) = attr.is_nullable {
+                        // Ensure only optional types can be nullable.
+                        if !is_optional && is_nullable {
+                            let type_name = field.ty.to_token_stream().to_string();
+                            return Err(quote_spanned!(field.ty.span() =>
+                                compile_error!(concat!(
+                                    "Only an optional type can be nullable. Use Option<",
+                                    #type_name,
+                                    "> instead of ",
+                                    #type_name
+                                ))
+                            )
+                            .into());
+                        }
+
+                        actual.is_nullable = Some(is_nullable);
+                    }
+                }
+
+                // Generate nullable attribute code.
+                actual.is_nullable.map(|is_nullable| {
+                    quote! {
                         use ronky::Serializable;
                         ty.set_nullable(#is_nullable);
-                    })
-                } else {
-                    None
-                }
+                    }
+                })
             }
-            Ok(None) => None,
             Err(stream) => return Err(stream),
         };
 
