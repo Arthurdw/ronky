@@ -1,0 +1,5 @@
+error: No arguments were provided for this.
+ --> tests/compile_fail/no_arri_attribute_arguments.rs:5:7
+  |
+5 |     #[arri()]
+  |       ^^^^
