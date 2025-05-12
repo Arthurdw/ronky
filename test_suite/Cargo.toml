@@ -17,4 +17,4 @@ workspace = true
 
 [dev-dependencies]
 ronky = { workspace = true, features = ["derive"] }
-trybuild = "1.0.104"
+trybuild = "1.0.105"
