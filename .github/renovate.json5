@@ -1,5 +1,12 @@
 {
-  "extends": ["config:base"],
-  "labels": ["dependencies", "release:patch"],
-  "reviewers": ["arthurdw"]
+  extends: [
+    'config:recommended',
+  ],
+  labels: [
+    'dependencies',
+    'release:patch',
+  ],
+  reviewers: [
+    'arthurdw',
+  ],
 }
