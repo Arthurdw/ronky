@@ -6,7 +6,7 @@ resolver = "2"
 members = ["arri_repr", "ronky", "ronky_derive", "test_suite", "examples/*"]
 
 [workspace.package]
-version = "1.0.19"
+version = "1.0.20"
 edition = "2024"
 license = "GPL-3.0-or-later"
 authors = ["Arthur De Witte <dev@arthurdw.com>"]
@@ -23,6 +23,6 @@ correctness = "deny"
 use_self = "deny"
 
 [workspace.dependencies]
-ronky = { path = "ronky", version = "1.0.19" }
-arri_repr = { path = "arri_repr", version = "1.0.19" }
-ronky_derive = { path = "ronky_derive/", version = "1.0.19" }
+ronky = { path = "ronky", version = "1.0.20" }
+arri_repr = { path = "arri_repr", version = "1.0.20" }
+ronky_derive = { path = "ronky_derive/", version = "1.0.20" }
