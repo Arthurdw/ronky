@@ -4,7 +4,6 @@
     "config:recommended"
   ],
   "labels": [
-    "dependencies",
     "release:patch"
   ],
   "reviewers": [
