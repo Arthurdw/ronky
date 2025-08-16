@@ -1,0 +1,14 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended"
+  ],
+  "labels": [
+    "dependencies",
+    "release:patch"
+  ],
+  "reviewers": [
+    "arthurdw"
+  ],
+  "dependencyDashboard": false
+}
