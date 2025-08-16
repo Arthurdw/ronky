@@ -1,0 +1,34 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Create Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          IS_PRERELEASE=""
+          if [[ "${{ github.ref_name }}" == *"-rc"* ]] || \
+             [[ "${{ github.ref_name }}" == *"-beta"* ]] || \
+             [[ "${{ github.ref_name }}" == *"-alpha"* ]]; then
+            IS_PRERELEASE="--prerelease"
+          fi
+
+          gh release create "${{ github.ref_name }}" \
+            --title "Release ${{ github.ref_name }}" \
+            --generate-notes \
+            $IS_PRERELEASE
