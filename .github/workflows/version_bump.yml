@@ -16,8 +16,19 @@ jobs:
       image: arthurdw/rust-ci:latest
 
     steps:
+      - name: Get token
+        id: get_token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.RONKY_CD_APP_ID }}
+          private-key: ${{ secrets.RONKY_CD_TOKEN }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+
       - name: Check out repository
         uses: actions/checkout@v5
+        with:
+          token: ${{ steps.get_token.outputs.token }}
 
       - name: Fix repository permissions
         run: |
@@ -77,6 +88,6 @@ jobs:
       - name: Push changes
         uses: ad-m/github-push-action@master
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ steps.get_token.outputs.token }}
           branch: ${{ github.ref }}
           tags: true
