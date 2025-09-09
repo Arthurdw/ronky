@@ -36,9 +36,10 @@ jobs:
 
       - name: Check crate version matches tag
         run: |
-          CARGO_VERSION=$(grep -E "^version" ronky/Cargo.toml | head -1 | cut -d'"' -f2)
+          # Check workspace version since all crates use workspace versioning
+          CARGO_VERSION=$(grep -E "^version" Cargo.toml | head -1 | cut -d'"' -f2)
           if [ "$CARGO_VERSION" != "${{ steps.extract-version.outputs.version }}" ]; then
-            echo "Error: Cargo.toml version ($CARGO_VERSION) doesn't match tag version (${{ steps.extract-version.outputs.version }})"
+            echo "Error: Cargo.toml workspace version ($CARGO_VERSION) doesn't match tag version (${{ steps.extract-version.outputs.version }})"
             exit 1
           fi
 
