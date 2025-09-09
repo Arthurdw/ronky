@@ -20,8 +20,8 @@ repos:
         stages: [commit]
         # This automatically fixes clippy warnings where possible
 
-      - id: cargo-test
-        name: cargo test
+      - id: cargo-nextest
+        name: cargo nextest
         entry: cargo nextest run --all
         language: system
         types: [rust]

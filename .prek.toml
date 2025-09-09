@@ -21,7 +21,7 @@ glob = "*.rs"
 stage = "pre-commit"
 
 [[hook]]
-name = "cargo-test"
+name = "cargo-nextest"
 run = "cargo nextest run --all"
 glob = "*.rs"
 stage = "pre-push"
