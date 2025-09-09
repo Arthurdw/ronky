@@ -110,18 +110,10 @@ pub fn exported_derive(input: TokenStream) -> TokenStream {
     };
 
     // Only generate serialization if the feature is enabled in the derive crate
-    let serialization_impl = if cfg!(feature = "serialization") {
-        #[cfg(feature = "serialization")]
-        {
-            crate::serialization::generate_serialization(&input)
-        }
-        #[cfg(not(feature = "serialization"))]
-        {
-            quote! {}
-        }
-    } else {
-        quote! {}
-    };
+    #[cfg(feature = "serialization")]
+    let serialization_impl = crate::serialization::generate_serialization(&input);
+    #[cfg(not(feature = "serialization"))]
+    let serialization_impl = quote! {};
 
     quote! {
         impl #impl_generics ronky::Exportable for #struct_name #ty_generics #where_clause {
