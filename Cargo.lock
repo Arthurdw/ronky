@@ -1155,6 +1155,7 @@ dependencies = [
  "serde",
  "sonic-rs",
  "trybuild",
+ "version_check",
 ]
 
 [[package]]
