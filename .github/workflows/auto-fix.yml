@@ -42,7 +42,14 @@ jobs:
         run: cargo fmt --all
 
       - name: Run cargo clippy fix
-        run: cargo clippy --all-features --all-targets --fix --allow-staged --allow-dirty || true
+        run: |
+          # Run clippy fix and capture the exit code
+          # Exit code 101 means fixes were applied, which is expected
+          cargo clippy --all-features --all-targets --fix --allow-staged --allow-dirty || EXIT_CODE=$?
+          if [ "${EXIT_CODE:-0}" != "0" ] && [ "${EXIT_CODE:-0}" != "101" ]; then
+            echo "Clippy failed with unexpected error code: ${EXIT_CODE}"
+            exit 1
+          fi
 
       - name: Check for changes
         id: verify-diff
