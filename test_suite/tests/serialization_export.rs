@@ -1,4 +1,4 @@
-use ronky::{Exported, ExportedDeserialize, ExportedSerialize};
+use ronky::{Exportable, Exported, ExportedDeserialize, ExportedSerialize};
 use serde::{Deserialize, Serialize};
 
 #[test]
@@ -155,10 +155,10 @@ fn test_enum_serialization() {
 
 #[test]
 fn test_generic_struct_serialization() {
-    #[derive(Serialize, Deserialize, Debug, PartialEq)]
-    struct Container<T> {
+    #[derive(Exported, Serialize, Deserialize, Debug, PartialEq)]
+    struct Container<T: Exportable> {
         value: T,
-        count: usize,
+        count: u32,
     }
 
     let container = Container {
