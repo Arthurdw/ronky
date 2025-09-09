@@ -52,9 +52,3 @@ repos:
       - id: mixed-line-ending
         args: ['--fix=lf']
         stages: [commit]
-
-  - repo: https://github.com/commitizen-tools/commitizen
-    rev: v3.13.0
-    hooks:
-      - id: commitizen
-        stages: [commit-msg]

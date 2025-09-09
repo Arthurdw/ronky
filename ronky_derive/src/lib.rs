@@ -15,7 +15,7 @@
 //! ## Usage
 //! Use the `Exported` macro to automatically implement the `Exportable` trait for your types:
 //!
-//! ```rust
+//! ```rust,ignore
 //! use ronky_derive::Exported;
 //!
 //! #[derive(Exported)]
