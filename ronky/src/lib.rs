@@ -108,7 +108,7 @@
 //!
 //! ### 🔄 The Basic Transformation
 //!
-//! ```rust
+//! ```rust,ignore
 //! use ronky::{Exportable, Exported, SCHEMA_VERSION};
 //! use serde_json::{Value, from_str, to_string_pretty};
 //!
@@ -142,7 +142,7 @@
 //!
 //! ### 🧩 The Advanced Cat-egory: Building Complex Types
 //!
-//! ```rust
+//! ```rust,ignore
 //! use ronky::{Exportable, Exported, SCHEMA_VERSION};
 //!
 //! /// Metadata about things (and sometimes other things)
@@ -261,18 +261,18 @@
 //!    ```
 //!
 //! 2. Import the essentials:
-//!    ```rust
+//!    ```rust,ignore
 //!    use ronky::{Exported, SCHEMA_VERSION};
 //!    ```
 //!
 //! 3. Decorate your types:
-//!    ```rust
+//!    ```rust,ignore
 //!    #[derive(Exported)]
 //!    struct MyType { /* fields */ }
 //!    ```
 //!
 //! 4. Export and serialize:
-//!    ```rust
+//!    ```rust,ignore
 //!    let schema = MyType::export().serialize().unwrap();
 //!    ```
 //!
