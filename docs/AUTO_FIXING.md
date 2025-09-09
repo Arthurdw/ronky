@@ -67,7 +67,7 @@ cargo fmt --all
 # Fix clippy warnings
 cargo clippy --all-features --all-targets --fix --allow-dirty
 
-# Run all pre-commit hooks with auto-fix
+# Run all pre-commit hooks with auto-fix (prek uses the same config as pre-commit)
 prek run --all-files
 
 # Or with pre-commit

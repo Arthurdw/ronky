@@ -290,11 +290,13 @@ Photo by [Startshot](https://www.instagram.com/_startshot_/)
 
 ### Pre-commit Hooks
 
-This project uses pre-commit hooks to maintain code quality. We support both `pre-commit` and `prek`.
+This project uses pre-commit hooks to maintain code quality. We support both `pre-commit` and `prek` (a Rust implementation that uses the same `.pre-commit-config.yaml` format).
 
 **Auto-fixing**: The hooks automatically fix formatting issues, clippy warnings, trailing whitespace, and line endings. See [docs/AUTO_FIXING.md](docs/AUTO_FIXING.md) for details.
 
-#### Using prek (Recommended)
+#### Using prek (Recommended for Rust projects)
+
+`prek` is a Rust-based pre-commit hook runner that uses the standard `.pre-commit-config.yaml` configuration file.
 
 ```bash
 # Install prek (if not already installed)
