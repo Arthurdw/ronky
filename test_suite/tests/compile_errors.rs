@@ -2,6 +2,14 @@ use std::fs;
 
 #[test]
 fn compile_fail() {
+    // Skip on nightly due to different error spans
+    if let Some(channel) = version_check::Channel::read()
+        && channel.is_nightly()
+    {
+        eprintln!("Skipping compile_fail tests on nightly due to span differences");
+        return;
+    }
+
     let failures = fs::read_dir("tests/compile_fail")
         .unwrap()
         .filter_map(|entry| {

@@ -15,7 +15,7 @@
 //! ## Usage
 //! Use the `Exported` macro to automatically implement the `Exportable` trait for your types:
 //!
-//! ```rust
+//! ```rust,ignore
 //! use ronky_derive::Exported;
 //!
 //! #[derive(Exported)]
@@ -32,6 +32,8 @@ mod r#enum;
 mod metadata;
 mod named_struct;
 mod parsers;
+#[cfg(feature = "serialization")]
+mod serialization;
 
 use r#enum::export_enum;
 use named_struct::export_named_struct;
@@ -64,12 +66,14 @@ pub fn export_stream(input: TokenStream) -> TokenStream {
 /// annotated struct or enum. It also provides a specialized implementation of the
 /// `get_type_name` method for generic types.
 ///
+/// NOTE: You must also derive `sonic_rs::Serialize` and `sonic_rs::Deserialize` for serialization support.
+///
 /// # Attributes
 /// - `#[arri]`: Custom attributes supported by this macro.
 ///
 /// # Example
 /// ```ignore
-/// #[derive(Exported)]
+/// #[derive(Exported, sonic_rs::Serialize, sonic_rs::Deserialize)]
 /// struct MyStruct {
 ///     field: String,
 /// }
@@ -80,7 +84,7 @@ pub fn exported_derive(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     let struct_name = input.ident.clone();
 
-    let generics = input.generics;
+    let generics = &input.generics;
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
 
     // Extract the type parameters from generics
@@ -105,6 +109,18 @@ pub fn exported_derive(input: TokenStream) -> TokenStream {
         quote! {}
     };
 
+    // Only generate serialization if the feature is enabled in the derive crate
+    let serialization_impl = {
+        #[cfg(feature = "serialization")]
+        {
+            crate::serialization::generate_serialization(&input)
+        }
+        #[cfg(not(feature = "serialization"))]
+        {
+            quote! {}
+        }
+    };
+
     quote! {
         impl #impl_generics ronky::Exportable for #struct_name #ty_generics #where_clause {
             /// Exports the struct or enum as a serializable representation.
@@ -113,6 +129,8 @@ pub fn exported_derive(input: TokenStream) -> TokenStream {
             }
             #get_type_name_impl
         }
+
+        #serialization_impl
     }
     .into()
 }

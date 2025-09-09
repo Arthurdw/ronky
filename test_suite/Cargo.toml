@@ -16,5 +16,8 @@ keywords.workspace = true
 workspace = true
 
 [dev-dependencies]
-ronky = { workspace = true, features = ["derive"] }
+ronky = { workspace = true, features = ["derive", "serialization"] }
+sonic-rs.workspace = true
+serde.workspace = true
 trybuild = "1.0.104"
+version_check = "0.9"

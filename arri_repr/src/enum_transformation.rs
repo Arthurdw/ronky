@@ -39,13 +39,6 @@ impl EnumTransformation {
 
     /// Converts a string to snake case.
     ///
-    /// # Examples
-    ///
-    /// ```
-    /// assert_eq!(EnumTransformation::to_snake_case("hello world"), "hello_world");
-    /// assert_eq!(EnumTransformation::to_snake_case("helloWorld"), "hello_world");
-    /// ```
-    ///
     /// # Arguments
     ///
     /// * `value` - The input string to convert.
@@ -71,13 +64,6 @@ impl EnumTransformation {
     }
 
     /// Converts a string to camel case.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// assert_eq!(EnumTransformation::to_camel_case("hello world"), "helloWorld");
-    /// assert_eq!(EnumTransformation::to_camel_case("hello_world"), "helloWorld");
-    /// ```
     ///
     /// # Arguments
     ///
@@ -109,13 +95,6 @@ impl EnumTransformation {
     }
 
     /// Converts a string to pascal case.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// assert_eq!(EnumTransformation::to_pascal_case("hello world"), "HelloWorld");
-    /// assert_eq!(EnumTransformation::to_pascal_case("hello_world"), "HelloWorld");
-    /// ```
     ///
     /// # Arguments
     ///

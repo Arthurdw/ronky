@@ -35,6 +35,10 @@ next variable should be called `data` or `info` (we both know you'll pick `data`
     - [The Basics](#the-basics)
     - [Attribute Options](#attribute-options)
   - [🐈 The Ronky Memorial Section](#-the-ronky-memorial-section)
+  - [🛠️ Development](#️-development)
+    - [Pre-commit Hooks](#pre-commit-hooks)
+    - [Running Tests](#running-tests)
+    - [Code Quality Checks](#code-quality-checks)
   - [🌟 Final Thought](#-final-thought)
   <!--toc:end-->
 
@@ -281,6 +285,74 @@ He passed away peacefully, surrounded by those who loved him, and will be deeply
 
 ![A beautiful picture of Ronky](./.readme/assets/ronky.jpg)
 Photo by [Startshot](https://www.instagram.com/_startshot_/)
+
+## 🛠️ Development
+
+### Pre-commit Hooks
+
+This project uses pre-commit hooks to maintain code quality. We support both `pre-commit` and `prek` (a Rust implementation that uses the same `.pre-commit-config.yaml` format).
+
+**Auto-fixing**: The hooks automatically fix formatting issues, clippy warnings, trailing whitespace, and line endings. See [docs/AUTO_FIXING.md](docs/AUTO_FIXING.md) for details.
+
+#### Using prek (Recommended for Rust projects)
+
+`prek` is a Rust-based pre-commit hook runner that uses the standard `.pre-commit-config.yaml` configuration file.
+
+```bash
+# Install prek (if not already installed)
+cargo install prek
+
+# Install hooks
+prek install
+
+# Run all hooks manually
+prek run --all-files
+
+# Run specific hook
+prek run cargo-fmt
+```
+
+#### Using pre-commit
+
+```bash
+# Install pre-commit
+pip install pre-commit
+
+# Install hooks
+pre-commit install
+
+# Run all hooks manually
+pre-commit run --all-files
+```
+
+### Running Tests
+
+```bash
+# Run all tests with nextest
+cargo nextest run --all
+
+# Run specific test
+cargo nextest run serialization_export
+
+# Run with standard cargo test
+cargo test --all
+```
+
+### Code Quality Checks
+
+```bash
+# Format code
+cargo fmt --all
+
+# Run clippy
+cargo clippy --all-features --all-targets -- -D warnings
+
+# Check compilation
+cargo check --all --all-features
+
+# Run all checks at once
+./scripts/pre-commit-all.sh
+```
 
 ## 🌟 Final Thought
 
