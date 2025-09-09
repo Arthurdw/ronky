@@ -35,9 +35,9 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: 'chore: Update dependencies'
-          title: '🔧 Weekly dependency updates'
+          title: 'Weekly dependency updates'
           body: |
-            ## 📦 Dependency Updates
+            ## Dependency Updates
 
             This PR contains the weekly dependency updates.
 
