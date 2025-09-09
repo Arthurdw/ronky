@@ -4,7 +4,7 @@ version = 4
 
 [[package]]
 name = "about"
-version = "1.0.30"
+version = "1.0.31"
 dependencies = [
  "ronky",
  "serde_json",
@@ -38,7 +38,7 @@ checksum = "7c02d123df017efcdfbd739ef81735b36c5ba83ec3c59c80a9d7ecc718f92e50"
 
 [[package]]
 name = "arri_repr"
-version = "1.0.30"
+version = "1.0.31"
 dependencies = [
  "bigdecimal",
  "bytes",
@@ -205,7 +205,7 @@ checksum = "d0a5c400df2834b80a4c3327b3aad3a4c4cd4de0629063962b03235697506a28"
 
 [[package]]
 name = "custom_result"
-version = "1.0.30"
+version = "1.0.31"
 dependencies = [
  "ronky",
  "serde_json",
@@ -776,7 +776,7 @@ dependencies = [
 
 [[package]]
 name = "ronky"
-version = "1.0.30"
+version = "1.0.31"
 dependencies = [
  "arri_repr",
  "ronky_derive",
@@ -784,7 +784,7 @@ dependencies = [
 
 [[package]]
 name = "ronky_derive"
-version = "1.0.30"
+version = "1.0.31"
 dependencies = [
  "arri_repr",
  "proc-macro2",
@@ -959,7 +959,7 @@ dependencies = [
 
 [[package]]
 name = "test_suite"
-version = "0.0.0"
+version = "0.0.1"
 dependencies = [
  "ronky",
  "trybuild",
