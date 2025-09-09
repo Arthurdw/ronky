@@ -15,6 +15,13 @@ stage = "pre-commit"
 # Automatically fixes clippy warnings where possible
 
 [[hook]]
+name = "cargo-clippy"
+run = "cargo clippy --all-features --all-targets -- -D warnings"
+glob = "*.rs"
+stage = "pre-commit"
+# Checks for any remaining clippy warnings that couldn't be auto-fixed
+
+[[hook]]
 name = "cargo-check"
 run = "cargo check --all --all-features"
 glob = "*.rs"

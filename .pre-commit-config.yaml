@@ -20,6 +20,15 @@ repos:
         stages: [commit]
         # This automatically fixes clippy warnings where possible
 
+      - id: cargo-clippy
+        name: cargo clippy check
+        entry: cargo clippy --all-features --all-targets -- -D warnings
+        language: system
+        types: [rust]
+        pass_filenames: false
+        stages: [commit]
+        # This checks for any remaining clippy warnings that couldn't be auto-fixed
+
       - id: cargo-nextest
         name: cargo nextest
         entry: cargo nextest run --all
