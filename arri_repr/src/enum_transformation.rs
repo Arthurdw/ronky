@@ -42,8 +42,10 @@ impl EnumTransformation {
     /// # Examples
     ///
     /// ```
-    /// assert_eq!(EnumTransformation::to_snake_case("hello world"), "hello_world");
-    /// assert_eq!(EnumTransformation::to_snake_case("helloWorld"), "hello_world");
+    /// use arri_repr::EnumTransformation;
+    /// let transform = EnumTransformation::Snakecase;
+    /// assert_eq!(transform.apply("hello world"), "hello_world");
+    /// assert_eq!(transform.apply("helloWorld"), "hello_world");
     /// ```
     ///
     /// # Arguments
@@ -75,8 +77,10 @@ impl EnumTransformation {
     /// # Examples
     ///
     /// ```
-    /// assert_eq!(EnumTransformation::to_camel_case("hello world"), "helloWorld");
-    /// assert_eq!(EnumTransformation::to_camel_case("hello_world"), "helloWorld");
+    /// use arri_repr::EnumTransformation;
+    /// let transform = EnumTransformation::Camelcase;
+    /// assert_eq!(transform.apply("hello world"), "helloWorld");
+    /// assert_eq!(transform.apply("hello_world"), "helloWorld");
     /// ```
     ///
     /// # Arguments
@@ -113,8 +117,10 @@ impl EnumTransformation {
     /// # Examples
     ///
     /// ```
-    /// assert_eq!(EnumTransformation::to_pascal_case("hello world"), "HelloWorld");
-    /// assert_eq!(EnumTransformation::to_pascal_case("hello_world"), "HelloWorld");
+    /// use arri_repr::EnumTransformation;
+    /// let transform = EnumTransformation::Pascalcase;
+    /// assert_eq!(transform.apply("hello world"), "HelloWorld");
+    /// assert_eq!(transform.apply("hello_world"), "HelloWorld");
     /// ```
     ///
     /// # Arguments
