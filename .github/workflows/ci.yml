@@ -44,6 +44,7 @@ jobs:
   test:
     name: Test Suite
     runs-on: ubuntu-latest
+    continue-on-error: ${{ matrix.rust == 'nightly' }}
     strategy:
       matrix:
         rust: [stable, nightly]
