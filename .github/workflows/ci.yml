@@ -64,6 +64,8 @@ jobs:
         run: cargo nextest run --all
 
       - name: Run doc tests
+        # Skip doc tests on nightly due to ord_subset compilation issue
+        if: matrix.rust != 'nightly'
         run: cargo test --doc --all-features --all
 
   check:
