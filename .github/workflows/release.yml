@@ -50,10 +50,21 @@ jobs:
           draft: false
           prerelease: ${{ contains(github.ref, '-rc') || contains(github.ref, '-beta') || contains(github.ref, '-alpha') }}
 
+      - name: Check CARGO_REGISTRY_TOKEN availability
+        if: ${{ secrets.CARGO_REGISTRY_TOKEN == '' }}
+        run: |
+          echo "::warning::CARGO_REGISTRY_TOKEN secret is not set. Skipping crates.io publication."
+          echo "To enable automatic publishing to crates.io:"
+          echo "1. Get an API token from https://crates.io/settings/tokens"
+          echo "2. Add it as CARGO_REGISTRY_TOKEN in repository Settings → Secrets"
+
       - name: Publish to crates.io
+        if: ${{ secrets.CARGO_REGISTRY_TOKEN != '' }}
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
         run: |
           # Publish in dependency order with retries for crates.io propagation
-          cargo publish -p arri_repr --token ${{ secrets.CARGO_TOKEN }}
+          cargo publish -p arri_repr
 
           # Wait for crates.io to index the package (typically takes 30-60 seconds)
           echo "Waiting for arri_repr to be available on crates.io..."
@@ -66,7 +77,7 @@ jobs:
             sleep 10
           done
 
-          cargo publish -p ronky_derive --token ${{ secrets.CARGO_TOKEN }}
+          cargo publish -p ronky_derive
 
           # Wait for ronky_derive to be indexed
           echo "Waiting for ronky_derive to be available on crates.io..."
@@ -79,6 +90,4 @@ jobs:
             sleep 10
           done
 
-          cargo publish -p ronky --token ${{ secrets.CARGO_TOKEN }}
-        env:
-          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_TOKEN }}
+          cargo publish -p ronky
