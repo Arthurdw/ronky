@@ -151,16 +151,16 @@
 //!     /// What we called it before marketing got involved
 //!     #[deprecated(since = "1.0.0", note = "Use `firstName` and `lastName` instead")]
 //!     name: String,
-//!     
+//!
 //!     /// The name that appears on your coffee cup at Starbucks
 //!     first_name: String,
-//!     
+//!
 //!     /// The name your parents use when you're in trouble
 //!     last_name: Option<String>,
-//!     
+//!
 //!     /// The number that makes you sigh at birthday parties
 //!     age: u32,
-//!     
+//!
 //!     /// The subject of our obsession
 //!     of: T,
 //! }
@@ -171,7 +171,7 @@
 //! struct Human {
 //!     /// Fellow code-monkeys who review your PRs
 //!     friends: Vec<Human>, // Recursive types? No problem!
-//!     
+//!
 //!     /// The real owners of your home
 //!     pets: Vec<About<Pet>>,
 //! }
@@ -182,13 +182,13 @@
 //! enum CatColor {
 //!     /// Like my coffee and my humor
 //!     Black,
-//!     
+//!
 //!     /// Like my documentation standards and error handling
 //!     White,
-//!     
+//!
 //!     /// Like my moral compass when it comes to optimization
 //!     Gray,
-//!     
+//!
 //!     /// Like my commit history after a weekend hackathon
 //!     MixedGrayWhite,
 //! }
@@ -200,17 +200,17 @@
 //!     Dog {
 //!         /// The word you'll repeat 37 times at the dog park
 //!         name: String,
-//!         
+//!
 //!         /// What you'll forget when the vet asks
 //!         #[arri(nullable)]
 //!         breed: Option<String>,
 //!     },
-//!     
+//!
 //!     #[arri(rename = "cat")] // All hail the cat overlords!
 //!     Lion {
 //!         /// A suggestion they might consider responding to someday
 //!         name: String,
-//!         
+//!
 //!         /// Their royal garment
 //!         #[arri(nullable)]
 //!         color: Option<CatColor>,
@@ -225,7 +225,7 @@
 //! ## 🐈 The Ronky Memorial Section
 //!
 //! ```text
-//!      /\_/\  
+//!      /\_/\
 //!     ( o.o )
 //!      > ^ <
 //!     /  O  \  "Meow meow, transform types meow."
@@ -295,6 +295,9 @@
 //! Now go pet your cat (or dog, or rubber duck) – they've been waiting patiently while you
 //! read this documentation. ❤️
 
+#[cfg(feature = "serialization")]
+mod serialization;
+
 #[cfg(feature = "derive")]
 extern crate ronky_derive;
 
@@ -303,6 +306,9 @@ pub use ronky_derive::Exported;
 
 extern crate arri_repr;
 pub use arri_repr::*;
+
+#[cfg(feature = "serialization")]
+pub use serialization::{ExportedDeserialize, ExportedSerialize};
 
 pub static SCHEMA_VERSION: &str = "v0.0.8";
 

@@ -1,0 +1,53 @@
+name: Scheduled Maintenance
+
+on:
+  schedule:
+    # Run every Monday at 00:00 UTC
+    - cron: '0 0 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update-dependencies:
+    name: Update Dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Update dependencies
+        run: |
+          cargo update
+          cargo upgrade --workspace --skip-compatible
+        continue-on-error: true
+
+      - name: Run tests
+        run: cargo test --all
+        continue-on-error: true
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'chore: Update dependencies'
+          title: '🔧 Weekly dependency updates'
+          body: |
+            ## 📦 Dependency Updates
+
+            This PR contains the weekly dependency updates.
+
+            ### Changes
+            - Updated Cargo.lock with latest compatible versions
+            - Upgraded workspace dependencies where applicable
+
+            ### Checklist
+            - [ ] All tests pass
+            - [ ] No breaking changes identified
+            - [ ] Documentation updated if needed
+          branch: deps/weekly-update
+          delete-branch: true

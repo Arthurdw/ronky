@@ -1,0 +1,39 @@
+# Prek configuration for Rust project
+
+[[hook]]
+name = "cargo-fmt"
+run = "cargo fmt --all --"
+glob = "*.rs"
+stage = "pre-commit"
+# Automatically fixes formatting issues
+
+[[hook]]
+name = "cargo-clippy-fix"
+run = "cargo clippy --all-features --all-targets --fix --allow-staged --allow-dirty -- -D warnings"
+glob = "*.rs"
+stage = "pre-commit"
+# Automatically fixes clippy warnings where possible
+
+[[hook]]
+name = "cargo-check"
+run = "cargo check --all --all-features"
+glob = "*.rs"
+stage = "pre-commit"
+
+[[hook]]
+name = "cargo-test"
+run = "cargo nextest run --all"
+glob = "*.rs"
+stage = "pre-push"
+
+[[hook]]
+name = "trailing-whitespace"
+run = "sed -i 's/[[:space:]]*$//' {}"
+glob = "*"
+stage = "pre-commit"
+
+[[hook]]
+name = "end-of-file-fixer"
+run = "sed -i -e '$a\\' {}"
+glob = "*"
+stage = "pre-commit"

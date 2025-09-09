@@ -26,3 +26,5 @@ use_self = "deny"
 ronky = { path = "ronky", version = "1.0.31" }
 arri_repr = { path = "arri_repr", version = "1.0.31" }
 ronky_derive = { path = "ronky_derive/", version = "1.0.31" }
+sonic-rs = "0.5.4"
+serde = { version = "1.0", features = ["derive"] }

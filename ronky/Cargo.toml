@@ -17,6 +17,8 @@ workspace = true
 [dependencies]
 arri_repr = { workspace = true, features = [] }
 ronky_derive = { workspace = true, optional = true }
+sonic-rs = { workspace = true, optional = true }
+serde = { workspace = true, optional = true }
 
 [dev-dependencies]
 ronky_derive.workspace = true
@@ -24,6 +26,7 @@ ronky_derive.workspace = true
 [features]
 default = []
 derive = ["ronky_derive"]
+serialization = ["sonic-rs", "serde", "ronky_derive?/serialization"]
 chrono = ["arri_repr/chrono"]
 time = ["arri_repr/time"]
 uuid = ["arri_repr/uuid"]
