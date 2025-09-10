@@ -5,6 +5,10 @@ on:
     tags:
       - 'v*'
 
+# Only run on actual tag pushes, not branch pushes
+# This prevents the workflow from triggering on commits to main that happen
+# during the version bump process
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: false  # Don't cancel releases
@@ -16,6 +20,8 @@ jobs:
   create-release:
     name: Create Release
     runs-on: ubuntu-latest
+    # Ensure this only runs on tag pushes, not regular commits
+    if: startsWith(github.ref, 'refs/tags/')
     steps:
       - uses: actions/checkout@v5
 
@@ -46,6 +52,7 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           generate_release_notes: true
           draft: false
           prerelease: ${{ contains(github.ref, '-rc') || contains(github.ref, '-beta') || contains(github.ref, '-alpha') }}
