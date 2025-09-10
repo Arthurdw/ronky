@@ -30,6 +30,8 @@ jobs:
         with:
           token: ${{ steps.get_token.outputs.token }}
 
+      - uses: Swatinem/rust-cache@v2
+
       - name: Fix repository permissions
         run: |
           chown -R $(id -u):$(id -g) .
