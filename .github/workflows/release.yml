@@ -20,8 +20,6 @@ jobs:
   create-release:
     name: Create Release
     runs-on: ubuntu-latest
-    # Ensure this only runs on tag pushes, not regular commits
-    if: github.ref_type == 'tag'
     steps:
       - uses: actions/checkout@v5
 
