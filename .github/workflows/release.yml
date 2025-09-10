@@ -65,3 +65,36 @@ jobs:
           generate_release_notes: true
           draft: false
           prerelease: ${{ contains(github.ref, '-rc') || contains(github.ref, '-beta') || contains(github.ref, '-alpha') }}
+
+      - name: Publish to crates.io
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+        run: |
+          # Publish in dependency order with retries for crates.io propagation
+          cargo publish -p arri_repr
+
+          # Wait for crates.io to index the package (typically takes 30-60 seconds)
+          echo "Waiting for arri_repr to be available on crates.io..."
+          for i in {1..12}; do
+            if cargo search arri_repr | grep -q "^arri_repr = "; then
+              echo "arri_repr is now available"
+              break
+            fi
+            echo "Attempt $i/12: Package not yet available, waiting..."
+            sleep 10
+          done
+
+          cargo publish -p ronky_derive
+
+          # Wait for ronky_derive to be indexed
+          echo "Waiting for ronky_derive to be available on crates.io..."
+          for i in {1..12}; do
+            if cargo search ronky_derive | grep -q "^ronky_derive = "; then
+              echo "ronky_derive is now available"
+              break
+            fi
+            echo "Attempt $i/12: Package not yet available, waiting..."
+            sleep 10
+          done
+
+          cargo publish -p ronky
