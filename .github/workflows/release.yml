@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
 
 # Only run on actual tag pushes, not branch pushes
 # This prevents the workflow from triggering on commits to main that happen
@@ -11,7 +11,7 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: false  # Don't cancel releases
+  cancel-in-progress: false # Don't cancel releases
 
 permissions:
   contents: write
