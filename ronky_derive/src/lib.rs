@@ -205,7 +205,10 @@ fn generate_serializable_impl(
         let field_name = field.ident.as_ref().unwrap();
         let mut field_name_str = field_name.to_string();
         // Strip r# prefix from raw identifiers
-        field_name_str = field_name_str.strip_prefix("r#").unwrap_or(&field_name_str).to_string();
+        field_name_str = field_name_str
+            .strip_prefix("r#")
+            .unwrap_or(&field_name_str)
+            .to_string();
         let json_key = transform_field_name(&field_name_str);
 
         quote! {
