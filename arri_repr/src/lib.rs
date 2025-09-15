@@ -1,3 +1,5 @@
+#![allow(clippy::multiple_crate_versions)]
+
 //! # Arri Schema Representation Library
 //!
 //! This crate provides all the types and Rust representations required for working with the Arri schema.

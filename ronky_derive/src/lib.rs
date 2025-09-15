@@ -1,3 +1,5 @@
+#![allow(clippy::multiple_crate_versions)]
+
 //! # Ronky Derive Macro Library
 //!
 //! This crate provides procedural macros for the `ronky` library, enabling seamless implementation
