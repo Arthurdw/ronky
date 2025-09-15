@@ -1,3 +1,5 @@
+#![allow(clippy::multiple_crate_versions)]
+
 //! # 🐱 RONKY 🐱
 //!
 //! [![Crates.io Version](https://img.shields.io/crates/v/ronky)](https://crates.io/crates/ronky)

@@ -28,3 +28,18 @@ arri_repr = { path = "arri_repr", version = "1.1.10" }
 ronky_derive = { path = "ronky_derive/", version = "1.1.10" }
 sonic-rs = "0.5.4"
 serde = { version = "1.0", features = ["derive"] }
+
+# Partnered libraries
+chrono = { version = "0.4.41", features = ["serde"] }
+time = { version = "0.3.41", features = ["serde", "parsing", "formatting"] }
+uuid = { version = "1.16.0", features = ["serde"] }
+bigdecimal = { version = "0.4.8", features = ["serde"] }
+num-bigint = { version = "0.4.6", features = ["serde"] }
+num-bigfloat = { version = "1.7.2", features = ["serde"] }
+rust_decimal = { version = "1.37.1", features = ["serde"] }
+decimal = { version = "2.1.0", features = ["serde"], default-features = false }
+url = { version = "2.5.4", features = ["serde"] }
+bytes = { version = "1.10.1", features = ["serde"] }
+dashmap = { version = "6.1.0", features = ["serde"] }
+indexmap = { version = "2.9.0", features = ["serde"] }
+smallvec = { version = "1.15.0", features = ["serde"] }

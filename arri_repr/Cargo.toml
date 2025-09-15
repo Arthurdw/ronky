@@ -36,16 +36,16 @@ smallvec = ["dep:smallvec"]
 [dependencies]
 # TODO: see if we can make downcast also a feature flag
 downcast-rs = "2.0.1"
-chrono = { version = "0.4.41", optional = true }
-time = { version = "0.3.41", optional = true }
-uuid = { version = "1.16.0", optional = true }
-bigdecimal = { version = "0.4.8", optional = true }
-num-bigint = { version = "0.4.6", optional = true }
-num-bigfloat = { version = "1.7.2", optional = true }
-rust_decimal = { version = "1.37.1", optional = true }
-decimal = { version = "2.1.0", optional = true }
-url = { version = "2.5.4", optional = true }
-bytes = { version = "1.10.1", optional = true }
-dashmap = { version = "6.1.0", optional = true }
-indexmap = { version = "2.9.0", optional = true }
-smallvec = { version = "1.15.0", optional = true }
+chrono = { workspace = true, optional = true }
+time = { workspace = true, optional = true }
+uuid = { workspace = true, optional = true }
+bigdecimal = { workspace = true, optional = true }
+num-bigint = { workspace = true, optional = true }
+num-bigfloat = { workspace = true, optional = true }
+rust_decimal = { workspace = true, optional = true }
+decimal = { workspace = true, optional = true }
+url = { workspace = true, optional = true }
+bytes = { workspace = true, optional = true }
+dashmap = { workspace = true, optional = true }
+indexmap = { workspace = true, optional = true }
+smallvec = { workspace = true, optional = true }

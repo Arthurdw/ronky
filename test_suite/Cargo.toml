@@ -16,8 +16,22 @@ keywords.workspace = true
 workspace = true
 
 [dev-dependencies]
-ronky = { workspace = true, features = ["derive", "serialization"] }
+ronky = { workspace = true, features = ["derive", "serialization", "chrono", "time", "uuid", "bigdecimal", "num-bigint", "num-bigfloat", "rust_decimal", "decimal", "url", "bytes", "dashmap", "indexmap", "smallvec"] }
+chrono.workspace = true
+time.workspace = true
+uuid.workspace = true
+bigdecimal.workspace = true
+num-bigint.workspace = true
+num-bigfloat.workspace = true
+rust_decimal.workspace = true
+decimal.workspace = true
+url.workspace = true
+bytes.workspace = true
+dashmap.workspace = true
+indexmap.workspace = true
+smallvec.workspace = true
 sonic-rs.workspace = true
 serde.workspace = true
+serde_json = "1.0"
 trybuild = "1.0.104"
 version_check = "0.9"
