@@ -16,7 +16,6 @@ fn test_chrono_serialization() {
         duration: chrono::Duration,
     }
 
-    let _fixed_offset = FixedOffset::east_opt(5 * 3600).unwrap();
     let test_data = ChronoStruct {
         utc_time: DateTime::parse_from_rfc3339("2023-12-25T10:30:00Z")
             .unwrap()
