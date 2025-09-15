@@ -31,6 +31,7 @@
 //! probably looking for the [ronky](https://docs.rs/ronky) crate.
 
 mod r#enum;
+mod enum_transformation;
 mod metadata;
 mod named_struct;
 mod parsers;
@@ -189,13 +190,24 @@ fn generate_serializable_impl(
     let generics = &input.generics;
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
 
+    // Determine if we're in arri_repr crate or external crate
+    let crate_path = if std::env::var("CARGO_PKG_NAME").unwrap_or_default() == "arri_repr" {
+        quote! { crate }
+    } else {
+        quote! { ::ronky }
+    };
+
     // Check for disabled warnings
     let disabled_warnings = get_disabled_warnings(&input.attrs);
 
     // Generate serialize method
     let serialize_calls = fields.iter().map(|field| {
         let field_name = field.ident.as_ref().unwrap();
-        let field_name_str = field_name.to_string();
+        let mut field_name_str = field_name.to_string();
+        // Strip r# prefix from raw identifiers
+        if field_name_str.starts_with("r#") {
+            field_name_str = field_name_str[2..].to_string();
+        }
         let json_key = transform_field_name(&field_name_str);
 
         quote! {
@@ -208,9 +220,15 @@ fn generate_serializable_impl(
         .iter()
         .any(|f| f.ident.as_ref().is_some_and(|name| name == "metadata"));
 
-    let has_nullable = fields
+    let nullable_field = fields
         .iter()
-        .any(|f| f.ident.as_ref().is_some_and(|name| name == "nullable"));
+        .find(|f| {
+            f.ident
+                .as_ref()
+                .is_some_and(|name| name == "nullable" || name == "is_nullable")
+        })
+        .and_then(|f| f.ident.as_ref());
+    let has_nullable = nullable_field.is_some();
 
     // Generate warnings for missing fields
     let mut warnings = Vec::new();
@@ -231,7 +249,7 @@ fn generate_serializable_impl(
     // Generate set_metadata implementation if metadata field exists
     let set_metadata_impl = if has_metadata {
         quote! {
-            fn set_metadata(&mut self, metadata: ::ronky::MetadataSchema) {
+            fn set_metadata(&mut self, metadata: #crate_path::MetadataSchema) {
                 self.metadata = Some(metadata);
             }
         }
@@ -240,10 +258,10 @@ fn generate_serializable_impl(
     };
 
     // Generate set_nullable implementation if nullable field exists
-    let set_nullable_impl = if has_nullable {
+    let set_nullable_impl = if let Some(field_name) = nullable_field {
         quote! {
             fn set_nullable(&mut self, nullable: bool) {
-                self.nullable = Some(nullable);
+                self.#field_name = Some(nullable);
             }
         }
     } else {
@@ -253,9 +271,9 @@ fn generate_serializable_impl(
     quote! {
         #(#warnings)*
 
-        impl #impl_generics ::ronky::Serializable for #struct_name #ty_generics #where_clause {
+        impl #impl_generics #crate_path::Serializable for #struct_name #ty_generics #where_clause {
             fn serialize(&self) -> Option<String> {
-                ::ronky::Serializer::builder()
+                #crate_path::Serializer::builder()
                     #(#serialize_calls)*
                     .build()
                     .into()
@@ -270,9 +288,15 @@ fn generate_serializable_impl(
 
 fn transform_field_name(field_name: &str) -> String {
     match field_name {
+        "type" => "type".to_string(),
+        "enum" => "enum".to_string(),
+        "ref" => "ref".to_string(),
         "is_deprecated" => "isDeprecated".to_string(),
         "deprecated_since" => "deprecatedSince".to_string(),
         "deprecated_message" => "deprecatedNote".to_string(),
+        "is_nullable" => "isNullable".to_string(),
+        "is_strict" => "isStrict".to_string(),
+        "optional_properties" => "optionalProperties".to_string(),
         _ => snake_to_camel_case(field_name),
     }
 }

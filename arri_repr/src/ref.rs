@@ -1,9 +1,10 @@
-use crate::{Serializable, serializer::Serializer};
+use ronky_derive::Serializable as SerializableDerive;
 
 /// Represents a reference schema in an Arri schema.
 ///
 /// This struct is used to define a reference to another schema.
-#[derive(Default, Debug, PartialEq, Eq)]
+#[derive(Default, Debug, PartialEq, Eq, SerializableDerive)]
+#[arri_disable(metadata, nullable)]
 pub struct RefSchema {
     /// The reference string pointing to another schema.
     pub r#ref: String,
@@ -23,16 +24,5 @@ impl RefSchema {
         Self {
             r#ref: r#ref.to_string(),
         }
-    }
-}
-
-impl Serializable for RefSchema {
-    /// Serializes the `RefSchema` into a string representation.
-    ///
-    /// # Returns
-    ///
-    /// An `Option<String>` containing the serialized schema, or `None` if serialization fails.
-    fn serialize(&self) -> Option<String> {
-        Serializer::builder().set("ref", &self.r#ref).build().into()
     }
 }

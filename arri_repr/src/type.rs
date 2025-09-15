@@ -1,10 +1,12 @@
-use crate::{MetadataSchema, Serializable, serializer::Serializer};
+use crate::{MetadataSchema, Serializable};
+use ronky_derive::Serializable as SerializableDerive;
 
 /// Represents a schema for a type in an Arri schema.
 ///
 /// This struct defines the type, optional metadata, and nullability
 /// associated with the schema.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, SerializableDerive)]
+#[arri_disable(nullable)]
 pub struct TypeSchema {
     /// The type of the schema.
     r#type: Types,
@@ -33,25 +35,6 @@ impl TypeSchema {
             metadata: None,
             is_nullable: None,
         }
-    }
-}
-
-impl Serializable for TypeSchema {
-    fn serialize(&self) -> Option<String> {
-        Serializer::builder()
-            .set("type", &self.r#type)
-            .set("metadata", &self.metadata)
-            .set("isNullable", &self.is_nullable)
-            .build()
-            .into()
-    }
-
-    fn set_metadata(&mut self, metadata: MetadataSchema) {
-        self.metadata = Some(metadata);
-    }
-
-    fn set_nullable(&mut self, nullable: bool) {
-        self.is_nullable = Some(nullable);
     }
 }
 
