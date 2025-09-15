@@ -43,6 +43,7 @@ pub use metadata::MetadataSchema;
 pub use properties::PropertiesSchema;
 pub use r#ref::RefSchema;
 pub use serializable::Serializable;
+pub use serializer::Serializer;
 pub use tagged_union::TaggedUnionSchema;
 pub use r#type::{TypeSchema, Types};
 pub use values::ValuesSchema;

@@ -136,3 +136,183 @@ pub fn exported_derive(input: TokenStream) -> TokenStream {
     }
     .into()
 }
+
+/// A procedural macro to derive the `Serializable` trait for structs.
+///
+/// This macro generates an implementation of the `arri_repr::Serializable` trait for the
+/// annotated struct. It automatically generates the `serialize()` method based on struct fields,
+/// and optionally implements `set_metadata()` and `set_nullable()` if the corresponding fields exist.
+///
+/// # Field name transformations
+/// - `is_deprecated` becomes `"isDeprecated"`
+/// - `deprecated_since` becomes `"deprecatedSince"`
+/// - `deprecated_message` becomes `"deprecatedNote"`
+/// - Other `snake_case` fields are converted to `camelCase`
+///
+/// # Special field detection
+/// - If a field named `metadata` of type `Option<MetadataSchema>` exists, `set_metadata()` will be implemented
+/// - If a field named `nullable` of type `Option<bool>` exists, `set_nullable()` will be implemented
+/// - Missing fields will generate warnings unless disabled with `#[arri_disable(metadata, nullable)]`
+///
+/// # Example
+/// ```ignore
+/// #[derive(Serializable)]
+/// struct MySchema {
+///     pub id: Option<String>,
+///     pub description: Option<String>,
+///     pub is_deprecated: Option<bool>,
+///     pub metadata: Option<MetadataSchema>,  // Enables set_metadata()
+///     pub nullable: Option<bool>,            // Enables set_nullable()
+/// }
+/// ```
+#[proc_macro_derive(Serializable, attributes(arri_disable))]
+pub fn serializable_derive(input: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(input as DeriveInput);
+
+    match input.data {
+        Data::Struct(DataStruct {
+            fields: Fields::Named(ref fields),
+            ..
+        }) => generate_serializable_impl(&input, &fields.named),
+        _ => quote_spanned!(input.span() =>
+            compile_error!("Serializable can only be derived for structs with named fields")
+        )
+        .into(),
+    }
+}
+
+fn generate_serializable_impl(
+    input: &DeriveInput,
+    fields: &syn::punctuated::Punctuated<syn::Field, syn::Token![,]>,
+) -> TokenStream {
+    let struct_name = &input.ident;
+    let generics = &input.generics;
+    let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
+
+    // Check for disabled warnings
+    let disabled_warnings = get_disabled_warnings(&input.attrs);
+
+    // Generate serialize method
+    let serialize_calls = fields.iter().map(|field| {
+        let field_name = field.ident.as_ref().unwrap();
+        let field_name_str = field_name.to_string();
+        let json_key = transform_field_name(&field_name_str);
+
+        quote! {
+            .set(#json_key, &self.#field_name)
+        }
+    });
+
+    // Check for metadata and nullable fields
+    let has_metadata = fields
+        .iter()
+        .any(|f| f.ident.as_ref().is_some_and(|name| name == "metadata"));
+
+    let has_nullable = fields
+        .iter()
+        .any(|f| f.ident.as_ref().is_some_and(|name| name == "nullable"));
+
+    // Generate warnings for missing fields
+    let mut warnings = Vec::new();
+    if !has_metadata && !disabled_warnings.contains(&"metadata".to_string()) {
+        warnings.push(quote! {
+            #[deprecated(note = "Consider adding a 'metadata: Option<MetadataSchema>' field for better schema support, or disable this warning with #[arri_disable(metadata)]")]
+            const _METADATA_FIELD_MISSING: () = ();
+        });
+    }
+
+    if !has_nullable && !disabled_warnings.contains(&"nullable".to_string()) {
+        warnings.push(quote! {
+            #[deprecated(note = "Consider adding a 'nullable: Option<bool>' field for nullability support, or disable this warning with #[arri_disable(nullable)]")]
+            const _NULLABLE_FIELD_MISSING: () = ();
+        });
+    }
+
+    // Generate set_metadata implementation if metadata field exists
+    let set_metadata_impl = if has_metadata {
+        quote! {
+            fn set_metadata(&mut self, metadata: ::ronky::MetadataSchema) {
+                self.metadata = Some(metadata);
+            }
+        }
+    } else {
+        quote! {}
+    };
+
+    // Generate set_nullable implementation if nullable field exists
+    let set_nullable_impl = if has_nullable {
+        quote! {
+            fn set_nullable(&mut self, nullable: bool) {
+                self.nullable = Some(nullable);
+            }
+        }
+    } else {
+        quote! {}
+    };
+
+    quote! {
+        #(#warnings)*
+
+        impl #impl_generics ::ronky::Serializable for #struct_name #ty_generics #where_clause {
+            fn serialize(&self) -> Option<String> {
+                ::ronky::Serializer::builder()
+                    #(#serialize_calls)*
+                    .build()
+                    .into()
+            }
+
+            #set_metadata_impl
+            #set_nullable_impl
+        }
+    }
+    .into()
+}
+
+fn transform_field_name(field_name: &str) -> String {
+    match field_name {
+        "is_deprecated" => "isDeprecated".to_string(),
+        "deprecated_since" => "deprecatedSince".to_string(),
+        "deprecated_message" => "deprecatedNote".to_string(),
+        _ => snake_to_camel_case(field_name),
+    }
+}
+
+fn snake_to_camel_case(s: &str) -> String {
+    let mut result = String::new();
+    let mut capitalize_next = false;
+
+    for ch in s.chars() {
+        if ch == '_' {
+            capitalize_next = true;
+        } else if capitalize_next {
+            result.push(ch.to_ascii_uppercase());
+            capitalize_next = false;
+        } else {
+            result.push(ch);
+        }
+    }
+
+    result
+}
+
+fn get_disabled_warnings(attrs: &[syn::Attribute]) -> Vec<String> {
+    let mut disabled = Vec::new();
+
+    for attr in attrs {
+        if attr.path().is_ident("arri_disable") {
+            // Parse the parenthesized content manually
+            if let Ok(tokens) = attr.parse_args::<proc_macro2::TokenStream>() {
+                // Convert tokens to string and split by commas
+                let tokens_str = tokens.to_string();
+                for item in tokens_str.split(',') {
+                    let trimmed = item.trim();
+                    if !trimmed.is_empty() {
+                        disabled.push(trimmed.to_string());
+                    }
+                }
+            }
+        }
+    }
+
+    disabled
+}

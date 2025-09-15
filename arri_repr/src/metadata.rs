@@ -1,6 +1,6 @@
 use std::ops::BitOr;
 
-use crate::{Serializable, serializer::Serializer};
+use crate::Serializable;
 
 /// Macro to merge fields from one struct into another.
 ///
@@ -123,6 +123,7 @@ impl MetadataSchema {
 
 impl Serializable for MetadataSchema {
     fn serialize(&self) -> Option<String> {
+        use crate::serializer::Serializer;
         Serializer::builder()
             .set("id", &self.id)
             .set("description", &self.description)

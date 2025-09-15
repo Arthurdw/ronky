@@ -25,7 +25,7 @@ ronky_derive.workspace = true
 
 [features]
 default = []
-derive = ["ronky_derive"]
+derive = ["ronky_derive", "arri_repr/derive"]
 serialization = ["sonic-rs", "serde", "ronky_derive?/serialization"]
 chrono = ["arri_repr/chrono"]
 time = ["arri_repr/time"]
