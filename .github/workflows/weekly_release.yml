@@ -1,0 +1,164 @@
+---
+name: Weekly Release
+run-name: weekly-release
+
+on:
+  schedule:
+    # Every Wednesday at 9:00 AM UTC
+    - cron: "0 9 * * 3"
+  workflow_dispatch: # Allow manual trigger for testing
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false # Don't cancel releases
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  weekly-release:
+    name: Weekly Release
+    runs-on: ubuntu-latest
+    container:
+      image: arthurdw/rust-ci:latest
+
+    steps:
+      - name: Get token
+        id: get_token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.RONKY_CD_APP_ID }}
+          private-key: ${{ secrets.RONKY_CD_TOKEN }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+
+      - name: Check out repository
+        uses: actions/checkout@v5
+        with:
+          token: ${{ steps.get_token.outputs.token }}
+          fetch-depth: 0 # Need full history to get merged PRs
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Fix repository permissions
+        run: |
+          chown -R $(id -u):$(id -g) .
+
+      - name: Get last release date
+        id: last_release
+        run: |
+          # Get the last release date, or use a week ago if no releases exist
+          LAST_RELEASE_DATE=$(gh api repos/${{ github.repository }}/releases/latest --jq .published_at 2>/dev/null || echo "")
+          if [ -z "$LAST_RELEASE_DATE" ]; then
+            # If no releases exist, use a week ago
+            LAST_RELEASE_DATE=$(date -d "7 days ago" -Iseconds)
+          fi
+          echo "last_release_date=$LAST_RELEASE_DATE" >> $GITHUB_OUTPUT
+          echo "Last release date: $LAST_RELEASE_DATE"
+        env:
+          GITHUB_TOKEN: ${{ steps.get_token.outputs.token }}
+
+      - name: Get merged PRs since last release
+        id: merged_prs
+        run: |
+          # Get all merged PRs since the last release
+          MERGED_PRS=$(gh api graphql -f query='
+            query($owner: String!, $repo: String!, $since: DateTime!) {
+              repository(owner: $owner, name: $repo) {
+                pullRequests(states: MERGED, first: 100, orderBy: {field: MERGED_AT, direction: DESC}) {
+                  nodes {
+                    number
+                    mergedAt
+                    labels(first: 10) {
+                      nodes {
+                        name
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ' -f owner='${{ github.repository_owner }}' -f repo='${{ github.event.repository.name }}' -f since='${{ steps.last_release.outputs.last_release_date }}' --jq '.data.repository.pullRequests.nodes[] | select(.mergedAt > "${{ steps.last_release.outputs.last_release_date }}") | .labels.nodes[].name' | grep "^release:" | sort | uniq || echo "")
+
+          echo "Merged PR labels since last release:"
+          echo "$MERGED_PRS"
+
+          # Store for next step
+          echo "$MERGED_PRS" > /tmp/pr_labels.txt
+        env:
+          GITHUB_TOKEN: ${{ steps.get_token.outputs.token }}
+
+      - name: Determine version bump type
+        id: version_bump
+        run: |
+          # Set default version bump to patch
+          BUMP_TYPE="patch"
+
+          # Read the labels from the previous step
+          if [ -f /tmp/pr_labels.txt ]; then
+            PR_LABELS=$(cat /tmp/pr_labels.txt)
+
+            # Determine bump type based on highest priority label
+            if echo "$PR_LABELS" | grep -q "release:major"; then
+              BUMP_TYPE="major"
+            elif echo "$PR_LABELS" | grep -q "release:minor"; then
+              BUMP_TYPE="minor"
+            elif echo "$PR_LABELS" | grep -q "release:patch"; then
+              BUMP_TYPE="patch"
+            fi
+          fi
+
+          echo "bump_type=$BUMP_TYPE" >> $GITHUB_OUTPUT
+          echo "Version bump type: $BUMP_TYPE"
+
+      - name: Check if release is needed
+        id: check_release
+        run: |
+          # Check if there are any merged PRs since last release
+          if [ -f /tmp/pr_labels.txt ] && [ -s /tmp/pr_labels.txt ]; then
+            echo "needs_release=true" >> $GITHUB_OUTPUT
+            echo "Release needed - found merged PRs with release labels"
+          else
+            # Check if there are any commits since last release (excluding version bump commits)
+            COMMITS_SINCE_RELEASE=$(git rev-list --count HEAD --since="${{ steps.last_release.outputs.last_release_date }}" --grep="chore(release):" --invert-grep)
+            if [ "$COMMITS_SINCE_RELEASE" -gt 0 ]; then
+              echo "needs_release=true" >> $GITHUB_OUTPUT
+              echo "Release needed - found $COMMITS_SINCE_RELEASE commits since last release"
+            else
+              echo "needs_release=false" >> $GITHUB_OUTPUT
+              echo "No release needed - no changes since last release"
+            fi
+          fi
+
+      - name: Bump version
+        if: steps.check_release.outputs.needs_release == 'true'
+        run: |
+          bump_type="${{ steps.version_bump.outputs.bump_type }}"
+          echo "Bumping version using: $bump_type"
+          cargo release version $bump_type --execute --no-confirm
+
+      - name: Extract version from Cargo.toml
+        if: steps.check_release.outputs.needs_release == 'true'
+        run: echo "VERSION=$(grep -m 1 '^version =' Cargo.toml | cut -d '"' -f 2)" >> $GITHUB_ENV
+
+      - name: Commit version bump
+        if: steps.check_release.outputs.needs_release == 'true'
+        run: |
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Cargo.toml Cargo.lock
+          git commit -m "chore(release): version bump to ${{ env.VERSION }}"
+          git tag "v${{ env.VERSION}}"
+
+      - name: Push changes
+        if: steps.check_release.outputs.needs_release == 'true'
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ steps.get_token.outputs.token }}
+          branch: ${{ github.ref }}
+          tags: true
+
+      - name: No release needed
+        if: steps.check_release.outputs.needs_release == 'false'
+        run: echo "No changes detected since last release. Skipping release."
