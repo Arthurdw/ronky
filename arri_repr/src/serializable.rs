@@ -126,90 +126,23 @@ impl Serializable for bool {
     }
 }
 
+// Macro to generate Serializable implementations for numeric types
+macro_rules! impl_serializable_for_numeric {
+    ($($type:ty),* $(,)?) => {
+        $(
+            impl Serializable for $type {
+                fn serialize(&self) -> Option<String> {
+                    self.to_string().into()
+                }
+            }
+        )*
+    };
+}
+
 // Numeric type implementations
-impl Serializable for i8 {
-    fn serialize(&self) -> Option<String> {
-        self.to_string().into()
-    }
-}
-
-impl Serializable for i16 {
-    fn serialize(&self) -> Option<String> {
-        self.to_string().into()
-    }
-}
-
-impl Serializable for i32 {
-    fn serialize(&self) -> Option<String> {
-        self.to_string().into()
-    }
-}
-
-impl Serializable for i64 {
-    fn serialize(&self) -> Option<String> {
-        self.to_string().into()
-    }
-}
-
-impl Serializable for i128 {
-    fn serialize(&self) -> Option<String> {
-        self.to_string().into()
-    }
-}
-
-impl Serializable for isize {
-    fn serialize(&self) -> Option<String> {
-        self.to_string().into()
-    }
-}
-
-impl Serializable for u8 {
-    fn serialize(&self) -> Option<String> {
-        self.to_string().into()
-    }
-}
-
-impl Serializable for u16 {
-    fn serialize(&self) -> Option<String> {
-        self.to_string().into()
-    }
-}
-
-impl Serializable for u32 {
-    fn serialize(&self) -> Option<String> {
-        self.to_string().into()
-    }
-}
-
-impl Serializable for u64 {
-    fn serialize(&self) -> Option<String> {
-        self.to_string().into()
-    }
-}
-
-impl Serializable for u128 {
-    fn serialize(&self) -> Option<String> {
-        self.to_string().into()
-    }
-}
-
-impl Serializable for usize {
-    fn serialize(&self) -> Option<String> {
-        self.to_string().into()
-    }
-}
-
-impl Serializable for f32 {
-    fn serialize(&self) -> Option<String> {
-        self.to_string().into()
-    }
-}
-
-impl Serializable for f64 {
-    fn serialize(&self) -> Option<String> {
-        self.to_string().into()
-    }
-}
+impl_serializable_for_numeric!(
+    i8, i16, i32, i64, i128, isize, u8, u16, u32, u64, u128, usize, f32, f64,
+);
 
 impl Serializable for () {
     fn serialize(&self) -> Option<String> {

@@ -234,14 +234,14 @@ fn generate_serializable_impl(
     let mut warnings = Vec::new();
     if !has_metadata && !disabled_warnings.contains(&"metadata".to_string()) {
         warnings.push(quote! {
-            #[deprecated(note = "Consider adding a 'metadata: Option<MetadataSchema>' field for better schema support, or disable this warning with #[arri_disable(metadata)]")]
+            #[deprecated(note = "Consider adding a 'metadata: Option<#crate_path::MetadataSchema>' field for better schema support, or disable this warning with #[arri_disable(metadata)]")]
             const _METADATA_FIELD_MISSING: () = ();
         });
     }
 
     if !has_nullable && !disabled_warnings.contains(&"nullable".to_string()) {
         warnings.push(quote! {
-            #[deprecated(note = "Consider adding a 'nullable: Option<bool>' field for nullability support, or disable this warning with #[arri_disable(nullable)]")]
+            #[deprecated(note = "Consider adding a 'nullable: Option<bool>' or 'is_nullable: Option<bool>' field for nullability support, or disable this warning with #[arri_disable(nullable)]")]
             const _NULLABLE_FIELD_MISSING: () = ();
         });
     }
@@ -304,15 +304,23 @@ fn transform_field_name(field_name: &str) -> String {
 fn snake_to_camel_case(s: &str) -> String {
     let mut result = String::new();
     let mut capitalize_next = false;
+    let mut first_char = true;
 
     for ch in s.chars() {
         if ch == '_' {
-            capitalize_next = true;
+            if first_char {
+                // Preserve leading underscores
+                result.push(ch);
+            } else {
+                capitalize_next = true;
+            }
         } else if capitalize_next {
             result.push(ch.to_ascii_uppercase());
             capitalize_next = false;
+            first_char = false;
         } else {
             result.push(ch);
+            first_char = false;
         }
     }
 
@@ -324,15 +332,12 @@ fn get_disabled_warnings(attrs: &[syn::Attribute]) -> Vec<String> {
 
     for attr in attrs {
         if attr.path().is_ident("arri_disable") {
-            // Parse the parenthesized content manually
-            if let Ok(tokens) = attr.parse_args::<proc_macro2::TokenStream>() {
-                // Convert tokens to string and split by commas
-                let tokens_str = tokens.to_string();
-                for item in tokens_str.split(',') {
-                    let trimmed = item.trim();
-                    if !trimmed.is_empty() {
-                        disabled.push(trimmed.to_string());
-                    }
+            // Use syn's parsing utilities for more robust parsing
+            if let Ok(args) = attr.parse_args_with(
+                syn::punctuated::Punctuated::<syn::Ident, syn::Token![,]>::parse_terminated,
+            ) {
+                for ident in args {
+                    disabled.push(ident.to_string());
                 }
             }
         }

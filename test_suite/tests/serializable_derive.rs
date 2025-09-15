@@ -47,6 +47,11 @@ fn test_field_name_transformations() {
     assert_eq!(json["deprecatedSince"], "1.0.0");
     assert_eq!(json["deprecatedNote"], "Use new API");
     assert_eq!(json["myFieldName"], "value");
+
+    // Verify old field names are not present
+    assert!(!json.as_object().unwrap().contains_key("deprecated_since"));
+    assert!(!json.as_object().unwrap().contains_key("deprecated_message"));
+    assert!(!json.as_object().unwrap().contains_key("my_field_name"));
 }
 
 #[test]
@@ -182,4 +187,76 @@ fn test_empty_optional_fields() {
     assert_eq!(json.as_object().unwrap().len(), 1);
     assert_eq!(json["description"], "only description");
     assert!(json["id"].is_null() || !json.as_object().unwrap().contains_key("id"));
+}
+
+#[test]
+fn test_leading_underscore_handling() {
+    #[derive(SerializableDerive)]
+    #[arri_disable(metadata, nullable)]
+    struct UnderscoreStruct {
+        _private_field: Option<String>,
+        _another_private: Option<String>,
+        normal_field: Option<String>,
+    }
+
+    let instance = UnderscoreStruct {
+        _private_field: Some("private".to_string()),
+        _another_private: Some("another".to_string()),
+        normal_field: Some("normal".to_string()),
+    };
+
+    let result = instance.serialize().unwrap();
+    let json: serde_json::Value = serde_json::from_str(&result).unwrap();
+
+    // Check that leading underscores are preserved in field names
+    assert_eq!(json["_privateField"], "private");
+    assert_eq!(json["_anotherPrivate"], "another");
+    assert_eq!(json["normalField"], "normal");
+}
+
+#[test]
+fn test_none_field_omission() {
+    #[derive(SerializableDerive)]
+    #[arri_disable(metadata, nullable)]
+    struct OptionalStruct {
+        present_field: Option<String>,
+        none_field: Option<String>,
+        another_present: Option<i32>,
+    }
+
+    let instance = OptionalStruct {
+        present_field: Some("value".to_string()),
+        none_field: None,
+        another_present: Some(42),
+    };
+
+    let result = instance.serialize().unwrap();
+    let json: serde_json::Value = serde_json::from_str(&result).unwrap();
+    let obj = json.as_object().unwrap();
+
+    // Check that None fields are completely omitted
+    assert!(obj.contains_key("presentField"));
+    assert!(obj.contains_key("anotherPresent"));
+    assert!(!obj.contains_key("noneField"));
+
+    assert_eq!(json["presentField"], "value");
+    assert_eq!(json["anotherPresent"], 42);
+}
+
+#[test]
+fn test_primitive_serializable_implementations() {
+    use ronky::Serializable;
+
+    // Test numeric types
+    assert_eq!(42i32.serialize().unwrap(), "42");
+    assert_eq!(42u64.serialize().unwrap(), "42");
+    assert_eq!(2.5f64.serialize().unwrap(), "2.5");
+
+    // Test string types
+    assert_eq!("test".serialize().unwrap(), "\"test\"");
+    assert_eq!("hello".to_string().serialize().unwrap(), "\"hello\"");
+
+    // Test boolean
+    assert_eq!(true.serialize().unwrap(), "true");
+    assert_eq!(false.serialize().unwrap(), "false");
 }
