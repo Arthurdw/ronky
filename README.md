@@ -18,9 +18,6 @@ Born from the frustration of manual schema creation (and named after a particula
 Ronky does the tedious work so you can focus on the important stuff – like deciding whether your
 next variable should be called `data` or `info` (we both know you'll pick `data`).
 
-> 🚧 **Paws at Work**: Like a cat that's not quite finished knocking everything off your desk,
-> Ronky is still under construction. Object serialization and deserialization are coming soon,
-> probably right after this catnap. 🚧
 
 <!--toc:start-->
 
