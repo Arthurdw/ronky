@@ -16,7 +16,6 @@ fn test_chrono_serialization() {
         duration: chrono::Duration,
     }
 
-    let _fixed_offset = FixedOffset::east_opt(5 * 3600).unwrap();
     let test_data = ChronoStruct {
         utc_time: DateTime::parse_from_rfc3339("2023-12-25T10:30:00Z")
             .unwrap()
@@ -349,8 +348,11 @@ fn test_indexmap_serialization() {
 fn test_smallvec_serialization() {
     use smallvec::{SmallVec, smallvec};
 
-    // Note: SmallVec arrays need to implement Exportable, but for serialization testing
-    // we can test the functionality by just ensuring it works with serde
+    // Note: Unlike other types tested in this file, SmallVec does not implement the `Exported` trait,
+    // so we cannot use the `to_json`/`from_json` helpers here. Instead, we verify that SmallVec
+    // supports serialization and deserialization by testing its compatibility with serde directly.
+    // This ensures that SmallVec can be serialized and deserialized, even though it cannot be used
+    // with the `Exported` trait due to trait bounds or orphan rules.
     let small_numbers: SmallVec<[i32; 4]> = smallvec![1, 2, 3, 4, 5];
     let json = serde_json::to_string(&small_numbers).unwrap();
     let deserialized: SmallVec<[i32; 4]> = serde_json::from_str(&json).unwrap();
