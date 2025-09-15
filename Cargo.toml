@@ -37,7 +37,7 @@ bigdecimal = { version = "0.4.8", features = ["serde"] }
 num-bigint = { version = "0.4.6", features = ["serde"] }
 num-bigfloat = { version = "1.7.2", features = ["serde"] }
 rust_decimal = { version = "1.37.1", features = ["serde"] }
-decimal = { version = "2.1.0", features = ["serde"] }
+decimal = { version = "2.1.0", features = ["serde"], default-features = false }
 url = { version = "2.5.4", features = ["serde"] }
 bytes = { version = "1.10.1", features = ["serde"] }
 dashmap = { version = "6.1.0", features = ["serde"] }
