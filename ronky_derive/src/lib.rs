@@ -251,7 +251,7 @@ fn generate_serializable_impl(
 
     // Generate warnings for missing fields
     let mut warnings = Vec::new();
-    if !has_metadata && !disabled_warnings.contains(&"metadata".to_string()) {
+    if !has_metadata && !disabled_warnings.iter().any(|s| s == "metadata") {
         warnings.push(quote! {
             const _: () = {
                 #[deprecated(note = "Consider adding a 'metadata: Option<#crate_path::MetadataSchema>' field for better schema support, or disable this warning with #[arri_disable(metadata)]")]
@@ -261,7 +261,7 @@ fn generate_serializable_impl(
         });
     }
 
-    if !has_nullable && !disabled_warnings.contains(&"nullable".to_string()) {
+    if !has_nullable && !disabled_warnings.iter().any(|s| s == "nullable") {
         warnings.push(quote! {
             const _: () = {
                 #[deprecated(note = "Consider adding a 'nullable: Option<bool>' or 'is_nullable: Option<bool>' field for nullability support, or disable this warning with #[arri_disable(nullable)]")]
@@ -275,7 +275,11 @@ fn generate_serializable_impl(
     let set_metadata_impl = if has_metadata {
         quote! {
             fn set_metadata(&mut self, metadata: #crate_path::MetadataSchema) {
-                self.metadata = Some(metadata);
+                self.metadata = Some(if let Some(current) = &self.metadata {
+                    current.clone() | metadata
+                } else {
+                    metadata
+                });
             }
         }
     } else {
@@ -324,9 +328,11 @@ fn transform_field_name(field_name: &str) -> String {
         "is_strict" => "isStrict".to_string(),
         "optional_properties" => "optionalProperties".to_string(),
         _ => {
-            // Handle leading underscores: preserve them and apply camelCase to the rest
-            if let Some(stripped) = field_name.strip_prefix('_') {
-                format!("_{}", stripped.to_lower_camel_case())
+            // Preserve all leading underscores; camelCase the remainder
+            let underscores = field_name.chars().take_while(|&c| c == '_').count();
+            if underscores > 0 {
+                let rest = &field_name[underscores..];
+                format!("{}{}", "_".repeat(underscores), rest.to_lower_camel_case())
             } else {
                 field_name.to_lower_camel_case()
             }

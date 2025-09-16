@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 /// Enum representing various string transformation types.
 ///
 /// These transformations can be applied to strings to convert them
@@ -40,6 +42,13 @@ impl EnumTransformation {
     }
 }
 
+impl FromStr for EnumTransformation {
+    type Err = String;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Self::try_from(s)
+    }
+}
+
 impl TryFrom<String> for EnumTransformation {
     type Error = String;
 
@@ -52,13 +61,18 @@ impl TryFrom<&str> for EnumTransformation {
     type Error = String;
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
-        let normalized = value.replace([' ', '-'], "_").to_lowercase();
+        let normalized = value
+            .replace([' ', '-', '_'], "")
+            .to_lowercase()
+            .trim_end_matches("case")
+            .to_string();
+
         Ok(match normalized.as_str() {
-            "uppercase" => Self::Uppercase,
-            "lowercase" => Self::Lowercase,
-            "snake_case" | "snakecase" => Self::Snakecase,
-            "camelcase" => Self::Camelcase,
-            "pascalcase" => Self::Pascalcase,
+            "upper" => Self::Uppercase,
+            "lower" => Self::Lowercase,
+            "snake" => Self::Snakecase,
+            "camel" => Self::Camelcase,
+            "pascal" => Self::Pascalcase,
             _ => return Err(format!("Unknown transformation: {}", value)),
         })
     }
@@ -111,5 +125,29 @@ mod tests {
         assert_eq!(helper.apply("hello_world"), "hello_world");
         assert_eq!(helper.apply("helloWorld"), "helloworld");
         assert_eq!(helper.apply("HelloWorld"), "helloworld");
+    }
+
+    #[test]
+    fn parse_aliases() {
+        assert_eq!(
+            EnumTransformation::try_from("camel").unwrap(),
+            EnumTransformation::Camelcase
+        );
+        assert_eq!(
+            EnumTransformation::try_from("pascal").unwrap(),
+            EnumTransformation::Pascalcase
+        );
+        assert_eq!(
+            EnumTransformation::try_from("snake").unwrap(),
+            EnumTransformation::Snakecase
+        );
+        assert_eq!(
+            EnumTransformation::try_from("upper").unwrap(),
+            EnumTransformation::Uppercase
+        );
+        assert_eq!(
+            EnumTransformation::try_from("lower").unwrap(),
+            EnumTransformation::Lowercase
+        );
     }
 }
