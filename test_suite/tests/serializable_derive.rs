@@ -23,6 +23,10 @@ fn test_basic_serializable_derive() {
     assert_eq!(json["id"], "test-id");
     assert_eq!(json["description"], "test description");
     assert_eq!(json["isDeprecated"], true);
+    assert!(
+        json.get("is_deprecated").is_none(),
+        "snake_case key should be omitted"
+    );
 }
 
 #[test]
@@ -49,9 +53,9 @@ fn test_field_name_transformations() {
     assert_eq!(json["myFieldName"], "value");
 
     // Verify old field names are not present
-    assert!(!json.as_object().unwrap().contains_key("deprecated_since"));
-    assert!(!json.as_object().unwrap().contains_key("deprecated_message"));
-    assert!(!json.as_object().unwrap().contains_key("my_field_name"));
+    assert!(json.get("deprecated_since").is_none());
+    assert!(json.get("deprecated_message").is_none());
+    assert!(json.get("my_field_name").is_none());
 }
 
 #[test]
@@ -79,6 +83,13 @@ fn test_metadata_field_detection() {
     instance.set_metadata(test_metadata.clone());
 
     assert_eq!(instance.metadata, Some(test_metadata));
+
+    // Also test serialized nested metadata contents
+    let result = instance.serialize().unwrap();
+    let json: serde_json::Value = serde_json::from_str(&result).unwrap();
+    assert_eq!(json["metadata"]["id"], "meta-id");
+    assert_eq!(json["metadata"]["description"], "meta description");
+    assert_eq!(json["metadata"]["isDeprecated"], false);
 }
 
 #[test]
@@ -98,6 +109,11 @@ fn test_nullable_field_detection() {
     instance.set_nullable(true);
 
     assert_eq!(instance.nullable, Some(true));
+
+    // Also test serialized nullable output
+    let result = instance.serialize().unwrap();
+    let json: serde_json::Value = serde_json::from_str(&result).unwrap();
+    assert_eq!(json["isNullable"], true);
 }
 
 #[test]
@@ -141,6 +157,10 @@ fn test_combined_metadata_and_nullable() {
     assert_eq!(json["isNullable"], true);
     // metadata field will be serialized as a nested object
     assert!(json["metadata"].is_object());
+    // Check nested metadata fields and absence of unset entries
+    assert_eq!(json["metadata"]["id"], "meta-id");
+    assert!(json["metadata"].get("description").is_none());
+    assert!(json["metadata"].get("isDeprecated").is_none());
 }
 
 #[test]
@@ -269,10 +289,18 @@ fn test_none_field_omission() {
 fn test_primitive_serializable_implementations() {
     use ronky::Serializable;
 
-    // Test numeric types
-    assert_eq!(42i32.serialize().unwrap(), "42");
-    assert_eq!(42u64.serialize().unwrap(), "42");
-    assert_eq!(2.5f64.serialize().unwrap(), "2.5");
+    // Test numeric types with JSON validation
+    let i32_result = 42i32.serialize().unwrap();
+    let json: serde_json::Value = serde_json::from_str(&i32_result).unwrap();
+    assert_eq!(json, serde_json::json!(42));
+
+    let u64_result = 1u64.serialize().unwrap();
+    let json: serde_json::Value = serde_json::from_str(&u64_result).unwrap();
+    assert_eq!(json, serde_json::json!(1));
+
+    let f32_result = 3.5f32.serialize().unwrap();
+    let json: serde_json::Value = serde_json::from_str(&f32_result).unwrap();
+    assert_eq!(json.as_f64().unwrap(), 3.5);
 
     // Test string types
     assert_eq!("test".serialize().unwrap(), "\"test\"");
