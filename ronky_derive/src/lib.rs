@@ -253,17 +253,21 @@ fn generate_serializable_impl(
     let mut warnings = Vec::new();
     if !has_metadata && !disabled_warnings.contains(&"metadata".to_string()) {
         warnings.push(quote! {
-            #[deprecated(note = "Consider adding a 'metadata: Option<#crate_path::MetadataSchema>' field for better schema support, or disable this warning with #[arri_disable(metadata)]")]
-            const _METADATA_FIELD_MISSING: () = ();
-            const _: () = _METADATA_FIELD_MISSING; // trigger deprecation
+            const _: () = {
+                #[deprecated(note = "Consider adding a 'metadata: Option<#crate_path::MetadataSchema>' field for better schema support, or disable this warning with #[arri_disable(metadata)]")]
+                const _METADATA_FIELD_MISSING: () = ();
+                _METADATA_FIELD_MISSING // trigger deprecation
+            };
         });
     }
 
     if !has_nullable && !disabled_warnings.contains(&"nullable".to_string()) {
         warnings.push(quote! {
-            #[deprecated(note = "Consider adding a 'nullable: Option<bool>' or 'is_nullable: Option<bool>' field for nullability support, or disable this warning with #[arri_disable(nullable)]")]
-            const _NULLABLE_FIELD_MISSING: () = ();
-            const _: () = _NULLABLE_FIELD_MISSING; // trigger deprecation
+            const _: () = {
+                #[deprecated(note = "Consider adding a 'nullable: Option<bool>' or 'is_nullable: Option<bool>' field for nullability support, or disable this warning with #[arri_disable(nullable)]")]
+                const _NULLABLE_FIELD_MISSING: () = ();
+                _NULLABLE_FIELD_MISSING // trigger deprecation
+            };
         });
     }
 
