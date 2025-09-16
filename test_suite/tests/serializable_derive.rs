@@ -138,7 +138,7 @@ fn test_combined_metadata_and_nullable() {
 
     assert_eq!(json["id"], "test");
     assert_eq!(json["description"], "description");
-    assert_eq!(json["nullable"], true);
+    assert_eq!(json["isNullable"], true);
     // metadata field will be serialized as a nested object
     assert!(json["metadata"].is_object());
 }
@@ -158,6 +158,28 @@ fn test_disable_warnings() {
     };
 
     // Should still serialize properly
+    let result = instance.serialize().unwrap();
+    let json: serde_json::Value = serde_json::from_str(&result).unwrap();
+
+    assert_eq!(json["id"], "test");
+    assert_eq!(json["description"], "description");
+}
+
+#[test]
+fn test_disable_warnings_case_insensitive() {
+    #[derive(SerializableDerive)]
+    #[arri_disable(METADATA, Nullable)]
+    struct CaseInsensitiveStruct {
+        id: Option<String>,
+        description: Option<String>,
+    }
+
+    let instance = CaseInsensitiveStruct {
+        id: Some("test".to_string()),
+        description: Some("description".to_string()),
+    };
+
+    // Should still serialize properly even with mixed case disable attributes
     let result = instance.serialize().unwrap();
     let json: serde_json::Value = serde_json::from_str(&result).unwrap();
 
@@ -259,4 +281,105 @@ fn test_primitive_serializable_implementations() {
     // Test boolean
     assert_eq!(true.serialize().unwrap(), "true");
     assert_eq!(false.serialize().unwrap(), "false");
+}
+
+#[test]
+fn test_nullable_vs_is_nullable_field_mapping() {
+    #[derive(SerializableDerive)]
+    #[arri_disable(metadata)]
+    struct NullableFieldStruct {
+        id: Option<String>,
+        nullable: Option<bool>,
+    }
+
+    #[derive(SerializableDerive)]
+    #[arri_disable(metadata)]
+    struct IsNullableFieldStruct {
+        id: Option<String>,
+        is_nullable: Option<bool>,
+    }
+
+    let nullable_instance = NullableFieldStruct {
+        id: Some("test".to_string()),
+        nullable: Some(true),
+    };
+
+    let is_nullable_instance = IsNullableFieldStruct {
+        id: Some("test".to_string()),
+        is_nullable: Some(true),
+    };
+
+    let nullable_result = nullable_instance.serialize().unwrap();
+    let is_nullable_result = is_nullable_instance.serialize().unwrap();
+
+    let nullable_json: serde_json::Value = serde_json::from_str(&nullable_result).unwrap();
+    let is_nullable_json: serde_json::Value = serde_json::from_str(&is_nullable_result).unwrap();
+
+    // Both nullable and is_nullable fields should map to "isNullable" in JSON
+    assert_eq!(nullable_json["isNullable"], true);
+    assert_eq!(is_nullable_json["isNullable"], true);
+
+    // Verify the snake_case field names are not present
+    assert!(!nullable_json.as_object().unwrap().contains_key("nullable"));
+    assert!(
+        !is_nullable_json
+            .as_object()
+            .unwrap()
+            .contains_key("is_nullable")
+    );
+}
+
+#[test]
+fn test_raw_identifier_handling() {
+    #[derive(SerializableDerive)]
+    #[arri_disable(metadata, nullable)]
+    struct RawIdentifierStruct {
+        r#type: Option<String>,
+        r#ref: Option<String>,
+        r#enum: Option<String>,
+        normal_field: Option<String>,
+    }
+
+    let instance = RawIdentifierStruct {
+        r#type: Some("object".to_string()),
+        r#ref: Some("reference".to_string()),
+        r#enum: Some("MyEnum".to_string()),
+        normal_field: Some("normal".to_string()),
+    };
+
+    let result = instance.serialize().unwrap();
+    let json: serde_json::Value = serde_json::from_str(&result).unwrap();
+
+    // Raw identifiers should be serialized without the r# prefix
+    assert_eq!(json["type"], "object");
+    assert_eq!(json["ref"], "reference");
+    assert_eq!(json["enum"], "MyEnum");
+    assert_eq!(json["normalField"], "normal");
+}
+
+#[test]
+fn test_type_schema_setters() {
+    use ronky::{MetadataSchema, TypeSchema, Types};
+
+    let mut type_schema = TypeSchema::new(Types::String);
+
+    // Test that TypeSchema now has set_metadata and set_nullable methods
+    // (previously nullable was disabled, now it should work)
+    let metadata = MetadataSchema {
+        id: Some("test".to_string()),
+        description: Some("A string type".to_string()),
+        is_deprecated: None,
+        deprecated_since: None,
+        deprecated_message: None,
+    };
+
+    type_schema.set_metadata(metadata.clone());
+    type_schema.set_nullable(true);
+
+    let result = type_schema.serialize().unwrap();
+    let json: serde_json::Value = serde_json::from_str(&result).unwrap();
+
+    assert_eq!(json["type"], "string");
+    assert_eq!(json["isNullable"], true);
+    assert!(json["metadata"].is_object());
 }

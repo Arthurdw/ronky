@@ -25,15 +25,20 @@ impl TryFrom<String> for EnumTransformation {
     type Error = String;
 
     fn try_from(value: String) -> Result<Self, Self::Error> {
-        Ok(match value.as_str() {
+        Self::try_from(value.as_str())
+    }
+}
+
+impl TryFrom<&str> for EnumTransformation {
+    type Error = String;
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        let normalized = value.replace([' ', '-'], "_").to_lowercase();
+        Ok(match normalized.as_str() {
             "uppercase" => Self::Uppercase,
-            "UPPERCASE" => Self::Uppercase,
             "lowercase" => Self::Lowercase,
-            "snake_case" => Self::Snakecase,
-            "snakecase" => Self::Snakecase,
-            "camelCase" => Self::Camelcase,
+            "snake_case" | "snakecase" => Self::Snakecase,
             "camelcase" => Self::Camelcase,
-            "PascalCase" => Self::Pascalcase,
             "pascalcase" => Self::Pascalcase,
             _ => return Err(format!("Unknown transformation: {}", value)),
         })

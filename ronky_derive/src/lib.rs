@@ -152,8 +152,10 @@ pub fn exported_derive(input: TokenStream) -> TokenStream {
 ///
 /// # Special field detection
 /// - If a field named `metadata` of type `Option<MetadataSchema>` exists, `set_metadata()` will be implemented
-/// - If a field named `nullable` of type `Option<bool>` exists, `set_nullable()` will be implemented
+/// - If a field named `nullable` or `is_nullable` of type `Option<bool>` exists, `set_nullable()` will be implemented
 /// - Missing fields will generate warnings unless disabled with `#[arri_disable(metadata, nullable)]`
+///
+/// Raw identifiers like `r#type`, `r#ref`, and `r#enum` are supported and serialized without the `r#` prefix.
 ///
 /// # Example
 /// ```ignore
@@ -190,11 +192,27 @@ fn generate_serializable_impl(
     let generics = &input.generics;
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
 
-    // Determine if we're in arri_repr crate or external crate
-    let crate_path = if std::env::var("CARGO_PKG_NAME").unwrap_or_default() == "arri_repr" {
-        quote! { crate }
-    } else {
-        quote! { ::ronky }
+    // Determine target crate path robustly
+    let crate_path = {
+        use proc_macro_crate::{FoundCrate, crate_name};
+        match crate_name("ronky") {
+            Ok(FoundCrate::Itself) => quote! { crate },
+            Ok(FoundCrate::Name(name)) => {
+                let ident = proc_macro2::Ident::new(&name, proc_macro2::Span::call_site());
+                quote! { ::#ident }
+            }
+            Err(_) => {
+                // If ronky is not found, try arri_repr
+                match crate_name("arri_repr") {
+                    Ok(FoundCrate::Itself) => quote! { crate },
+                    Ok(FoundCrate::Name(name)) => {
+                        let ident = proc_macro2::Ident::new(&name, proc_macro2::Span::call_site());
+                        quote! { ::#ident }
+                    }
+                    Err(_) => quote! { ::ronky }, // fallback
+                }
+            }
+        }
     };
 
     // Check for disabled warnings
@@ -237,6 +255,7 @@ fn generate_serializable_impl(
         warnings.push(quote! {
             #[deprecated(note = "Consider adding a 'metadata: Option<#crate_path::MetadataSchema>' field for better schema support, or disable this warning with #[arri_disable(metadata)]")]
             const _METADATA_FIELD_MISSING: () = ();
+            const _: () = _METADATA_FIELD_MISSING; // trigger deprecation
         });
     }
 
@@ -244,6 +263,7 @@ fn generate_serializable_impl(
         warnings.push(quote! {
             #[deprecated(note = "Consider adding a 'nullable: Option<bool>' or 'is_nullable: Option<bool>' field for nullability support, or disable this warning with #[arri_disable(nullable)]")]
             const _NULLABLE_FIELD_MISSING: () = ();
+            const _: () = _NULLABLE_FIELD_MISSING; // trigger deprecation
         });
     }
 
@@ -295,6 +315,7 @@ fn transform_field_name(field_name: &str) -> String {
         "is_deprecated" => "isDeprecated".to_string(),
         "deprecated_since" => "deprecatedSince".to_string(),
         "deprecated_message" => "deprecatedNote".to_string(),
+        "nullable" => "isNullable".to_string(),
         "is_nullable" => "isNullable".to_string(),
         "is_strict" => "isStrict".to_string(),
         "optional_properties" => "optionalProperties".to_string(),
@@ -338,7 +359,7 @@ fn get_disabled_warnings(attrs: &[syn::Attribute]) -> Vec<String> {
                 syn::punctuated::Punctuated::<syn::Ident, syn::Token![,]>::parse_terminated,
             ) {
                 for ident in args {
-                    disabled.push(ident.to_string());
+                    disabled.push(ident.to_string().to_lowercase().trim().to_string());
                 }
             }
         }

@@ -6,7 +6,6 @@ use ronky_derive::Serializable as SerializableDerive;
 /// This struct defines the type, optional metadata, and nullability
 /// associated with the schema.
 #[derive(Debug, PartialEq, Eq, SerializableDerive)]
-#[arri_disable(nullable)]
 pub struct TypeSchema {
     /// The type of the schema.
     r#type: Types,
