@@ -3,7 +3,7 @@ ronky = { path = "ronky" }
 
 [workspace]
 resolver = "2"
-members = ["arri_repr", "ronky", "ronky_derive", "test_suite", "examples/*"]
+members = ["arri_common", "arri_repr", "ronky", "ronky_derive", "test_suite", "examples/*"]
 
 [workspace.package]
 version = "1.1.10"
@@ -26,6 +26,7 @@ use_self = "deny"
 ronky = { path = "ronky", version = "1.1.10" }
 arri_repr = { path = "arri_repr", version = "1.1.10" }
 ronky_derive = { path = "ronky_derive/", version = "1.1.10" }
+heck = "0.5.0"
 sonic-rs = "0.5.4"
 serde = { version = "1.0", features = ["derive"] }
 

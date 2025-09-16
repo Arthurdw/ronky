@@ -31,7 +31,6 @@
 //! probably looking for the [ronky](https://docs.rs/ronky) crate.
 
 mod r#enum;
-mod enum_transformation;
 mod metadata;
 mod named_struct;
 mod parsers;
@@ -39,6 +38,7 @@ mod parsers;
 mod serialization;
 
 use r#enum::export_enum;
+use heck::ToLowerCamelCase;
 use named_struct::export_named_struct;
 use proc_macro::TokenStream;
 use quote::{quote, quote_spanned};
@@ -308,8 +308,6 @@ fn generate_serializable_impl(
 }
 
 fn transform_field_name(field_name: &str) -> String {
-    use heck::ToLowerCamelCase;
-
     match field_name {
         "type" => "type".to_string(),
         "enum" => "enum".to_string(),

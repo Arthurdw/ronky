@@ -1,0 +1,18 @@
+[package]
+name = "arri_common"
+description = "Common types and utilities shared across Arri crates"
+readme = "README.md"
+
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+categories.workspace = true
+keywords.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+heck = { workspace = true }

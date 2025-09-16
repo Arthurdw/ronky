@@ -23,7 +23,6 @@
 mod elements;
 mod empty;
 mod r#enum;
-mod enum_transformation;
 mod exportable;
 mod metadata;
 mod properties;
@@ -34,10 +33,10 @@ mod tagged_union;
 mod r#type;
 mod values;
 
+pub use arri_common::EnumTransformation;
 pub use elements::ElementsSchema;
 pub use empty::EmptySchema;
 pub use r#enum::EnumSchema;
-pub use enum_transformation::EnumTransformation;
 pub use exportable::Exportable;
 pub use metadata::MetadataSchema;
 pub use properties::PropertiesSchema;
