@@ -308,6 +308,8 @@ fn generate_serializable_impl(
 }
 
 fn transform_field_name(field_name: &str) -> String {
+    use heck::ToLowerCamelCase;
+
     match field_name {
         "type" => "type".to_string(),
         "enum" => "enum".to_string(),
@@ -319,34 +321,15 @@ fn transform_field_name(field_name: &str) -> String {
         "is_nullable" => "isNullable".to_string(),
         "is_strict" => "isStrict".to_string(),
         "optional_properties" => "optionalProperties".to_string(),
-        _ => snake_to_camel_case(field_name),
-    }
-}
-
-fn snake_to_camel_case(s: &str) -> String {
-    let mut result = String::new();
-    let mut capitalize_next = false;
-    let mut first_char = true;
-
-    for ch in s.chars() {
-        if ch == '_' {
-            if first_char {
-                // Preserve leading underscores
-                result.push(ch);
+        _ => {
+            // Handle leading underscores: preserve them and apply camelCase to the rest
+            if let Some(stripped) = field_name.strip_prefix('_') {
+                format!("_{}", stripped.to_lower_camel_case())
             } else {
-                capitalize_next = true;
+                field_name.to_lower_camel_case()
             }
-        } else if capitalize_next {
-            result.push(ch.to_ascii_uppercase());
-            capitalize_next = false;
-            first_char = false;
-        } else {
-            result.push(ch);
-            first_char = false;
         }
     }
-
-    result
 }
 
 fn get_disabled_warnings(attrs: &[syn::Attribute]) -> Vec<String> {
