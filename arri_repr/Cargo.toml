@@ -35,7 +35,7 @@ smallvec = ["dep:smallvec"]
 
 [dependencies]
 # TODO: see if we can make downcast also a feature flag
-arri_common = { path = "../arri_common" }
+arri_common = { workspace = true }
 downcast-rs = "2.0.1"
 ronky_derive = { path = "../ronky_derive" }
 chrono = { workspace = true, optional = true }

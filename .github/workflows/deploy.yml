@@ -15,7 +15,7 @@ jobs:
 
     strategy:
       matrix:
-        crate: ["arri_repr", "ronky_derive", "ronky"]
+        crate: ["arri_common", "arri_repr", "ronky_derive", "ronky"]
       max-parallel: 1
 
     steps:
