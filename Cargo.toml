@@ -3,10 +3,17 @@ ronky = { path = "ronky" }
 
 [workspace]
 resolver = "2"
-members = ["arri_common", "arri_repr", "ronky", "ronky_derive", "test_suite", "examples/*"]
+members = [
+  "arri_common",
+  "arri_repr",
+  "ronky",
+  "ronky_derive",
+  "test_suite",
+  "examples/*",
+]
 
 [workspace.package]
-version = "1.1.10"
+version = "1.1.11"
 edition = "2024"
 license = "GPL-3.0-or-later"
 authors = ["Arthur De Witte <dev@arthurdw.com>"]
@@ -23,10 +30,10 @@ correctness = "deny"
 use_self = "deny"
 
 [workspace.dependencies]
-ronky = { path = "ronky", version = "1.1.10" }
-arri_repr = { path = "arri_repr", version = "1.1.10" }
-ronky_derive = { path = "ronky_derive/", version = "1.1.10" }
-arri_common = { path = "arri_common", version = "1.1.10" }
+ronky = { path = "ronky", version = "1.1.11" }
+arri_repr = { path = "arri_repr", version = "1.1.11" }
+ronky_derive = { path = "ronky_derive/", version = "1.1.11" }
+arri_common = { path = "arri_common", version = "1.1.11" }
 heck = "0.5.0"
 sonic-rs = "0.5.4"
 serde = { version = "1.0", features = ["derive"] }
