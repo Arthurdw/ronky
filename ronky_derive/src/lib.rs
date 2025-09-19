@@ -5,16 +5,28 @@
 //! This crate provides procedural macros for the `ronky` library, enabling seamless implementation
 //! of traits and boilerplate code generation for working with Arri schemas.
 //!
-//! The primary macro provided by this crate is `Exported`, which implements the `Exportable` trait
-//! for structs and enums. This trait facilitates the conversion of types into representations
-//! defined by the `arri_repr` crate, making it easier to work with Arri schema elements.
+//! ## Derive Macros
+//!
+//! This crate provides two main derive macros:
+//!
+//! ### `Exported`
+//! The primary macro that implements the `Exportable` trait for structs and enums.
+//! This trait facilitates the conversion of types into representations defined by the `arri_repr` crate.
+//!
+//! ### `Serializable`
+//! Implements the `Serializable` trait for structs, providing automatic JSON serialization
+//! with field name transformations (snake_case to camelCase) and special handling for metadata
+//! and nullable fields.
 //!
 //! ## Features
-//! - Derive macros for implementing the `Exportable` trait.
+//! - Derive macros for implementing the `Exportable` and `Serializable` traits.
 //! - Simplifies the process of converting types to `arri_repr` representations.
+//! - Automatic field name transformations and special field detection.
 //! - Designed to integrate tightly with the `ronky` crate.
 //!
 //! ## Usage
+//!
+//! ### Exported Macro
 //! Use the `Exported` macro to automatically implement the `Exportable` trait for your types:
 //!
 //! ```rust,ignore
@@ -24,6 +36,21 @@
 //! struct MySchema {
 //!     name: String,
 //!     value: i32,
+//! }
+//! ```
+//!
+//! ### Serializable Macro
+//! Use the `Serializable` macro for automatic JSON serialization with field mapping:
+//!
+//! ```rust,ignore
+//! use ronky_derive::Serializable;
+//!
+//! #[derive(Serializable)]
+//! struct ApiSchema {
+//!     field_name: String,        // becomes "fieldName" in JSON
+//!     is_deprecated: Option<bool>, // becomes "isDeprecated"
+//!     metadata: Option<MetadataSchema>, // enables set_metadata()
+//!     nullable: Option<bool>,     // enables set_nullable()
 //! }
 //! ```
 //!
@@ -219,20 +246,23 @@ fn generate_serializable_impl(
     let disabled_warnings = get_disabled_warnings(&input.attrs);
 
     // Generate serialize method
-    let serialize_calls = fields.iter().map(|field| {
-        let field_name = field.ident.as_ref().unwrap();
-        let mut field_name_str = field_name.to_string();
-        // Strip r# prefix from raw identifiers
-        field_name_str = field_name_str
-            .strip_prefix("r#")
-            .unwrap_or(&field_name_str)
-            .to_string();
-        let json_key = transform_field_name(&field_name_str);
-
-        quote! {
-            .set(#json_key, &self.#field_name)
-        }
-    });
+    let mut seen = std::collections::HashSet::<String>::new();
+    let serialize_calls: Vec<proc_macro2::TokenStream> = fields
+        .iter()
+        .filter_map(|field| {
+            let field_name = field.ident.as_ref().unwrap();
+            let mut field_name_str = field_name.to_string();
+            field_name_str = field_name_str
+                .strip_prefix("r#")
+                .unwrap_or(&field_name_str)
+                .to_string();
+            let json_key = transform_field_name(&field_name_str);
+            if !seen.insert(json_key.clone()) {
+                return None; // skip duplicates (e.g., nullable vs is_nullable)
+            }
+            Some(quote! { .set(#json_key, &self.#field_name) })
+        })
+        .collect();
 
     // Check for metadata and nullable fields
     let has_metadata = fields

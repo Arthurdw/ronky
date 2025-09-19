@@ -1,6 +1,6 @@
 [package]
 name = "ronky_derive"
-description = "Macro implementation of #[derive(Export)]"
+description = "Procedural macros for ronky: #[derive(Exported)] and #[derive(Serializable)]"
 readme = "README.md"
 
 version.workspace = true

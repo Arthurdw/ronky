@@ -226,9 +226,10 @@ fn test_empty_optional_fields() {
     let json: serde_json::Value = serde_json::from_str(&result).unwrap();
 
     // Only non-None fields should be included
-    assert_eq!(json.as_object().unwrap().len(), 1);
-    assert_eq!(json["description"], "only description");
-    assert!(json["id"].is_null() || !json.as_object().unwrap().contains_key("id"));
+    let obj = json.as_object().unwrap();
+    assert_eq!(obj.len(), 1);
+    assert_eq!(obj.get("description").unwrap(), "only description");
+    assert!(!obj.contains_key("id"));
 }
 
 #[test]
