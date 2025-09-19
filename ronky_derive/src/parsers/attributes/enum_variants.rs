@@ -1,5 +1,5 @@
 use super::goto_next;
-use arri_repr::EnumTransformation;
+use arri_common::EnumTransformation;
 use proc_macro::TokenStream;
 use quote::quote;
 use syn::{

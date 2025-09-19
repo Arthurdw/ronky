@@ -4,7 +4,7 @@ use crate::Serializable;
 ///
 /// This struct provides methods to construct a serialized string
 /// with key-value pairs, following a JSON-like format.
-pub(crate) struct Serializer {
+pub struct Serializer {
     /// The output string being constructed.
     pub(crate) out: String,
 }
@@ -15,7 +15,7 @@ impl Serializer {
     /// # Returns
     ///
     /// A new `Serializer` instance.
-    pub(crate) fn builder() -> Self {
+    pub fn builder() -> Self {
         Self {
             out: String::from("{"),
         }
@@ -31,7 +31,7 @@ impl Serializer {
     /// # Returns
     ///
     /// A mutable reference to the `Serializer` instance.
-    pub(crate) fn set(&mut self, key: &str, value: &impl Serializable) -> &mut Self {
+    pub fn set(&mut self, key: &str, value: &impl Serializable) -> &mut Self {
         if let Some(value) = value.serialize() {
             self.out.push_str(&format!("\"{}\":{},", key, value));
         }
@@ -47,7 +47,7 @@ impl Serializer {
     /// # Returns
     ///
     /// A `String` containing the complete serialized output.
-    pub(crate) fn build(&mut self) -> String {
+    pub fn build(&mut self) -> String {
         if self.out.ends_with(',') {
             self.out.pop();
         }

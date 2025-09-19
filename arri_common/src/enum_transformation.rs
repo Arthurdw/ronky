@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 /// Enum representing various string transformation types.
 ///
 /// These transformations can be applied to strings to convert them
@@ -28,97 +30,22 @@ impl EnumTransformation {
     ///
     /// A new string with the transformation applied.
     pub fn apply(&self, value: &str) -> String {
+        use heck::{ToLowerCamelCase, ToPascalCase, ToSnakeCase};
+
         match self {
             Self::Uppercase => value.to_uppercase(),
             Self::Lowercase => value.to_lowercase(),
-            Self::Snakecase => Self::to_snake_case(self, value),
-            Self::Camelcase => Self::to_camel_case(self, value),
-            Self::Pascalcase => Self::to_pascal_case(self, value),
+            Self::Snakecase => value.to_snake_case(),
+            Self::Camelcase => value.to_lower_camel_case(),
+            Self::Pascalcase => value.to_pascal_case(),
         }
     }
+}
 
-    /// Converts a string to snake case.
-    ///
-    /// # Arguments
-    ///
-    /// * `value` - The input string to convert.
-    ///
-    /// # Returns
-    ///
-    /// A new string in snake case format.
-    fn to_snake_case(&self, value: &str) -> String {
-        value
-            .replace(" ", "_")
-            .replace("-", "_")
-            .chars()
-            .flat_map(|c| {
-                if c.is_uppercase() {
-                    vec!['_', c.to_ascii_lowercase()]
-                } else {
-                    vec![c]
-                }
-            })
-            .collect::<String>()
-            .trim_start_matches('_')
-            .to_string()
-    }
-
-    /// Converts a string to camel case.
-    ///
-    /// # Arguments
-    ///
-    /// * `value` - The input string to convert.
-    ///
-    /// # Returns
-    ///
-    /// A new string in camel case format.
-    fn to_camel_case(&self, value: &str) -> String {
-        let mut result = String::new();
-        let mut capitalize_next = false;
-
-        if let Some(first_char) = value.chars().next() {
-            result.push(first_char.to_ascii_lowercase());
-        }
-
-        for c in value.chars().skip(1) {
-            if c == '_' || c == ' ' {
-                capitalize_next = true;
-            } else if capitalize_next {
-                result.push(c.to_ascii_uppercase());
-                capitalize_next = false;
-            } else {
-                result.push(c);
-            }
-        }
-
-        result
-    }
-
-    /// Converts a string to pascal case.
-    ///
-    /// # Arguments
-    ///
-    /// * `value` - The input string to convert.
-    ///
-    /// # Returns
-    ///
-    /// A new string in pascal case format.
-    fn to_pascal_case(&self, value: &str) -> String {
-        let mut result = String::new();
-        let mut capitalize_next = true;
-
-        for c in value.chars() {
-            if c == '_' || c == ' ' {
-                capitalize_next = true;
-            } else if capitalize_next {
-                result.push(c.to_ascii_uppercase());
-                capitalize_next = false;
-            } else {
-                result.push(c);
-            }
-        }
-
-        result
+impl FromStr for EnumTransformation {
+    type Err = String;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Self::try_from(s)
     }
 }
 
@@ -126,16 +53,26 @@ impl TryFrom<String> for EnumTransformation {
     type Error = String;
 
     fn try_from(value: String) -> Result<Self, Self::Error> {
-        Ok(match value.as_str() {
-            "uppercase" => Self::Uppercase,
-            "UPPERCASE" => Self::Uppercase,
-            "lowercase" => Self::Lowercase,
-            "snake_case" => Self::Snakecase,
-            "snakecase" => Self::Snakecase,
-            "camelCase" => Self::Camelcase,
-            "camelcase" => Self::Camelcase,
-            "PascalCase" => Self::Pascalcase,
-            "pascalcase" => Self::Pascalcase,
+        Self::try_from(value.as_str())
+    }
+}
+
+impl TryFrom<&str> for EnumTransformation {
+    type Error = String;
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        let normalized = value
+            .replace([' ', '-', '_'], "")
+            .to_lowercase()
+            .trim_end_matches("case")
+            .to_string();
+
+        Ok(match normalized.as_str() {
+            "upper" => Self::Uppercase,
+            "lower" => Self::Lowercase,
+            "snake" => Self::Snakecase,
+            "camel" => Self::Camelcase,
+            "pascal" => Self::Pascalcase,
             _ => return Err(format!("Unknown transformation: {}", value)),
         })
     }
@@ -188,5 +125,29 @@ mod tests {
         assert_eq!(helper.apply("hello_world"), "hello_world");
         assert_eq!(helper.apply("helloWorld"), "helloworld");
         assert_eq!(helper.apply("HelloWorld"), "helloworld");
+    }
+
+    #[test]
+    fn parse_aliases() {
+        assert_eq!(
+            EnumTransformation::try_from("camel").unwrap(),
+            EnumTransformation::Camelcase
+        );
+        assert_eq!(
+            EnumTransformation::try_from("pascal").unwrap(),
+            EnumTransformation::Pascalcase
+        );
+        assert_eq!(
+            EnumTransformation::try_from("snake").unwrap(),
+            EnumTransformation::Snakecase
+        );
+        assert_eq!(
+            EnumTransformation::try_from("upper").unwrap(),
+            EnumTransformation::Uppercase
+        );
+        assert_eq!(
+            EnumTransformation::try_from("lower").unwrap(),
+            EnumTransformation::Lowercase
+        );
     }
 }

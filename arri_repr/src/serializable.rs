@@ -126,6 +126,24 @@ impl Serializable for bool {
     }
 }
 
+// Macro to generate Serializable implementations for numeric types
+macro_rules! impl_serializable_for_numeric {
+    ($($type:ty),* $(,)?) => {
+        $(
+            impl Serializable for $type {
+                fn serialize(&self) -> Option<String> {
+                    self.to_string().into()
+                }
+            }
+        )*
+    };
+}
+
+// Numeric type implementations
+impl_serializable_for_numeric!(
+    i8, i16, i32, i64, i128, isize, u8, u16, u32, u64, u128, usize, f32, f64,
+);
+
 impl Serializable for () {
     fn serialize(&self) -> Option<String> {
         "null".to_string().into()

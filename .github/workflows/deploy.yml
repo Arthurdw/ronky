@@ -9,13 +9,14 @@ on:
 
 jobs:
   build:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     container:
       image: arthurdw/rust-ci:latest
 
     strategy:
       matrix:
-        crate: ["arri_repr", "ronky_derive", "ronky"]
+        crate: ["arri_common", "arri_repr", "ronky_derive", "ronky"]
       max-parallel: 1
 
     steps:
@@ -29,4 +30,4 @@ jobs:
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
         run: |
-          cargo publish
+          cargo publish --locked

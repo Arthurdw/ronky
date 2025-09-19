@@ -1,6 +1,6 @@
 use std::ops::BitOr;
 
-use crate::{Serializable, serializer::Serializer};
+use ronky_derive::Serializable as SerializableDerive;
 
 /// Macro to merge fields from one struct into another.
 ///
@@ -21,7 +21,8 @@ macro_rules! merge_fields {
 ///
 /// This struct defines the metadata schema, including optional fields
 /// such as `id`, `description`, and deprecation-related information.
-#[derive(Default, Debug, Clone, PartialEq, Eq)]
+#[derive(Default, Debug, Clone, PartialEq, Eq, SerializableDerive)]
+#[arri_disable(metadata, nullable)]
 pub struct MetadataSchema {
     /// Unique identifier for the metadata schema.
     pub id: Option<String>,
@@ -121,19 +122,6 @@ impl MetadataSchema {
     }
 }
 
-impl Serializable for MetadataSchema {
-    fn serialize(&self) -> Option<String> {
-        Serializer::builder()
-            .set("id", &self.id)
-            .set("description", &self.description)
-            .set("isDeprecated", &self.is_deprecated)
-            .set("deprecatedSince", &self.deprecated_since)
-            .set("deprecatedNote", &self.deprecated_message)
-            .build()
-            .into()
-    }
-}
-
 impl BitOr for MetadataSchema {
     type Output = Self;
 
@@ -145,6 +133,7 @@ impl BitOr for MetadataSchema {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::Serializable;
 
     #[test]
     fn test_metadata_schema_defaults() {

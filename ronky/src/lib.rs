@@ -304,7 +304,7 @@ mod serialization;
 extern crate ronky_derive;
 
 #[cfg(feature = "derive")]
-pub use ronky_derive::Exported;
+pub use ronky_derive::{Exported, Serializable as SerializableDerive};
 
 extern crate arri_repr;
 pub use arri_repr::*;
