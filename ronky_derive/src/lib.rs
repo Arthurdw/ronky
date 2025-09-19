@@ -269,6 +269,8 @@ fn generate_serializable_impl(
         .iter()
         .any(|f| f.ident.as_ref().is_some_and(|name| name == "metadata"));
 
+    // Note: We could add Option<bool> type validation here, but field name
+    // checking is sufficient for typical usage and keeps the code simple
     let nullable_field = fields
         .iter()
         .find(|f| {
