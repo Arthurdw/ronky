@@ -37,7 +37,7 @@ smallvec = ["dep:smallvec"]
 # TODO: see if we can make downcast also a feature flag
 arri_common = { workspace = true }
 downcast-rs = "2.0.1"
-ronky_derive = { path = "../ronky_derive" }
+ronky_derive = { workspace = true }
 chrono = { workspace = true, optional = true }
 time = { workspace = true, optional = true }
 uuid = { workspace = true, optional = true }
