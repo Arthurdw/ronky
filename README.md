@@ -145,17 +145,19 @@ fn main() {
 use ronky::{Exportable, Exported, SCHEMA_VERSION};
 
 /// Metadata about things (and sometimes other things)
+/// Automatically converts snake_case field names to camelCase for the schema
 #[derive(Exported)]
+#[arri(rename_all = "camelCase")] // firstName, lastName, etc. in the schema
 struct About<T: Exportable> {
     /// What we called it before marketing got involved
     #[deprecated(since = "1.0.0", note = "Use `firstName` and `lastName` instead")]
     name: String,
 
     /// The name that appears on your coffee cup at Starbucks
-    first_name: String,
+    first_name: String, // Becomes "firstName" in the schema
 
     /// The name your parents use when you're in trouble
-    last_name: Option<String>,
+    last_name: Option<String>, // Becomes "lastName" in the schema
 
     /// The number that makes you sigh at birthday parties
     age: u32,
@@ -255,10 +257,15 @@ enum Pet {
 
 ### Attribute Options
 
+**Struct-level attributes:**
 - `#[arri(strict)]` - No extra properties allowed
-- `#[arri(transform = "snake_case")]` - Transform enum variant names
-- `#[arri(discriminator = "type")]` - Set discriminator field name
-- `#[arri(rename = "newName")]` - Rename a field or variant
+- `#[arri(rename_all = "camelCase")]` - Transform all field names to a specific case
+  - Supported cases: `camelCase`, `PascalCase`, `snake_case`, `SCREAMING_SNAKE_CASE`, `kebab-case`, `SCREAMING-KEBAB-CASE`
+- `#[arri(transform = "snake_case")]` - Transform enum variant names (enums only)
+- `#[arri(discriminator = "type")]` - Set discriminator field name (tagged unions only)
+
+**Field-level attributes:**
+- `#[arri(rename = "newName")]` - Rename a specific field or variant (overrides `rename_all`)
 - `#[arri(nullable)]` - Mark a field as nullable
 
 ## 🐈 The Ronky Memorial Section
