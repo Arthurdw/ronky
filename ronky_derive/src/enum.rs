@@ -73,7 +73,7 @@ pub fn export_enum(input: &DeriveInput, variants: &Punctuated<Variant, Comma>) -
                             }
                         });
                     let struct_export: proc_macro2::TokenStream =
-                        export_struct_fields(&fields.named).into();
+                        export_struct_fields(&fields.named, &None).into();
 
                     exported.push(quote! {
                         schema.add_mapping(#variant_name, Box::new({

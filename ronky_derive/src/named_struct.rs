@@ -4,7 +4,11 @@ use syn::{DeriveInput, Field, punctuated::Punctuated, token::Comma};
 
 use crate::{
     metadata,
-    parsers::{ParsedField, attributes::properties, parse_field},
+    parsers::{
+        ParsedField,
+        attributes::properties::{self, CaseTransform},
+        parse_field,
+    },
 };
 
 /// A macro to process a field and generate code for setting its properties in a schema.
@@ -15,8 +19,9 @@ use crate::{
 /// - `$stream`: The type information or other data associated with the field.
 /// - `$args`: Additional arguments or metadata for the field.
 /// - `$set_property`: The method or function to set the property in the schema.
+/// - `$rename_all`: Optional case transformation to apply to field names.
 macro_rules! process_field {
-    ($properties:ident => $field:expr, $stream:expr, $args:expr, $set_property:ident) => {{
+    ($properties:ident => $field:expr, $stream:expr, $args:expr, $set_property:ident, $rename_all:expr) => {{
         // Extract the default field name from the field's identifier.
         let default_field_name = $field.ident.as_ref().unwrap().to_string();
 
@@ -25,7 +30,13 @@ macro_rules! process_field {
             .into_iter()
             .find(|a| a.rename.is_some())
             .and_then(|a| a.rename)
-            .unwrap_or(default_field_name);
+            .unwrap_or_else(|| {
+                // Apply rename_all transformation if no explicit rename is provided
+                match $rename_all {
+                    Some(transform) => transform.transform(&default_field_name),
+                    None => default_field_name,
+                }
+            });
 
         // Convert the stream into a TokenStream for further processing.
         let stream: proc_macro2::TokenStream = $stream.into();
@@ -56,19 +67,23 @@ macro_rules! process_field {
 /// # Arguments
 ///
 /// * `fields` - A reference to a `Punctuated` collection of `Field` objects representing the struct's fields.
+/// * `rename_all` - Optional case transformation to apply to all field names.
 ///
 /// # Returns
 ///
 /// Returns a `TokenStream` that defines the schema for the struct's fields.
-pub fn export_struct_fields(fields: &Punctuated<Field, Comma>) -> TokenStream {
+pub fn export_struct_fields(
+    fields: &Punctuated<Field, Comma>,
+    rename_all: &Option<CaseTransform>,
+) -> TokenStream {
     let mut properties = Vec::new();
     for field in fields.iter() {
         match parse_field(field) {
             Ok(ParsedField::Required(field, stream, args)) => {
-                process_field!(properties => field, stream, args, set_property);
+                process_field!(properties => field, stream, args, set_property, rename_all);
             }
             Ok(ParsedField::Optional(field, stream, args)) => {
-                process_field!(properties => field, stream, args, set_optional_property);
+                process_field!(properties => field, stream, args, set_optional_property, rename_all);
             }
             Err(stream) => return stream,
         }
@@ -94,22 +109,27 @@ pub fn export_struct_fields(fields: &Punctuated<Field, Comma>) -> TokenStream {
 /// Returns a `TokenStream` that defines the schema for the named struct.
 pub fn export_named_struct(input: &DeriveInput, fields: &Punctuated<Field, Comma>) -> TokenStream {
     let metadata: proc_macro2::TokenStream = metadata::extract(&input.attrs).into();
-    let attrs = match properties::extract(&input.attrs) {
+    let (attrs, rename_all) = match properties::extract(&input.attrs) {
         Ok(attrs) => {
             if attrs.is_empty() {
-                None
+                (None, None)
             } else {
-                let strict = attrs.iter().any(|a| a.strict);
+                let strict = attrs.iter().find_map(|a| a.strict);
+                let rename_all = attrs.iter().find_map(|a| a.rename_all.clone());
 
-                Some(quote! {
-                    schema.set_strict(#strict);
-                })
+                let attrs_tokens = strict.map(|strict_value| {
+                    quote! {
+                        schema.set_strict(#strict_value);
+                    }
+                });
+
+                (attrs_tokens, rename_all)
             }
         }
-        Err(stream) => Some(stream.into()),
+        Err(stream) => (Some(stream.into()), None),
     };
 
-    let base_export: proc_macro2::TokenStream = export_struct_fields(fields).into();
+    let base_export: proc_macro2::TokenStream = export_struct_fields(fields, &rename_all).into();
 
     quote! {
         use ronky::Serializable;
