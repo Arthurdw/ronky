@@ -13,7 +13,7 @@ members = [
 ]
 
 [workspace.package]
-version = "1.1.18"
+version = "1.1.19"
 edition = "2024"
 license = "GPL-3.0-or-later"
 authors = ["Arthur De Witte <dev@arthurdw.com>"]
@@ -30,10 +30,10 @@ correctness = "deny"
 use_self = "deny"
 
 [workspace.dependencies]
-ronky = { path = "ronky", version = "1.1.18" }
-arri_repr = { path = "arri_repr", version = "1.1.18" }
-ronky_derive = { path = "ronky_derive/", version = "1.1.18" }
-arri_common = { path = "arri_common", version = "1.1.18" }
+ronky = { path = "ronky", version = "1.1.19" }
+arri_repr = { path = "arri_repr", version = "1.1.19" }
+ronky_derive = { path = "ronky_derive/", version = "1.1.19" }
+arri_common = { path = "arri_common", version = "1.1.19" }
 heck = "0.5.0"
 sonic-rs = "0.5.4"
 serde = { version = "1.0", features = ["derive"] }
