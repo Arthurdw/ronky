@@ -34,7 +34,7 @@ jobs:
           repositories: ${{ github.event.repository.name }}
 
       - name: Check out repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           token: ${{ steps.get_token.outputs.token }}
           fetch-depth: 0 # Need full history to get merged PRs
