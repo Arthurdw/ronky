@@ -187,3 +187,23 @@ fn test_rename_all_with_explicit_rename() {
     let export = export.downcast_ref::<PropertiesSchema>().unwrap();
     assert_eq!(*export, expected);
 }
+
+#[test]
+fn test_raw_identifier_export() {
+    #[allow(dead_code)]
+    #[derive(Exported)]
+    struct Event {
+        id: String,
+        r#type: String,
+    }
+
+    let export = Event::export();
+    let mut expected = PropertiesSchema::new();
+    expected.set_metadata(MetadataSchema::new().set_id("Event".to_string()).to_owned());
+    expected.set_property("id", Box::new(TypeSchema::new(Types::String)));
+    expected.set_property("type", Box::new(TypeSchema::new(Types::String)));
+
+    assert!(export.is::<PropertiesSchema>());
+    let export = export.downcast_ref::<PropertiesSchema>().unwrap();
+    assert_eq!(*export, expected);
+}
