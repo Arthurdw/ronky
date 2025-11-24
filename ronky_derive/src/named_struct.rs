@@ -25,6 +25,12 @@ macro_rules! process_field {
         // Extract the default field name from the field's identifier.
         let default_field_name = $field.ident.as_ref().unwrap().to_string();
 
+        // Strip the r# prefix if present (for raw identifiers like r#type)
+        let default_field_name = default_field_name
+            .strip_prefix("r#")
+            .unwrap_or(&default_field_name)
+            .to_string();
+
         // Determine the field name, allowing for renaming via arguments.
         let field_name = $args
             .into_iter()
