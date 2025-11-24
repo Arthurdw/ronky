@@ -56,7 +56,11 @@ pub fn export_enum(input: &DeriveInput, variants: &Punctuated<Variant, Comma>) -
             .find(|a| a.rename.is_some())
             .and_then(|a| a.rename.as_ref())
             .map(|s| s.to_string())
-            .unwrap_or_else(|| variant.ident.to_string());
+            .unwrap_or_else(|| {
+                // Strip the r# prefix if present (for raw identifiers like r#type)
+                let name = variant.ident.to_string();
+                name.strip_prefix("r#").unwrap_or(&name).to_string()
+            });
 
         is_tagged_union = !variant.fields.is_empty();
 

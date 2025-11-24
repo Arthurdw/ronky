@@ -84,3 +84,26 @@ fn test_export_with_transformations_multiline() {
     let export = export.downcast_ref::<EnumSchema>().unwrap();
     assert_eq!(*export, expected);
 }
+
+#[test]
+fn test_raw_identifier_enum() {
+    #[allow(dead_code)]
+    #[allow(non_camel_case_types)]
+    #[derive(Exported)]
+    enum EventType {
+        Create,
+        r#type,
+        r#ref,
+    }
+
+    let export = EventType::export();
+    let mut expected = EnumSchema::new();
+    expected.add_variant("Create".to_string());
+    expected.add_variant("type".to_string());
+    expected.add_variant("ref".to_string());
+    expected.set_metadata(MetadataSchema::new().set_id("EventType").to_owned());
+
+    assert!(export.is::<EnumSchema>());
+    let export = export.downcast_ref::<EnumSchema>().unwrap();
+    assert_eq!(*export, expected);
+}
