@@ -58,7 +58,21 @@ jobs:
             exit 1
           fi
 
+      - name: Check if release already exists
+        id: check_release
+        run: |
+          if gh release view "v${{ steps.extract-version.outputs.version }}" &>/dev/null; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "Release v${{ steps.extract-version.outputs.version }} already exists, skipping creation"
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "Release v${{ steps.extract-version.outputs.version }} does not exist, will create"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ steps.get_token.outputs.token }}
+
       - name: Create GitHub Release
+        if: steps.check_release.outputs.exists == 'false'
         uses: softprops/action-gh-release@v2
         with:
           token: ${{ steps.get_token.outputs.token }}

@@ -115,21 +115,38 @@ jobs:
       - name: Check if release is needed
         id: check_release
         run: |
-          # Check if there are any merged PRs since last release
+          # First check: PRs with release labels
           if [ -f /tmp/pr_labels.txt ] && [ -s /tmp/pr_labels.txt ]; then
             echo "needs_release=true" >> $GITHUB_OUTPUT
             echo "Release needed - found merged PRs with release labels"
-          else
-            # Check if there are any commits since last release (excluding version bump commits)
-            COMMITS_SINCE_RELEASE=$(git rev-list --count HEAD --since="${{ steps.last_release.outputs.last_release_date }}" --grep="chore(release):" --invert-grep)
-            if [ "$COMMITS_SINCE_RELEASE" -gt 0 ]; then
-              echo "needs_release=true" >> $GITHUB_OUTPUT
-              echo "Release needed - found $COMMITS_SINCE_RELEASE commits since last release"
-            else
-              echo "needs_release=false" >> $GITHUB_OUTPUT
-              echo "No release needed - no changes since last release"
-            fi
+            exit 0
           fi
+
+          # Get the last release tag (more reliable than date-based checking)
+          LAST_TAG=$(gh api repos/${{ github.repository }}/releases/latest --jq .tag_name 2>/dev/null || echo "")
+
+          if [ -z "$LAST_TAG" ]; then
+            echo "No previous release found, proceeding with release"
+            echo "needs_release=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          echo "Last release tag: $LAST_TAG"
+
+          # Count commits between last tag and HEAD, excluding version bumps
+          COMMITS_SINCE_RELEASE=$(git rev-list --count ${LAST_TAG}..HEAD --grep="chore(release):" --invert-grep 2>/dev/null || echo "0")
+
+          echo "Commits since $LAST_TAG (excluding version bumps): $COMMITS_SINCE_RELEASE"
+
+          if [ "$COMMITS_SINCE_RELEASE" -gt 0 ]; then
+            echo "needs_release=true" >> $GITHUB_OUTPUT
+            echo "Release needed - found $COMMITS_SINCE_RELEASE commits since last release (defaulting to patch)"
+          else
+            echo "needs_release=false" >> $GITHUB_OUTPUT
+            echo "No release needed - no changes since last release"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ steps.get_token.outputs.token }}
 
       - name: Bump version
         if: steps.check_release.outputs.needs_release == 'true'
