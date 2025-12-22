@@ -31,8 +31,8 @@ fn test_binary_tree_export() {
     #[allow(dead_code)]
     #[derive(Exported)]
     struct NumBinTree {
-        left: Option<Box<NumBinTree>>,
-        right: Option<Box<NumBinTree>>,
+        left: Option<Box<Self>>,
+        right: Option<Box<Self>>,
         value: i32,
     }
 

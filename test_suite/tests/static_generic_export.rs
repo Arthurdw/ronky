@@ -204,7 +204,7 @@ fn test_ref_generic_metadata_id_present() {
     #[derive(Exported)]
     struct Human {
         /// Example
-        friends: Vec<Human>,
+        friends: Vec<Self>,
     }
 
     #[allow(dead_code)]
