@@ -175,6 +175,18 @@ impl<T: Serializable> Serializable for HashMap<String, T> {
     }
 }
 
+impl<T: Serializable> Serializable for indexmap::IndexMap<String, T> {
+    fn serialize(&self) -> Option<String> {
+        self.iter()
+            .fold(Serializer::builder(), |mut builder, (key, value)| {
+                builder.set(key, value);
+                builder
+            })
+            .build()
+            .into()
+    }
+}
+
 impl<T: Serializable> Serializable for Box<T> {
     fn serialize(&self) -> Option<String> {
         self.as_ref().serialize()

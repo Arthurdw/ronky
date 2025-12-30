@@ -76,7 +76,6 @@
 //! WEB-SAVVY NAVIGATORS     🌐  url
 //! DATA-HANDLING WIZARDS    📊  bytes
 //! CONCURRENT COMPANIONS    🧵  dashmap
-//! ORDERLY ORGANIZERS       📋  indexmap
 //! OPTIMIZED PERFORMERS     ⚡  smallvec
 //! ```
 //!
