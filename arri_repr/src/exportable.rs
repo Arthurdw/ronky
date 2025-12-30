@@ -9,6 +9,7 @@ use crate::{
 use crate::{Serializable, TypeSchema, Types, elements::ElementsSchema};
 use std::cell::{Cell, RefCell};
 use std::collections::{BTreeMap, BTreeSet, BinaryHeap, HashMap, HashSet, LinkedList, VecDeque};
+use indexmap::{IndexMap, IndexSet};
 use std::ffi::{OsStr, OsString};
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr};
 use std::num::{
@@ -275,6 +276,8 @@ exportable! {
         // Values Schema's
         HashMap<K: ToString, V> => ValuesSchema::new(Box::new(V::export())),
         BTreeMap<K: ToString, V> => ValuesSchema::new(Box::new(V::export())),
+        IndexMap<K: ToString, V> => ValuesSchema::new(Box::new(V::export())),
+        IndexSet<T> => ElementsSchema::new(Box::new(T::export())),
     },
     features: {
         "chrono" => {
@@ -370,16 +373,6 @@ exportable! {
                 generic: {
                     DashMap<K: ToString, V> => ValuesSchema::new(Box::new(V::export())),
                     DashSet<T> => ElementsSchema::new(Box::new(T::export())),
-                }
-            }
-        },
-        "indexmap" => {
-            use indexmap::{IndexMap, IndexSet};
-
-            exportable! {
-                generic: {
-                    IndexMap<K: ToString, V> => ValuesSchema::new(Box::new(V::export())),
-                    IndexSet<T> => ElementsSchema::new(Box::new(T::export())),
                 }
             }
         },

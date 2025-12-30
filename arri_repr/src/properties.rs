@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use indexmap::IndexMap;
 
 use crate::{MetadataSchema, Serializable, serializer::Serializer};
 
@@ -9,12 +9,12 @@ use crate::{MetadataSchema, Serializable, serializer::Serializer};
 #[derive(Default, Debug, PartialEq, Eq)]
 pub struct PropertiesSchema {
     /// A map of required properties, where the key is the property name
-    /// and the value is a serializable object.
-    pub properties: HashMap<String, Box<dyn Serializable>>,
+    /// and the value is a serializable object. Uses IndexMap to preserve insertion order.
+    pub properties: IndexMap<String, Box<dyn Serializable>>,
 
     /// A map of optional properties, where the key is the property name
-    /// and the value is a serializable object.
-    pub optional_properties: HashMap<String, Box<dyn Serializable>>,
+    /// and the value is a serializable object. Uses IndexMap to preserve insertion order.
+    pub optional_properties: IndexMap<String, Box<dyn Serializable>>,
 
     /// Indicates whether the schema is strict. If `Some(true)`, the schema
     /// enforces strict validation.
@@ -120,5 +120,52 @@ impl Serializable for PropertiesSchema {
     /// * `is_nullable` - A boolean indicating whether null values are allowed.
     fn set_nullable(&mut self, is_nullable: bool) {
         self.is_nullable = Some(is_nullable);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_properties_schema_preserves_field_order() {
+        let mut schema = PropertiesSchema::new();
+        schema.set_property("aaa", Box::new("first"));
+        schema.set_property("zzz", Box::new("second"));
+        schema.set_property("mmm", Box::new("third"));
+
+        let serialized = schema.serialize().unwrap();
+
+        // Fields should appear in insertion order, not alphabetical
+        let aaa_pos = serialized.find("\"aaa\"").unwrap();
+        let zzz_pos = serialized.find("\"zzz\"").unwrap();
+        let mmm_pos = serialized.find("\"mmm\"").unwrap();
+
+        assert!(aaa_pos < zzz_pos, "aaa should come before zzz");
+        assert!(zzz_pos < mmm_pos, "zzz should come before mmm");
+    }
+
+    #[test]
+    fn test_optional_properties_schema_preserves_field_order() {
+        let mut schema = PropertiesSchema::new();
+        schema.set_optional_property("first_field", Box::new("a"));
+        schema.set_optional_property("second_field", Box::new("b"));
+        schema.set_optional_property("third_field", Box::new("c"));
+
+        let serialized = schema.serialize().unwrap();
+
+        // Fields should appear in insertion order
+        let first_pos = serialized.find("\"first_field\"").unwrap();
+        let second_pos = serialized.find("\"second_field\"").unwrap();
+        let third_pos = serialized.find("\"third_field\"").unwrap();
+
+        assert!(
+            first_pos < second_pos,
+            "first_field should come before second_field"
+        );
+        assert!(
+            second_pos < third_pos,
+            "second_field should come before third_field"
+        );
     }
 }
