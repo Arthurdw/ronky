@@ -7,9 +7,9 @@ use crate::{
     EmptySchema, PropertiesSchema, RefSchema, TaggedUnionSchema, ValuesSchema, type_utils,
 };
 use crate::{Serializable, TypeSchema, Types, elements::ElementsSchema};
+use indexmap::{IndexMap, IndexSet};
 use std::cell::{Cell, RefCell};
 use std::collections::{BTreeMap, BTreeSet, BinaryHeap, HashMap, HashSet, LinkedList, VecDeque};
-use indexmap::{IndexMap, IndexSet};
 use std::ffi::{OsStr, OsString};
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr};
 use std::num::{
