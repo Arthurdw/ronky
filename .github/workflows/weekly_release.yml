@@ -6,7 +6,12 @@ on:
   schedule:
     # Every Wednesday at 9:00 AM UTC
     - cron: "0 9 * * 3"
-  workflow_dispatch: # Allow manual trigger for testing
+  workflow_dispatch:
+    inputs:
+      include_github_changes:
+        description: 'Include .github/ changes when checking for release'
+        type: boolean
+        default: false
 
 concurrency:
   group: ${{ github.workflow }}
@@ -84,8 +89,8 @@ jobs:
           echo "Merged PR labels since last release:"
           echo "$MERGED_PRS"
 
-          # Store for next step
-          echo "$MERGED_PRS" > /tmp/pr_labels.txt
+          # Store for next step (use -n to avoid empty file with just newline)
+          echo -n "$MERGED_PRS" > /tmp/pr_labels.txt
         env:
           GITHUB_TOKEN: ${{ steps.get_token.outputs.token }}
 
@@ -133,8 +138,12 @@ jobs:
 
           echo "Last release tag: $LAST_TAG"
 
-          # Count commits between last tag and HEAD, excluding version bumps
-          COMMITS_SINCE_RELEASE=$(git rev-list --count ${LAST_TAG}..HEAD --grep="chore(release):" --invert-grep 2>/dev/null || echo "0")
+          # Count commits between last tag and HEAD, excluding version bumps (and optionally .github-only changes)
+          if [ "${{ inputs.include_github_changes }}" == "true" ]; then
+            COMMITS_SINCE_RELEASE=$(git log --oneline ${LAST_TAG}..HEAD --grep="chore(release):" --invert-grep 2>/dev/null | wc -l || echo "0")
+          else
+            COMMITS_SINCE_RELEASE=$(git log --oneline ${LAST_TAG}..HEAD --grep="chore(release):" --invert-grep -- . ':!.github' 2>/dev/null | wc -l || echo "0")
+          fi
 
           echo "Commits since $LAST_TAG (excluding version bumps): $COMMITS_SINCE_RELEASE"
 
