@@ -108,15 +108,35 @@ impl PartialEq for dyn Serializable {
 
 impl Eq for dyn Serializable {}
 
+fn escape_json_string(s: &str) -> String {
+    let mut escaped = String::with_capacity(s.len());
+    for c in s.chars() {
+        match c {
+            '"' => escaped.push_str("\\\""),
+            '\\' => escaped.push_str("\\\\"),
+            '\x08' => escaped.push_str("\\\\b"),
+            '\x0c' => escaped.push_str("\\\\f"),
+            '\n' => escaped.push_str("\\\\n"),
+            '\r' => escaped.push_str("\\\\r"),
+            '\t' => escaped.push_str("\\\\t"),
+            c if c.is_control() => {
+                escaped.push_str(&format!("\\\\u{:04x}", c as u32));
+            }
+            c => escaped.push(c),
+        }
+    }
+    escaped
+}
+
 impl Serializable for &'static str {
     fn serialize(&self) -> Option<String> {
-        format!("\"{}\"", self).into()
+        Some(format!("\"{}\"", escape_json_string(&self)))
     }
 }
 
 impl Serializable for String {
     fn serialize(&self) -> Option<String> {
-        format!("\"{}\"", self).into()
+        Some(format!("\"{}\"", escape_json_string(&self)))
     }
 }
 
