@@ -1,6 +1,10 @@
+use std::str::FromStr;
+
 use ronky::{
-    Exportable, Exported, MetadataSchema, PropertiesSchema, Serializable, TypeSchema, Types,
+    Exportable, Exported, ExportedDeserialize, ExportedSerialize, MetadataSchema, PropertiesSchema,
+    Serializable, TypeSchema, Types,
 };
+use serde::Serialize;
 
 #[test]
 fn test_rename() {
@@ -206,4 +210,40 @@ fn test_raw_identifier_export() {
     assert!(export.is::<PropertiesSchema>());
     let export = export.downcast_ref::<PropertiesSchema>().unwrap();
     assert_eq!(*export, expected);
+}
+
+#[test]
+fn test_serializing_string_escapes_special_characters() {
+    #[derive(Exported, Serialize)]
+    struct MyStruct {
+        pub foo: String,
+        pub bar: String,
+    }
+
+    let val = MyStruct {
+        foo: String::from("hello\nworld"),
+        bar: String::from("\"\\\x08\x0c\n\r\r\t"),
+    };
+    let json_str = val.to_json().expect("serialization succeeds");
+    println!("RESULT: {:?}", &json_str);
+    serde_json::Value::from_json(&json_str).expect("deserialization succeeds");
+}
+
+#[test]
+fn test_serializing_metadata_escapes_special_characters() {
+    #[allow(dead_code)]
+    /// This is a description test
+    /// Multiple lines should be supported without messing up JSON
+    #[derive(Exported)]
+    struct MyStruct {
+        /// All special characters should also be supported \t \b " \f \r \u12345
+        pub foo: String,
+        pub bar: String,
+    }
+
+    let output = MyStruct::export().serialize();
+    let expected_output = "{\"properties\":{\"foo\":{\"type\":\"string\",\"metadata\":{\"description\":\"All special characters should also be supported \\\\t \\\\b \\\" \\\\f \\\\r \\\\u12345\"}},\"bar\":{\"type\":\"string\"}},\"optionalProperties\":{},\"metadata\":{\"id\":\"MyStruct\",\"description\":\"This is a description test\\nMultiple lines should be supported without messing up JSON\"}}".to_string();
+    assert_eq!(&output, &Some(expected_output));
+
+    let _ = serde_json::Value::from_str(&output.unwrap()).expect("it should produce valid JSON");
 }
