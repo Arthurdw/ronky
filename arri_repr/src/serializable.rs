@@ -5,6 +5,44 @@ use downcast_rs::{Downcast, impl_downcast};
 
 use crate::{MetadataSchema, serializer::Serializer};
 
+/// Escapes special characters in a string for JSON output.
+///
+/// Follows the JSON specification for string escaping:
+/// - `"` -> `\"`
+/// - `\` -> `\\`
+/// - `/` -> `\/`
+/// - Backspace -> `\b`
+/// - Form feed -> `\f`
+/// - Newline -> `\n`
+/// - Carriage return -> `\r`
+/// - Tab -> `\t`
+/// - Control characters and other special Unicode -> `\uXXXX`
+fn escape_json_string(s: &str) -> String {
+    let mut result = String::with_capacity(s.len() + 16);
+    result.push('"');
+
+    for ch in s.chars() {
+        match ch {
+            '"' => result.push_str("\\\""),
+            '\\' => result.push_str("\\\\"),
+            '/' => result.push_str("\\/"),
+            '\u{0008}' => result.push_str("\\b"), // backspace
+            '\u{000C}' => result.push_str("\\f"), // form feed
+            '\n' => result.push_str("\\n"),
+            '\r' => result.push_str("\\r"),
+            '\t' => result.push_str("\\t"),
+            ch if ch.is_control() => {
+                // Escape other control characters as \uXXXX
+                result.push_str(&format!("\\u{:04x}", ch as u32));
+            }
+            ch => result.push(ch),
+        }
+    }
+
+    result.push('"');
+    result
+}
+
 /// Triggers a panic with a detailed error message, including the type, serialized data,
 /// and value that caused the issue. This function is intended to report bugs.
 ///
@@ -108,35 +146,15 @@ impl PartialEq for dyn Serializable {
 
 impl Eq for dyn Serializable {}
 
-fn escape_json_string(s: &str) -> String {
-    let mut escaped = String::with_capacity(s.len());
-    for c in s.chars() {
-        match c {
-            '"' => escaped.push_str("\\\""),
-            '\\' => escaped.push_str("\\\\"),
-            '\x08' => escaped.push_str("\\\\b"),
-            '\x0c' => escaped.push_str("\\\\f"),
-            '\n' => escaped.push_str("\\\\n"),
-            '\r' => escaped.push_str("\\\\r"),
-            '\t' => escaped.push_str("\\\\t"),
-            c if c.is_control() => {
-                escaped.push_str(&format!("\\\\u{:04x}", c as u32));
-            }
-            c => escaped.push(c),
-        }
-    }
-    escaped
-}
-
 impl Serializable for &'static str {
     fn serialize(&self) -> Option<String> {
-        Some(format!("\"{}\"", escape_json_string(&self)))
+        escape_json_string(self).into()
     }
 }
 
 impl Serializable for String {
     fn serialize(&self) -> Option<String> {
-        Some(format!("\"{}\"", escape_json_string(&self)))
+        escape_json_string(self).into()
     }
 }
 
@@ -493,5 +511,32 @@ mod tests {
             datetime_utc.serialize(),
             Some("\"1985-04-12T23:20:50.520Z\"".to_string())
         );
+    }
+
+    #[test]
+    fn test_serialize_string_with_special_characters() {
+        // Test case from issue #233 - special characters should be escaped
+        let test_cases: Vec<(&str, &str)> = vec![
+            ("simple", "\"simple\""),
+            ("with\"quote", "\"with\\\"quote\""),
+            ("with\\backslash", "\"with\\\\backslash\""),
+            ("with\nnewline", "\"with\\nnewline\""),
+            ("with\ttab", "\"with\\ttab\""),
+            ("with\rcarriage", "\"with\\rcarriage\""),
+            ("with/solidus", "\"with\\/solidus\""),
+            (
+                "a comma separated list of tags to filter by\nex: \"foo,bar\"",
+                "\"a comma separated list of tags to filter by\\nex: \\\"foo,bar\\\"\"",
+            ),
+        ];
+
+        for (input, expected) in test_cases {
+            let serialized = input.to_string().serialize().unwrap();
+            let result: serde_json::Value = serde_json::from_str(&serialized)
+                .unwrap_or_else(|_| panic!("Failed to parse JSON for input: {}", input));
+            let expected_result: serde_json::Value = serde_json::from_str(expected)
+                .unwrap_or_else(|_| panic!("Failed to parse expected JSON: {}", expected));
+            assert_eq!(result, expected_result, "Mismatch for input: {}", input);
+        }
     }
 }

@@ -242,7 +242,7 @@ fn test_serializing_metadata_escapes_special_characters() {
     }
 
     let output = MyStruct::export().serialize();
-    let expected_output = "{\"properties\":{\"foo\":{\"type\":\"string\",\"metadata\":{\"description\":\"All special characters should also be supported \\\\t \\\\b \\\" \\\\f \\\\r \\\\u12345\"}},\"bar\":{\"type\":\"string\"}},\"optionalProperties\":{},\"metadata\":{\"id\":\"MyStruct\",\"description\":\"This is a description test\\\\nMultiple lines should be supported without messing up JSON\"}}".to_string();
+    let expected_output = "{\"properties\":{\"foo\":{\"type\":\"string\",\"metadata\":{\"description\":\"All special characters should also be supported \\\\t \\\\b \\\" \\\\f \\\\r \\\\u12345\"}},\"bar\":{\"type\":\"string\"}},\"optionalProperties\":{},\"metadata\":{\"id\":\"MyStruct\",\"description\":\"This is a description test\\nMultiple lines should be supported without messing up JSON\"}}".to_string();
     assert_eq!(&output, &Some(expected_output));
 
     let _ = serde_json::Value::from_str(&output.unwrap()).expect("it should produce valid JSON");
