@@ -143,3 +143,58 @@ fn test_metadata_struct_properties() {
     let export = export.downcast_ref::<PropertiesSchema>().unwrap();
     assert_eq!(*export, expected);
 }
+
+#[test]
+fn test_special_characters_in_doc_comments() {
+    /// This is a description test
+    /// Multiple lines should be supported without messing up JSON
+    #[allow(dead_code)]
+    #[derive(Exported)]
+    struct MyStruct {
+        /// a comma separated list of tags to filter by
+        /// ex: "foo,bar"
+        pub foo: String,
+        pub bar: String,
+    }
+
+    let export = MyStruct::export();
+    assert!(export.is::<PropertiesSchema>());
+    let export = export.downcast_ref::<PropertiesSchema>().unwrap();
+
+    // Verify struct-level metadata with multi-line description
+    let struct_desc = export
+        .metadata
+        .as_ref()
+        .and_then(|m| m.description.as_ref())
+        .expect("Struct should have description");
+    assert!(struct_desc.contains("This is a description test"));
+    assert!(struct_desc.contains("Multiple lines should be supported without messing up JSON"));
+
+    // Verify that the serialized schema is valid JSON
+    let serialized = export.serialize().expect("Export should be serializable");
+    let json: serde_json::Value = serde_json::from_str(&serialized)
+        .expect("Serialized schema should be valid JSON");
+
+    // Verify the struct description in JSON
+    assert!(json["metadata"]["description"]
+        .as_str()
+        .expect("Struct description should be present")
+        .contains("This is a description test"));
+
+    // Verify field-level description with special characters in JSON
+    let foo_desc = json["properties"]["foo"]["metadata"]["description"]
+        .as_str()
+        .expect("foo field description should be in JSON");
+
+    // Verify that the multi-line description is properly formatted
+    // The original has a newline between the two doc comment lines
+    assert!(foo_desc.contains("comma separated list"), "multi-line content not found");
+    assert!(foo_desc.contains("foo,bar"), "quoted content not found");
+
+    // Verify that the newline character is present (from joining doc comment lines)
+    assert!(foo_desc.contains('\n'), "newline not found in description");
+
+    // Verify escaping: the doc comment contains quotes around "foo,bar"
+    // After JSON parsing, these appear as actual quote characters in the string
+    assert!(foo_desc.contains('"'), "quote character not found");
+}
