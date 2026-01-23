@@ -32,7 +32,8 @@ macro_rules! enum_transformation_match {
 /// A `proc_macro2::TokenStream` representing the transformation.
 pub fn enum_transformation_to_tokens(transform: &EnumTransformation) -> proc_macro2::TokenStream {
     enum_transformation_match!(
-        transform => Uppercase, Lowercase, Snakecase, Camelcase, Pascalcase
+        transform => Uppercase, Lowercase, Snakecase, Camelcase, Pascalcase,
+                     Kebabcase, Screamingkebabcase, Screamingsnakecase
     )
 }
 
