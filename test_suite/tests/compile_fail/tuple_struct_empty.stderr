@@ -1,0 +1,5 @@
+error: Empty tuple structs are not exportable
+ --> tests/compile_fail/tuple_struct_empty.rs:4:1
+  |
+4 | struct Empty();
+  | ^^^^^^
