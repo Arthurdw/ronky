@@ -1,0 +1,5 @@
+error: Multi-field tuple structs are not yet supported. See the Arri tuple discussion: https://github.com/modiimedia/arri/issues/163
+ --> tests/compile_fail/tuple_struct_multiple_fields.rs:4:1
+  |
+4 | struct MultiField(String, i32);
+  | ^^^^^^

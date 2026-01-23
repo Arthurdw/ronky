@@ -63,6 +63,7 @@ mod named_struct;
 mod parsers;
 #[cfg(feature = "serialization")]
 mod serialization;
+mod tuple_struct;
 
 use r#enum::export_enum;
 use heck::ToLowerCamelCase;
@@ -70,6 +71,7 @@ use named_struct::export_named_struct;
 use proc_macro::TokenStream;
 use quote::{quote, quote_spanned};
 use syn::{Data, DataEnum, DataStruct, DeriveInput, Fields, parse_macro_input, spanned::Spanned};
+use tuple_struct::export_tuple_struct;
 
 /// A procedural macro to export a struct or enum.
 ///
@@ -85,8 +87,9 @@ pub fn export_stream(input: TokenStream) -> TokenStream {
 
     match input.data {
         Data::Struct(DataStruct { fields: Fields::Named(ref fields), .. }) => export_named_struct(&input, &fields.named),
+        Data::Struct(DataStruct { fields: Fields::Unnamed(ref fields), .. }) => export_tuple_struct(&input, &fields.unnamed),
         Data::Enum(DataEnum { ref variants, .. }) => export_enum(&input, variants),
-        _ => quote_spanned!(input.span() => compile_error!("Only named structs or enums are exportable for now")).into()
+        _ => quote_spanned!(input.span() => compile_error!("Only named structs, tuple structs with one field, or enums are exportable")).into()
     }
 }
 
