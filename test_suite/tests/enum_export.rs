@@ -107,3 +107,69 @@ fn test_raw_identifier_enum() {
     let export = export.downcast_ref::<EnumSchema>().unwrap();
     assert_eq!(*export, expected);
 }
+
+#[test]
+fn test_export_with_kebab_case_transformation() {
+    #[allow(dead_code)]
+    #[derive(Exported)]
+    #[arri(transform = "kebab-case")]
+    enum ExampleEnum {
+        MyVariant,
+        AnotherOne,
+    }
+
+    let export = ExampleEnum::export();
+    let mut expected = EnumSchema::new();
+    expected.add_variant("my-variant".to_string());
+    expected.add_variant("another-one".to_string());
+    expected.set_metadata(MetadataSchema::new().set_id("ExampleEnum").to_owned());
+    expected.set_transforms(&[EnumTransformation::Kebabcase]);
+
+    assert!(export.is::<EnumSchema>());
+    let export = export.downcast_ref::<EnumSchema>().unwrap();
+    assert_eq!(*export, expected);
+}
+
+#[test]
+fn test_export_with_screaming_kebab_case_transformation() {
+    #[allow(dead_code)]
+    #[derive(Exported)]
+    #[arri(transform = "SCREAMING-KEBAB-CASE")]
+    enum ExampleEnum {
+        MyVariant,
+        AnotherOne,
+    }
+
+    let export = ExampleEnum::export();
+    let mut expected = EnumSchema::new();
+    expected.add_variant("MY-VARIANT".to_string());
+    expected.add_variant("ANOTHER-ONE".to_string());
+    expected.set_metadata(MetadataSchema::new().set_id("ExampleEnum").to_owned());
+    expected.set_transforms(&[EnumTransformation::Screamingkebabcase]);
+
+    assert!(export.is::<EnumSchema>());
+    let export = export.downcast_ref::<EnumSchema>().unwrap();
+    assert_eq!(*export, expected);
+}
+
+#[test]
+fn test_export_with_screaming_snake_case_transformation() {
+    #[allow(dead_code)]
+    #[derive(Exported)]
+    #[arri(transform = "SCREAMING_SNAKE_CASE")]
+    enum ExampleEnum {
+        MyVariant,
+        AnotherOne,
+    }
+
+    let export = ExampleEnum::export();
+    let mut expected = EnumSchema::new();
+    expected.add_variant("MY_VARIANT".to_string());
+    expected.add_variant("ANOTHER_ONE".to_string());
+    expected.set_metadata(MetadataSchema::new().set_id("ExampleEnum").to_owned());
+    expected.set_transforms(&[EnumTransformation::Screamingsnakecase]);
+
+    assert!(export.is::<EnumSchema>());
+    let export = export.downcast_ref::<EnumSchema>().unwrap();
+    assert_eq!(*export, expected);
+}

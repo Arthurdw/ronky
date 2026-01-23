@@ -17,6 +17,12 @@ pub enum EnumTransformation {
     Camelcase,
     /// Converts the string to pascal case.
     Pascalcase,
+    /// Converts the string to kebab case.
+    Kebabcase,
+    /// Converts the string to SCREAMING-KEBAB-CASE.
+    Screamingkebabcase,
+    /// Converts the string to SCREAMING_SNAKE_CASE.
+    Screamingsnakecase,
 }
 
 impl EnumTransformation {
@@ -30,7 +36,10 @@ impl EnumTransformation {
     ///
     /// A new string with the transformation applied.
     pub fn apply(&self, value: &str) -> String {
-        use heck::{ToLowerCamelCase, ToPascalCase, ToSnakeCase};
+        use heck::{
+            ToKebabCase, ToLowerCamelCase, ToPascalCase, ToShoutyKebabCase, ToShoutySnakeCase,
+            ToSnakeCase,
+        };
 
         match self {
             Self::Uppercase => value.to_uppercase(),
@@ -38,6 +47,9 @@ impl EnumTransformation {
             Self::Snakecase => value.to_snake_case(),
             Self::Camelcase => value.to_lower_camel_case(),
             Self::Pascalcase => value.to_pascal_case(),
+            Self::Kebabcase => value.to_kebab_case(),
+            Self::Screamingkebabcase => value.to_shouty_kebab_case(),
+            Self::Screamingsnakecase => value.to_shouty_snake_case(),
         }
     }
 }
@@ -73,6 +85,9 @@ impl TryFrom<&str> for EnumTransformation {
             "snake" => Self::Snakecase,
             "camel" => Self::Camelcase,
             "pascal" => Self::Pascalcase,
+            "kebab" => Self::Kebabcase,
+            "screamingkebab" => Self::Screamingkebabcase,
+            "screamingsnake" => Self::Screamingsnakecase,
             _ => return Err(format!("Unknown transformation: {}", value)),
         })
     }
@@ -148,6 +163,43 @@ mod tests {
         assert_eq!(
             EnumTransformation::try_from("lower").unwrap(),
             EnumTransformation::Lowercase
+        );
+    }
+
+    #[test]
+    fn test_to_kebab_case() {
+        let helper = EnumTransformation::Kebabcase;
+        assert_eq!(helper.apply("HelloWorld"), "hello-world");
+        assert_eq!(helper.apply("helloWorld"), "hello-world");
+    }
+
+    #[test]
+    fn test_to_screaming_kebab_case() {
+        let helper = EnumTransformation::Screamingkebabcase;
+        assert_eq!(helper.apply("HelloWorld"), "HELLO-WORLD");
+        assert_eq!(helper.apply("helloWorld"), "HELLO-WORLD");
+    }
+
+    #[test]
+    fn test_to_screaming_snake_case() {
+        let helper = EnumTransformation::Screamingsnakecase;
+        assert_eq!(helper.apply("HelloWorld"), "HELLO_WORLD");
+        assert_eq!(helper.apply("helloWorld"), "HELLO_WORLD");
+    }
+
+    #[test]
+    fn parse_new_aliases() {
+        assert_eq!(
+            EnumTransformation::try_from("kebab").unwrap(),
+            EnumTransformation::Kebabcase
+        );
+        assert_eq!(
+            EnumTransformation::try_from("screamingkebab").unwrap(),
+            EnumTransformation::Screamingkebabcase
+        );
+        assert_eq!(
+            EnumTransformation::try_from("screamingsnake").unwrap(),
+            EnumTransformation::Screamingsnakecase
         );
     }
 }
