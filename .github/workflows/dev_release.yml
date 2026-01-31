@@ -58,19 +58,42 @@ jobs:
             && apt update \
             && apt install gh -y
 
+      - name: Get last stable release
+        id: last_stable
+        run: |
+          # Get the last STABLE release (exclude -dev pre-releases)
+          # This ensures dev releases accumulate labels correctly between stable releases
+          LAST_STABLE_TAG=$(gh api repos/${{ github.repository }}/releases \
+            --jq '[.[] | select(.prerelease == false) | .tag_name][0]' \
+            2>/dev/null || echo "")
+
+          if [ -z "$LAST_STABLE_TAG" ] || [ "$LAST_STABLE_TAG" = "null" ]; then
+            echo "No previous stable release found"
+            LAST_STABLE_DATE=$(date -d "30 days ago" -Iseconds)
+            echo "last_stable_tag=" >> $GITHUB_OUTPUT
+          else
+            echo "Last stable release: $LAST_STABLE_TAG"
+            LAST_STABLE_DATE=$(gh api repos/${{ github.repository }}/releases/tags/$LAST_STABLE_TAG --jq .published_at)
+            echo "last_stable_tag=$LAST_STABLE_TAG" >> $GITHUB_OUTPUT
+          fi
+
+          echo "last_stable_date=$LAST_STABLE_DATE" >> $GITHUB_OUTPUT
+          echo "Last stable release date: $LAST_STABLE_DATE"
+        env:
+          GITHUB_TOKEN: ${{ steps.get_token.outputs.token }}
+
       - name: Check for code changes
         id: check_changes
         run: |
-          # Get the last release tag
-          LAST_TAG=$(gh api repos/${{ github.repository }}/releases/latest --jq .tag_name 2>/dev/null || echo "")
+          LAST_TAG="${{ steps.last_stable.outputs.last_stable_tag }}"
 
           if [ -z "$LAST_TAG" ]; then
-            echo "No previous release found, proceeding with dev release"
+            echo "No previous stable release found, proceeding with dev release"
             echo "has_code_changes=true" >> $GITHUB_OUTPUT
             exit 0
           fi
 
-          echo "Last release tag: $LAST_TAG"
+          echo "Checking changes since: $LAST_TAG"
 
           # Check if there are code changes (excluding docs, CI, etc.)
           CODE_CHANGES=$(git diff --name-only ${LAST_TAG}..HEAD -- . \
@@ -93,54 +116,58 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ steps.get_token.outputs.token }}
 
-      - name: Get PR labels for this commit
+      - name: Get all PR labels since last stable release
         id: pr_labels
         if: steps.check_changes.outputs.has_code_changes == 'true'
         run: |
-          # Find the PR that was merged with this commit
-          COMMIT_SHA="${{ github.sha }}"
-          echo "Looking for PR associated with commit: $COMMIT_SHA"
+          LAST_STABLE_DATE="${{ steps.last_stable.outputs.last_stable_date }}"
+          echo "Collecting PR labels since: $LAST_STABLE_DATE"
 
-          # Search for PRs that contain this commit
-          PR_DATA=$(gh api graphql -f query='
-            query($owner: String!, $repo: String!, $sha: String!) {
+          # Get ALL merged PRs since the last STABLE release with pagination
+          # This ensures we find the highest bump type across all PRs, not just the current one
+          MERGED_PRS=$(gh api graphql --paginate -f query='
+            query($owner: String!, $repo: String!, $cursor: String) {
               repository(owner: $owner, name: $repo) {
-                commit: object(expression: $sha) {
-                  ... on Commit {
-                    associatedPullRequests(first: 1) {
+                pullRequests(states: MERGED, first: 100, after: $cursor, orderBy: {field: MERGED_AT, direction: DESC}) {
+                  nodes {
+                    number
+                    mergedAt
+                    labels(first: 10) {
                       nodes {
-                        number
-                        labels(first: 10) {
-                          nodes {
-                            name
-                          }
-                        }
+                        name
                       }
                     }
+                  }
+                  pageInfo {
+                    hasNextPage
+                    endCursor
                   }
                 }
               }
             }
-          ' -f owner='${{ github.repository_owner }}' -f repo='${{ github.event.repository.name }}' -f sha="$COMMIT_SHA" \
-            --jq '.data.repository.commit.associatedPullRequests.nodes[0].labels.nodes[].name' 2>/dev/null || echo "")
+          ' -f owner='${{ github.repository_owner }}' -f repo='${{ github.event.repository.name }}' \
+            --jq --arg since "$LAST_STABLE_DATE" '
+              .data.repository.pullRequests.nodes[]
+              | select((.mergedAt | fromdateiso8601) > ($since | fromdateiso8601))
+              | .labels.nodes[].name
+            ' | grep "^release:" | sort | uniq || echo "")
 
-          echo "PR labels: $PR_DATA"
+          echo "All release labels since last stable release:"
+          echo "$MERGED_PRS"
 
-          # Extract release label if present
-          RELEASE_LABEL=$(echo "$PR_DATA" | grep "^release:" | head -1 || echo "")
-          echo "Release label: $RELEASE_LABEL"
-
-          # Determine bump type
-          if echo "$RELEASE_LABEL" | grep -q "release:major"; then
+          # Determine bump type based on HIGHEST priority label across ALL PRs
+          if echo "$MERGED_PRS" | grep -q "release:major"; then
             BUMP_TYPE="major"
-          elif echo "$RELEASE_LABEL" | grep -q "release:minor"; then
+          elif echo "$MERGED_PRS" | grep -q "release:minor"; then
             BUMP_TYPE="minor"
+          elif echo "$MERGED_PRS" | grep -q "release:patch"; then
+            BUMP_TYPE="patch"
           else
             BUMP_TYPE="patch"
           fi
 
           echo "bump_type=$BUMP_TYPE" >> $GITHUB_OUTPUT
-          echo "Determined bump type: $BUMP_TYPE"
+          echo "Determined bump type (highest across all PRs): $BUMP_TYPE"
         env:
           GITHUB_TOKEN: ${{ steps.get_token.outputs.token }}
 
@@ -148,14 +175,28 @@ jobs:
         id: version
         if: steps.check_changes.outputs.has_code_changes == 'true'
         run: |
-          # Get current version
-          CURRENT_VERSION=$(grep -m 1 '^version = ' Cargo.toml | cut -d '"' -f 2)
-          echo "Current version: $CURRENT_VERSION"
+          # Get the BASE version from the last stable release tag (not from Cargo.toml)
+          # This ensures consistent version calculation regardless of any -dev versions in the repo
+          LAST_STABLE_TAG="${{ steps.last_stable.outputs.last_stable_tag }}"
 
-          # Parse version components
-          MAJOR=$(echo $CURRENT_VERSION | cut -d. -f1)
-          MINOR=$(echo $CURRENT_VERSION | cut -d. -f2)
-          PATCH=$(echo $CURRENT_VERSION | cut -d. -f3 | cut -d- -f1)  # Remove any existing pre-release suffix
+          if [ -z "$LAST_STABLE_TAG" ]; then
+            # Fallback to Cargo.toml if no stable release exists
+            BASE_VERSION=$(grep -m 1 '^version = ' Cargo.toml | cut -d '"' -f 2 | cut -d- -f1)
+          else
+            # Extract version from tag (remove 'v' prefix)
+            BASE_VERSION=$(echo "$LAST_STABLE_TAG" | sed 's/^v//')
+          fi
+
+          echo "Base version (from last stable release): $BASE_VERSION"
+
+          # Also get current Cargo.toml version for updating later
+          CURRENT_VERSION=$(grep -m 1 '^version = ' Cargo.toml | cut -d '"' -f 2)
+          echo "Current Cargo.toml version: $CURRENT_VERSION"
+
+          # Parse version components from the BASE version
+          MAJOR=$(echo $BASE_VERSION | cut -d. -f1)
+          MINOR=$(echo $BASE_VERSION | cut -d. -f2)
+          PATCH=$(echo $BASE_VERSION | cut -d. -f3 | cut -d- -f1)  # Remove any pre-release suffix
 
           # Calculate next version based on bump type
           BUMP_TYPE="${{ steps.pr_labels.outputs.bump_type }}"
@@ -182,6 +223,7 @@ jobs:
           DEV_VERSION="${NEXT_VERSION}-dev.${SHORT_SHA}"
           echo "Dev version: $DEV_VERSION"
 
+          echo "base_version=$BASE_VERSION" >> $GITHUB_OUTPUT
           echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
           echo "next_version=$NEXT_VERSION" >> $GITHUB_OUTPUT
           echo "dev_version=$DEV_VERSION" >> $GITHUB_OUTPUT
@@ -191,13 +233,15 @@ jobs:
         if: steps.check_changes.outputs.has_code_changes == 'true'
         run: |
           DEV_VERSION="${{ steps.version.outputs.dev_version }}"
-          echo "Setting version to: $DEV_VERSION"
+          CURRENT_VERSION="${{ steps.version.outputs.current_version }}"
+          echo "Setting version to: $DEV_VERSION (from $CURRENT_VERSION)"
 
-          # Update workspace version in root Cargo.toml
+          # Update workspace version in root Cargo.toml (matches any version string)
           sed -i "s/^version = \".*\"/version = \"$DEV_VERSION\"/" Cargo.toml
 
-          # Update workspace dependency versions
-          sed -i "s/version = \"${{ steps.version.outputs.current_version }}\"/version = \"$DEV_VERSION\"/g" Cargo.toml
+          # Update workspace dependency versions (escape any special characters in current version)
+          ESCAPED_CURRENT=$(echo "$CURRENT_VERSION" | sed 's/[.[\*^$()+?{|]/\\&/g')
+          sed -i "s/version = \"$ESCAPED_CURRENT\"/version = \"$DEV_VERSION\"/g" Cargo.toml
 
           # Verify the change
           echo "Updated Cargo.toml:"
@@ -250,8 +294,9 @@ jobs:
           For stable releases, please use the latest non-dev version.
 
           **Changes in this release:**
-          - Based on: v${{ steps.version.outputs.current_version }}
+          - Based on stable release: v${{ steps.version.outputs.base_version }}
           - Next stable version will be: v${{ steps.version.outputs.next_version }}
+          - Bump type: ${{ steps.pr_labels.outputs.bump_type }}
           - Commit: ${{ github.sha }}" \
             --prerelease
         env:

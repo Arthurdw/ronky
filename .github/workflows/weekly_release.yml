@@ -61,17 +61,26 @@ jobs:
             && apt update \
             && apt install gh -y
 
-      - name: Get last release date
+      - name: Get last stable release date
         id: last_release
         run: |
-          # Get the last release date, or use a week ago if no releases exist
-          LAST_RELEASE_DATE=$(gh api repos/${{ github.repository }}/releases/latest --jq .published_at 2>/dev/null || echo "")
-          if [ -z "$LAST_RELEASE_DATE" ]; then
-            # If no releases exist, use a week ago
+          # Get the last STABLE release (exclude -dev pre-releases)
+          # This ensures we collect PR labels since the last stable release, not since any dev releases
+          LAST_STABLE_TAG=$(gh api repos/${{ github.repository }}/releases \
+            --jq '[.[] | select(.prerelease == false) | .tag_name][0]' \
+            2>/dev/null || echo "")
+
+          if [ -z "$LAST_STABLE_TAG" ] || [ "$LAST_STABLE_TAG" = "null" ]; then
+            # If no stable releases exist, use a week ago
             LAST_RELEASE_DATE=$(date -d "7 days ago" -Iseconds)
+            echo "No previous stable release found, using date: $LAST_RELEASE_DATE"
+          else
+            LAST_RELEASE_DATE=$(gh api repos/${{ github.repository }}/releases/tags/$LAST_STABLE_TAG --jq .published_at)
+            echo "Last stable release: $LAST_STABLE_TAG (published: $LAST_RELEASE_DATE)"
           fi
+
           echo "last_release_date=$LAST_RELEASE_DATE" >> $GITHUB_OUTPUT
-          echo "Last release date: $LAST_RELEASE_DATE"
+          echo "last_stable_tag=$LAST_STABLE_TAG" >> $GITHUB_OUTPUT
         env:
           GITHUB_TOKEN: ${{ steps.get_token.outputs.token }}
 
@@ -152,18 +161,18 @@ jobs:
             exit 0
           fi
 
-          # Get the last release tag (more reliable than date-based checking)
-          LAST_TAG=$(gh api repos/${{ github.repository }}/releases/latest --jq .tag_name 2>/dev/null || echo "")
+          # Use the last stable release tag from earlier step
+          LAST_TAG="${{ steps.last_release.outputs.last_stable_tag }}"
 
-          if [ -z "$LAST_TAG" ]; then
-            echo "No previous release found, proceeding with release"
+          if [ -z "$LAST_TAG" ] || [ "$LAST_TAG" = "null" ]; then
+            echo "No previous stable release found, proceeding with release"
             echo "needs_release=true" >> $GITHUB_OUTPUT
             exit 0
           fi
 
-          echo "Last release tag: $LAST_TAG"
+          echo "Last stable release tag: $LAST_TAG"
 
-          # Count commits between last tag and HEAD, excluding version bumps (and optionally .github-only changes)
+          # Count commits between last stable tag and HEAD, excluding version bumps (and optionally .github-only changes)
           if [ "${{ inputs.include_github_changes }}" == "true" ]; then
             COMMITS_SINCE_RELEASE=$(git log --oneline ${LAST_TAG}..HEAD --grep="chore(release):" --invert-grep 2>/dev/null | wc -l || echo "0")
           else
@@ -174,10 +183,10 @@ jobs:
 
           if [ "$COMMITS_SINCE_RELEASE" -gt 0 ]; then
             echo "needs_release=true" >> $GITHUB_OUTPUT
-            echo "Release needed - found $COMMITS_SINCE_RELEASE commits since last release (defaulting to patch)"
+            echo "Release needed - found $COMMITS_SINCE_RELEASE commits since last stable release (defaulting to patch)"
           else
             echo "needs_release=false" >> $GITHUB_OUTPUT
-            echo "No release needed - no changes since last release"
+            echo "No release needed - no changes since last stable release"
           fi
         env:
           GITHUB_TOKEN: ${{ steps.get_token.outputs.token }}
