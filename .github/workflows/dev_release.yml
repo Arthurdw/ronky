@@ -62,12 +62,12 @@ jobs:
         id: last_stable
         run: |
           # Get the last STABLE release (exclude -dev pre-releases)
-          # Uses --paginate to fetch all releases in case there are many dev releases
-          # Uses --slurp to combine paginated results into a single array for jq
-          LAST_STABLE_TAG=$(gh api repos/${{ github.repository }}/releases \
-            --paginate --slurp \
-            --jq '[.[][] | select(.prerelease == false) | .tag_name][0]' \
-            2>/dev/null || echo "")
+          # Uses --paginate to handle cases with many consecutive pre-releases (>30)
+          # The --jq filter is applied per-page, streaming results newest-first
+          # head -n 1 takes the first stable release found
+          LAST_STABLE_TAG=$(gh api repos/${{ github.repository }}/releases --paginate \
+            --jq '.[] | select(.prerelease == false) | .tag_name' \
+            2>/dev/null | head -n 1 || echo "")
 
           if [ -z "$LAST_STABLE_TAG" ] || [ "$LAST_STABLE_TAG" = "null" ]; then
             echo "No previous stable release found"
@@ -125,12 +125,13 @@ jobs:
           LAST_STABLE_DATE="${{ steps.last_stable.outputs.last_stable_date }}"
           echo "Collecting PR labels since: $LAST_STABLE_DATE"
 
-          # Get ALL merged PRs since the last STABLE release with pagination
+          # Get merged PRs since the last STABLE release
+          # Fetches up to 100 most recently updated PRs (sufficient for weekly release cycles)
           # This ensures we find the highest bump type across all PRs, not just the current one
-          MERGED_PRS=$(gh api graphql --paginate -f query='
-            query($owner: String!, $repo: String!, $cursor: String) {
+          MERGED_PRS=$(gh api graphql -f query='
+            query($owner: String!, $repo: String!) {
               repository(owner: $owner, name: $repo) {
-                pullRequests(states: MERGED, first: 100, after: $cursor, orderBy: {field: MERGED_AT, direction: DESC}) {
+                pullRequests(states: MERGED, first: 100, orderBy: {field: UPDATED_AT, direction: DESC}) {
                   nodes {
                     number
                     mergedAt
@@ -140,19 +141,15 @@ jobs:
                       }
                     }
                   }
-                  pageInfo {
-                    hasNextPage
-                    endCursor
-                  }
                 }
               }
             }
           ' -f owner='${{ github.repository_owner }}' -f repo='${{ github.event.repository.name }}' \
-            --jq --arg since "$LAST_STABLE_DATE" '
+            --jq "
               .data.repository.pullRequests.nodes[]
-              | select((.mergedAt | fromdateiso8601) > ($since | fromdateiso8601))
+              | select((.mergedAt | fromdateiso8601) > (\"$LAST_STABLE_DATE\" | fromdateiso8601))
               | .labels.nodes[].name
-            ' | grep "^release:" | sort | uniq || echo "")
+            " | grep "^release:" | sort | uniq || echo "")
 
           echo "All release labels since last stable release:"
           echo "$MERGED_PRS"
