@@ -18,7 +18,7 @@
 //! ```
 
 use crate::{Exportable, Serializable};
-use serde::{de::Visitor, Deserialize, Deserializer, Serialize, Serializer};
+use serde::{Deserialize, Deserializer, Serialize, Serializer, de::Visitor};
 use std::collections::BTreeMap;
 use std::fmt;
 

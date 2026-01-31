@@ -38,15 +38,15 @@ mod values;
 pub use arri_common::EnumTransformation;
 pub use elements::ElementsSchema;
 pub use empty::EmptySchema;
+pub use r#enum::EnumSchema;
 pub use exportable::Exportable;
 pub use metadata::MetadataSchema;
 pub use properties::PropertiesSchema;
-pub use r#enum::EnumSchema;
 pub use r#ref::RefSchema;
-pub use r#type::{TypeSchema, Types};
 pub use serializable::Serializable;
 pub use serializer::Serializer;
 pub use tagged_union::TaggedUnionSchema;
+pub use r#type::{TypeSchema, Types};
 #[cfg(feature = "any")]
 pub use value::{NumberValue, Value};
 pub use values::ValuesSchema;
