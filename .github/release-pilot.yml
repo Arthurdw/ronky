@@ -1,0 +1,56 @@
+# Release Pilot configuration for ronky workspace
+# https://github.com/A-Line-Services/release-pilot
+
+packages:
+  - name: arri_common
+    ecosystem: cargo
+    path: ./arri_common
+
+  - name: ronky_derive
+    ecosystem: cargo
+    path: ./ronky_derive
+
+  - name: arri_repr
+    ecosystem: cargo
+    path: ./arri_repr
+
+  - name: ronky
+    ecosystem: cargo
+    path: ./ronky
+
+# Publish crates in dependency order
+releaseOrder:
+  - arri_common
+  - ronky_derive
+  - arri_repr
+  - ronky
+
+labels:
+  major: "release:major"
+  minor: "release:minor"
+  patch: "release:patch"
+  skip: "release:skip"
+
+version:
+  defaultBump: patch
+  devRelease: true
+
+git:
+  tagPrefix: v
+  commitMessage: "chore(release): {version}"
+
+publish:
+  enabled: true
+  delayBetweenPackages: 30
+
+githubRelease:
+  enabled: true
+  generateNotes: true
+
+# Auto-update version references in README
+versionFiles:
+  enabled: true
+  files:
+    - file: README.md
+      pattern: 'ronky = \{ version = "[0-9]+\.[0-9]+\.[0-9]+"'
+      replace: 'ronky = { version = "{version}"'
