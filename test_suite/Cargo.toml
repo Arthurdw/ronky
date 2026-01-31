@@ -16,7 +16,7 @@ keywords.workspace = true
 workspace = true
 
 [dev-dependencies]
-ronky = { workspace = true, features = ["derive", "serialization", "chrono", "time", "uuid", "bigdecimal", "num-bigint", "num-bigfloat", "rust_decimal", "decimal", "url", "bytes", "dashmap", "smallvec"] }
+ronky = { workspace = true, features = ["derive", "serialization", "chrono", "time", "uuid", "bigdecimal", "num-bigint", "num-bigfloat", "rust_decimal", "decimal", "url", "bytes", "dashmap", "smallvec", "any"] }
 chrono.workspace = true
 time.workspace = true
 uuid.workspace = true

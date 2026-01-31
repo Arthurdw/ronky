@@ -31,6 +31,8 @@ mod serializable;
 mod serializer;
 mod tagged_union;
 mod r#type;
+#[cfg(feature = "any")]
+mod value;
 mod values;
 
 pub use arri_common::EnumTransformation;
@@ -45,6 +47,8 @@ pub use serializable::Serializable;
 pub use serializer::Serializer;
 pub use tagged_union::TaggedUnionSchema;
 pub use r#type::{TypeSchema, Types};
+#[cfg(feature = "any")]
+pub use value::{NumberValue, Value};
 pub use values::ValuesSchema;
 
 pub mod type_utils {

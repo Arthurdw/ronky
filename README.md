@@ -93,6 +93,7 @@ WEB-SAVVY NAVIGATORS     🌐  url
 DATA-HANDLING WIZARDS    📊  bytes
 CONCURRENT COMPANIONS    🧵  dashmap
 OPTIMIZED PERFORMERS     ⚡  smallvec
+DYNAMIC SHAPESHIFTERS    🔮  any (Value type for arbitrary JSON)
 ```
 
 Each of these crates gets the VIP (Very Important Purring) treatment from Ronky. Their types
@@ -222,6 +223,53 @@ enum Pet {
 > Copy, paste, and experience the magic of Ronky firsthand. Your future self
 > will thank you when your API documentation is automatically up-to-date.
 
+### 🔮 The Dynamic Shapeshifter: Working with Any Type
+
+Sometimes you need to handle arbitrary JSON data without knowing its structure at compile time.
+Enable the `any` feature (along with `derive` for the macro) and use the `Value` type:
+
+```toml
+ronky = { version = "1.0.0", features = ["derive", "any"] }
+```
+
+```rust
+use ronky::{Exported, Value, NumberValue};
+use std::collections::BTreeMap;
+
+/// A configuration that accepts arbitrary metadata
+#[derive(Exported)]
+struct Config {
+    /// The name of this configuration
+    name: String,
+
+    /// Arbitrary metadata - could be anything!
+    /// Exports to an empty Arri schema `{}` which accepts any JSON value
+    metadata: Value,
+}
+
+fn main() {
+    // Create dynamic values
+    let mut meta = BTreeMap::new();
+    meta.insert("version".to_string(), Value::Number(NumberValue::PosInt(42)));
+    meta.insert("enabled".to_string(), Value::Bool(true));
+    meta.insert("tags".to_string(), Value::Array(vec![
+        Value::String("production".to_string()),
+        Value::String("critical".to_string()),
+    ]));
+
+    let config = Config {
+        name: "my-service".to_string(),
+        metadata: Value::Object(meta),
+    };
+
+    // The schema exports `metadata` as `{}` - accepts any JSON value
+    let schema = Config::export().serialize().unwrap();
+}
+```
+
+> 🐱 **Note**: The `Value` type maps to Arri's "Empty Schema Form" (`{}`), which accepts
+> any JSON value. This is equivalent to `any` in TypeScript or `interface{}` in Go.
+
 ## 📋 Quick Reference
 
 ### The Basics
@@ -230,7 +278,14 @@ enum Pet {
 
    ```toml
    [dependencies]
-   ronky = "1.0.0"  # Check crates.io for the latest version
+   ronky = { version = "1.0.0", features = ["derive"] }
+   ```
+
+   The `derive` feature enables the `#[derive(Exported)]` macro. Additional features can be enabled as needed:
+
+   ```toml
+   [dependencies]
+   ronky = { version = "1.0.0", features = ["derive", "chrono", "uuid", "any"] }
    ```
 
 2. Import the essentials:
