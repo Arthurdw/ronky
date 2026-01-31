@@ -179,12 +179,12 @@ fn test_value_number_variants() {
 
     let pos_int = Value::Number(NumberValue::PosInt(42));
     let neg_int = Value::Number(NumberValue::NegInt(-42));
-    let float = Value::Number(NumberValue::Float(3.14));
+    let float = Value::Number(NumberValue::Float(2.72));
 
     assert!(matches!(pos_int, Value::Number(NumberValue::PosInt(42))));
     assert!(matches!(neg_int, Value::Number(NumberValue::NegInt(-42))));
     assert!(
-        matches!(float, Value::Number(NumberValue::Float(f)) if (f - 3.14).abs() < f64::EPSILON)
+        matches!(float, Value::Number(NumberValue::Float(f)) if (f - 2.72).abs() < f64::EPSILON)
     );
 }
 
@@ -267,8 +267,8 @@ fn test_value_number_to_json() {
         "-42"
     );
 
-    let float_json = Value::Number(NumberValue::Float(3.14)).to_json().unwrap();
-    assert!(float_json.starts_with("3.14"));
+    let float_json = Value::Number(NumberValue::Float(2.72)).to_json().unwrap();
+    assert!(float_json.starts_with("2.72"));
 }
 
 #[test]
@@ -381,8 +381,8 @@ fn test_value_number_from_json() {
     let neg = Value::from_json("-42").expect("should deserialize");
     assert!(matches!(neg, Value::Number(NumberValue::NegInt(-42))));
 
-    let float = Value::from_json("3.14").expect("should deserialize");
-    assert!(matches!(float, Value::Number(NumberValue::Float(f)) if (f - 3.14).abs() < 0.001));
+    let float = Value::from_json("2.72").expect("should deserialize");
+    assert!(matches!(float, Value::Number(NumberValue::Float(f)) if (f - 2.72).abs() < 0.001));
 }
 
 #[test]
