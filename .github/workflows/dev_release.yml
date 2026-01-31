@@ -9,7 +9,7 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}
-  cancel-in-progress: true # Cancel previous dev releases if a new one is triggered
+  cancel-in-progress: false # Don't cancel - could interrupt publishing and leave partial releases
 
 permissions:
   contents: write
@@ -214,19 +214,26 @@ jobs:
           cargo build --release --all-features
           cargo test --all --release
 
-      - name: Create git tag
+      - name: Commit version changes and create tag
         if: steps.check_changes.outputs.has_code_changes == 'true'
         run: |
           DEV_VERSION="${{ steps.version.outputs.dev_version }}"
           git config --local user.name "github-actions[bot]"
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          # Create tag pointing to the current commit (don't commit version changes)
+          # Commit version changes so the tag points to the exact sources used for the release
+          # This commit won't be pushed to main - only the tag will be pushed
+          git add Cargo.toml Cargo.lock
+          git commit -m "chore(dev-release): v${DEV_VERSION}"
+
+          # Create tag pointing to the commit with version changes
           git tag "v${DEV_VERSION}" -m "Dev release v${DEV_VERSION}"
 
       - name: Push tag
         if: steps.check_changes.outputs.has_code_changes == 'true'
         run: |
+          # Only push the tag, not the commit - keeps main clean while ensuring
+          # the tag points to a commit with the correct version in Cargo.toml
           git push origin "v${{ steps.version.outputs.dev_version }}"
         env:
           GITHUB_TOKEN: ${{ steps.get_token.outputs.token }}

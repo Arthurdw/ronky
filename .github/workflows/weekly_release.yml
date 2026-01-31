@@ -81,13 +81,13 @@ jobs:
           LAST_RELEASE_DATE="${{ steps.last_release.outputs.last_release_date }}"
           echo "Filtering PRs merged after: $LAST_RELEASE_DATE"
 
-          # Get all merged PRs since the last release
-          # Note: The GraphQL $since parameter is passed but GitHub's PR API doesn't filter by it,
-          # so we filter client-side with jq using --arg to properly pass the date
-          MERGED_PRS=$(gh api graphql -f query='
-            query($owner: String!, $repo: String!) {
+          # Get all merged PRs since the last release with pagination support
+          # Uses --paginate to fetch all PRs, not just the first 100
+          # Uses fromdateiso8601 for reliable date comparison (epoch-based)
+          MERGED_PRS=$(gh api graphql --paginate -f query='
+            query($owner: String!, $repo: String!, $cursor: String) {
               repository(owner: $owner, name: $repo) {
-                pullRequests(states: MERGED, first: 100, orderBy: {field: MERGED_AT, direction: DESC}) {
+                pullRequests(states: MERGED, first: 100, after: $cursor, orderBy: {field: MERGED_AT, direction: DESC}) {
                   nodes {
                     number
                     mergedAt
@@ -97,13 +97,17 @@ jobs:
                       }
                     }
                   }
+                  pageInfo {
+                    hasNextPage
+                    endCursor
+                  }
                 }
               }
             }
           ' -f owner='${{ github.repository_owner }}' -f repo='${{ github.event.repository.name }}' \
             --jq --arg since "$LAST_RELEASE_DATE" '
               .data.repository.pullRequests.nodes[]
-              | select(.mergedAt > $since)
+              | select((.mergedAt | fromdateiso8601) > ($since | fromdateiso8601))
               | .labels.nodes[].name
             ' | grep "^release:" | sort | uniq || echo "")
 
