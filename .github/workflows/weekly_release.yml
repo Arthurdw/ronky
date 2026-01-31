@@ -50,6 +50,17 @@ jobs:
         run: |
           chown -R $(id -u):$(id -g) .
 
+      - name: Install GitHub CLI
+        run: |
+          (type -p wget >/dev/null || (apt update && apt-get install wget -y)) \
+            && mkdir -p -m 755 /etc/apt/keyrings \
+            && out=$(mktemp) && wget -nv -O$out https://cli.github.com/packages/githubcli-archive-keyring.gpg \
+            && cat $out | tee /etc/apt/keyrings/githubcli-archive-keyring.gpg > /dev/null \
+            && chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg \
+            && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
+            && apt update \
+            && apt install gh -y
+
       - name: Get last release date
         id: last_release
         run: |
@@ -67,11 +78,16 @@ jobs:
       - name: Get merged PRs since last release
         id: merged_prs
         run: |
-          # Get all merged PRs since the last release
-          MERGED_PRS=$(gh api graphql -f query='
-            query($owner: String!, $repo: String!, $since: DateTime!) {
+          LAST_RELEASE_DATE="${{ steps.last_release.outputs.last_release_date }}"
+          echo "Filtering PRs merged after: $LAST_RELEASE_DATE"
+
+          # Get all merged PRs since the last release with pagination support
+          # Uses --paginate to fetch all PRs, not just the first 100
+          # Uses fromdateiso8601 for reliable date comparison (epoch-based)
+          MERGED_PRS=$(gh api graphql --paginate -f query='
+            query($owner: String!, $repo: String!, $cursor: String) {
               repository(owner: $owner, name: $repo) {
-                pullRequests(states: MERGED, first: 100, orderBy: {field: MERGED_AT, direction: DESC}) {
+                pullRequests(states: MERGED, first: 100, after: $cursor, orderBy: {field: MERGED_AT, direction: DESC}) {
                   nodes {
                     number
                     mergedAt
@@ -81,10 +97,19 @@ jobs:
                       }
                     }
                   }
+                  pageInfo {
+                    hasNextPage
+                    endCursor
+                  }
                 }
               }
             }
-          ' -f owner='${{ github.repository_owner }}' -f repo='${{ github.event.repository.name }}' -f since='${{ steps.last_release.outputs.last_release_date }}' --jq '.data.repository.pullRequests.nodes[] | select(.mergedAt > "${{ steps.last_release.outputs.last_release_date }}") | .labels.nodes[].name' | grep "^release:" | sort | uniq || echo "")
+          ' -f owner='${{ github.repository_owner }}' -f repo='${{ github.event.repository.name }}' \
+            --jq --arg since "$LAST_RELEASE_DATE" '
+              .data.repository.pullRequests.nodes[]
+              | select((.mergedAt | fromdateiso8601) > ($since | fromdateiso8601))
+              | .labels.nodes[].name
+            ' | grep "^release:" | sort | uniq || echo "")
 
           echo "Merged PR labels since last release:"
           echo "$MERGED_PRS"
