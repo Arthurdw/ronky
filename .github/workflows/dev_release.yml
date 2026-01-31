@@ -1,0 +1,270 @@
+---
+name: Dev Release
+run-name: dev-release
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true # Cancel previous dev releases if a new one is triggered
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  dev-release:
+    name: Dev Release
+    runs-on: ubuntu-latest
+    container:
+      image: arthurdw/rust-ci:latest
+
+    # Skip if this is a version bump commit (from weekly release)
+    if: "!contains(github.event.head_commit.message, 'chore(release):')"
+
+    steps:
+      - name: Get token
+        id: get_token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.RONKY_CD_APP_ID }}
+          private-key: ${{ secrets.RONKY_CD_TOKEN }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+
+      - name: Check out repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ steps.get_token.outputs.token }}
+          fetch-depth: 0
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Fix repository permissions
+        run: |
+          chown -R $(id -u):$(id -g) .
+
+      - name: Install GitHub CLI
+        run: |
+          (type -p wget >/dev/null || (apt update && apt-get install wget -y)) \
+            && mkdir -p -m 755 /etc/apt/keyrings \
+            && out=$(mktemp) && wget -nv -O$out https://cli.github.com/packages/githubcli-archive-keyring.gpg \
+            && cat $out | tee /etc/apt/keyrings/githubcli-archive-keyring.gpg > /dev/null \
+            && chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg \
+            && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
+            && apt update \
+            && apt install gh -y
+
+      - name: Check for code changes
+        id: check_changes
+        run: |
+          # Get the last release tag
+          LAST_TAG=$(gh api repos/${{ github.repository }}/releases/latest --jq .tag_name 2>/dev/null || echo "")
+
+          if [ -z "$LAST_TAG" ]; then
+            echo "No previous release found, proceeding with dev release"
+            echo "has_code_changes=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          echo "Last release tag: $LAST_TAG"
+
+          # Check if there are code changes (excluding docs, CI, etc.)
+          CODE_CHANGES=$(git diff --name-only ${LAST_TAG}..HEAD -- . \
+            ':!.github' \
+            ':!*.md' \
+            ':!.gitignore' \
+            ':!.pre-commit-config.yaml' \
+            ':!docs/' \
+            ':!.readme/' \
+            2>/dev/null | wc -l || echo "0")
+
+          echo "Code changes since $LAST_TAG: $CODE_CHANGES files"
+
+          if [ "$CODE_CHANGES" -gt 0 ]; then
+            echo "has_code_changes=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_code_changes=false" >> $GITHUB_OUTPUT
+            echo "No code changes detected, skipping dev release"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ steps.get_token.outputs.token }}
+
+      - name: Get PR labels for this commit
+        id: pr_labels
+        if: steps.check_changes.outputs.has_code_changes == 'true'
+        run: |
+          # Find the PR that was merged with this commit
+          COMMIT_SHA="${{ github.sha }}"
+          echo "Looking for PR associated with commit: $COMMIT_SHA"
+
+          # Search for PRs that contain this commit
+          PR_DATA=$(gh api graphql -f query='
+            query($owner: String!, $repo: String!, $sha: String!) {
+              repository(owner: $owner, name: $repo) {
+                commit: object(expression: $sha) {
+                  ... on Commit {
+                    associatedPullRequests(first: 1) {
+                      nodes {
+                        number
+                        labels(first: 10) {
+                          nodes {
+                            name
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ' -f owner='${{ github.repository_owner }}' -f repo='${{ github.event.repository.name }}' -f sha="$COMMIT_SHA" \
+            --jq '.data.repository.commit.associatedPullRequests.nodes[0].labels.nodes[].name' 2>/dev/null || echo "")
+
+          echo "PR labels: $PR_DATA"
+
+          # Extract release label if present
+          RELEASE_LABEL=$(echo "$PR_DATA" | grep "^release:" | head -1 || echo "")
+          echo "Release label: $RELEASE_LABEL"
+
+          # Determine bump type
+          if echo "$RELEASE_LABEL" | grep -q "release:major"; then
+            BUMP_TYPE="major"
+          elif echo "$RELEASE_LABEL" | grep -q "release:minor"; then
+            BUMP_TYPE="minor"
+          else
+            BUMP_TYPE="patch"
+          fi
+
+          echo "bump_type=$BUMP_TYPE" >> $GITHUB_OUTPUT
+          echo "Determined bump type: $BUMP_TYPE"
+        env:
+          GITHUB_TOKEN: ${{ steps.get_token.outputs.token }}
+
+      - name: Calculate dev version
+        id: version
+        if: steps.check_changes.outputs.has_code_changes == 'true'
+        run: |
+          # Get current version
+          CURRENT_VERSION=$(grep -m 1 '^version = ' Cargo.toml | cut -d '"' -f 2)
+          echo "Current version: $CURRENT_VERSION"
+
+          # Parse version components
+          MAJOR=$(echo $CURRENT_VERSION | cut -d. -f1)
+          MINOR=$(echo $CURRENT_VERSION | cut -d. -f2)
+          PATCH=$(echo $CURRENT_VERSION | cut -d. -f3 | cut -d- -f1)  # Remove any existing pre-release suffix
+
+          # Calculate next version based on bump type
+          BUMP_TYPE="${{ steps.pr_labels.outputs.bump_type }}"
+          case $BUMP_TYPE in
+            major)
+              MAJOR=$((MAJOR + 1))
+              MINOR=0
+              PATCH=0
+              ;;
+            minor)
+              MINOR=$((MINOR + 1))
+              PATCH=0
+              ;;
+            patch)
+              PATCH=$((PATCH + 1))
+              ;;
+          esac
+
+          NEXT_VERSION="${MAJOR}.${MINOR}.${PATCH}"
+          echo "Next version (based on $BUMP_TYPE bump): $NEXT_VERSION"
+
+          # Create dev version with short commit hash
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
+          DEV_VERSION="${NEXT_VERSION}-dev.${SHORT_SHA}"
+          echo "Dev version: $DEV_VERSION"
+
+          echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          echo "next_version=$NEXT_VERSION" >> $GITHUB_OUTPUT
+          echo "dev_version=$DEV_VERSION" >> $GITHUB_OUTPUT
+          echo "short_sha=$SHORT_SHA" >> $GITHUB_OUTPUT
+
+      - name: Update version for dev release
+        if: steps.check_changes.outputs.has_code_changes == 'true'
+        run: |
+          DEV_VERSION="${{ steps.version.outputs.dev_version }}"
+          echo "Setting version to: $DEV_VERSION"
+
+          # Update workspace version in root Cargo.toml
+          sed -i "s/^version = \".*\"/version = \"$DEV_VERSION\"/" Cargo.toml
+
+          # Update workspace dependency versions
+          sed -i "s/version = \"${{ steps.version.outputs.current_version }}\"/version = \"$DEV_VERSION\"/g" Cargo.toml
+
+          # Verify the change
+          echo "Updated Cargo.toml:"
+          grep -E "^version = |version = \"$DEV_VERSION\"" Cargo.toml | head -5
+
+      - name: Update Cargo.lock
+        if: steps.check_changes.outputs.has_code_changes == 'true'
+        run: |
+          cargo update --workspace
+
+      - name: Build and test
+        if: steps.check_changes.outputs.has_code_changes == 'true'
+        run: |
+          cargo build --release --all-features
+          cargo test --all --release
+
+      - name: Create git tag
+        if: steps.check_changes.outputs.has_code_changes == 'true'
+        run: |
+          DEV_VERSION="${{ steps.version.outputs.dev_version }}"
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # Create tag pointing to the current commit (don't commit version changes)
+          git tag "v${DEV_VERSION}" -m "Dev release v${DEV_VERSION}"
+
+      - name: Push tag
+        if: steps.check_changes.outputs.has_code_changes == 'true'
+        run: |
+          git push origin "v${{ steps.version.outputs.dev_version }}"
+        env:
+          GITHUB_TOKEN: ${{ steps.get_token.outputs.token }}
+
+      - name: Create GitHub pre-release
+        if: steps.check_changes.outputs.has_code_changes == 'true'
+        run: |
+          DEV_VERSION="${{ steps.version.outputs.dev_version }}"
+          gh release create "v${DEV_VERSION}" \
+            --title "v${DEV_VERSION}" \
+            --notes "Development release based on commit ${{ github.sha }}.
+
+          This is a pre-release version for testing purposes.
+          For stable releases, please use the latest non-dev version.
+
+          **Changes in this release:**
+          - Based on: v${{ steps.version.outputs.current_version }}
+          - Next stable version will be: v${{ steps.version.outputs.next_version }}
+          - Commit: ${{ github.sha }}" \
+            --prerelease
+        env:
+          GITHUB_TOKEN: ${{ steps.get_token.outputs.token }}
+
+      - name: Publish to crates.io
+        if: steps.check_changes.outputs.has_code_changes == 'true'
+        run: |
+          # Publish crates in dependency order
+          for crate in arri_common ronky_derive arri_repr ronky; do
+            echo "Publishing $crate..."
+            cd $crate
+            cargo publish --allow-dirty || echo "Warning: $crate publish failed (may already exist)"
+            cd ..
+            # Wait a bit for crates.io to index
+            sleep 30
+          done
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+
+      - name: No dev release needed
+        if: steps.check_changes.outputs.has_code_changes == 'false'
+        run: echo "No code changes detected since last release. Skipping dev release."
