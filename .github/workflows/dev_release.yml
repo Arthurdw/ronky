@@ -62,9 +62,11 @@ jobs:
         id: last_stable
         run: |
           # Get the last STABLE release (exclude -dev pre-releases)
-          # This ensures dev releases accumulate labels correctly between stable releases
+          # Uses --paginate to fetch all releases in case there are many dev releases
+          # Uses --slurp to combine paginated results into a single array for jq
           LAST_STABLE_TAG=$(gh api repos/${{ github.repository }}/releases \
-            --jq '[.[] | select(.prerelease == false) | .tag_name][0]' \
+            --paginate --slurp \
+            --jq '[.[][] | select(.prerelease == false) | .tag_name][0]' \
             2>/dev/null || echo "")
 
           if [ -z "$LAST_STABLE_TAG" ] || [ "$LAST_STABLE_TAG" = "null" ]; then
@@ -132,7 +134,7 @@ jobs:
                   nodes {
                     number
                     mergedAt
-                    labels(first: 10) {
+                    labels(first: 100) {
                       nodes {
                         name
                       }
