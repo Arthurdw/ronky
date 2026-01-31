@@ -226,7 +226,11 @@ enum Pet {
 ### 🔮 The Dynamic Shapeshifter: Working with Any Type
 
 Sometimes you need to handle arbitrary JSON data without knowing its structure at compile time.
-Enable the `any` feature and use the `Value` type:
+Enable the `any` feature (along with `derive` for the macro) and use the `Value` type:
+
+```toml
+ronky = { version = "1.0.0", features = ["derive", "any"] }
+```
 
 ```rust
 use ronky::{Exported, Value, NumberValue};
@@ -274,14 +278,14 @@ fn main() {
 
    ```toml
    [dependencies]
-   ronky = "1.0.0"  # Check crates.io for the latest version
+   ronky = { version = "1.0.0", features = ["derive"] }
    ```
 
-   **Optional features** (enable as needed):
+   The `derive` feature enables the `#[derive(Exported)]` macro. Additional features can be enabled as needed:
 
    ```toml
    [dependencies]
-   ronky = { version = "1.0.0", features = ["chrono", "uuid", "any"] }
+   ronky = { version = "1.0.0", features = ["derive", "chrono", "uuid", "any"] }
    ```
 
 2. Import the essentials:
