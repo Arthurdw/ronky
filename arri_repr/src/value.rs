@@ -36,8 +36,9 @@ use std::fmt;
 /// - `String` - Represents JSON strings
 /// - `Array` - Represents JSON arrays
 /// - `Object` - Represents JSON objects with string keys
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Default, Clone, PartialEq)]
 pub enum Value {
+    #[default]
     /// JSON null value
     Null,
     /// JSON boolean value
