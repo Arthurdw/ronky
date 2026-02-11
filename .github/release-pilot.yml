@@ -47,6 +47,8 @@ githubRelease:
   enabled: true
   generateNotes: true
 
+skipIfNoChanges: true
+
 # Auto-update version references in README
 versionFiles:
   enabled: true
