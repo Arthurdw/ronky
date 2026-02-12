@@ -229,7 +229,7 @@ Sometimes you need to handle arbitrary JSON data without knowing its structure a
 Enable the `any` feature (along with `derive` for the macro) and use the `Value` type:
 
 ```toml
-ronky = { version = "1.2.3", features = ["derive", "any"] }
+ronky = { version = "1.2.4", features = ["derive", "any"] }
 ```
 
 ```rust
@@ -278,14 +278,14 @@ fn main() {
 
    ```toml
    [dependencies]
-   ronky = { version = "1.2.3", features = ["derive"] }
+   ronky = { version = "1.2.4", features = ["derive"] }
    ```
 
    The `derive` feature enables the `#[derive(Exported)]` macro. Additional features can be enabled as needed:
 
    ```toml
    [dependencies]
-   ronky = { version = "1.2.3", features = ["derive", "chrono", "uuid", "any"] }
+   ronky = { version = "1.2.4", features = ["derive", "chrono", "uuid", "any"] }
    ```
 
 2. Import the essentials:
