@@ -1,20 +1,10 @@
 name: Release
 
 on:
-  push:
-    branches: [main]
   schedule:
     # Every Wednesday at 9:00 AM UTC (same as previous weekly release)
     - cron: "0 9 * * 3"
   workflow_dispatch:
-    inputs:
-      mode:
-        description: "Release mode"
-        type: choice
-        options:
-          - stable
-          - dev
-        default: stable
 
 concurrency:
   group: ${{ github.workflow }}
@@ -55,20 +45,9 @@ jobs:
       - name: Run tests
         run: cargo test --all --release
 
-      - name: Determine release mode
-        id: mode
-        run: |
-          if [[ "${{ github.event_name }}" == "schedule" ]]; then
-            echo "mode=stable" >> $GITHUB_OUTPUT
-          elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            echo "mode=${{ github.event.inputs.mode }}" >> $GITHUB_OUTPUT
-          else
-            echo "mode=dev" >> $GITHUB_OUTPUT
-          fi
-
       - name: Release
         uses: a-line-services/release-pilot@v1
         with:
-          mode: ${{ steps.mode.outputs.mode }}
+          mode: stable
           github-token: ${{ steps.get_token.outputs.token }}
           cargo-token: ${{ secrets.CARGO_REGISTRY_TOKEN }}

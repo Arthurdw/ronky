@@ -33,7 +33,7 @@ labels:
 
 version:
   defaultBump: patch
-  devRelease: true
+  devRelease: false
 
 git:
   tagPrefix: v
