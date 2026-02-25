@@ -4,7 +4,7 @@ version = 4
 
 [[package]]
 name = "about"
-version = "1.2.5"
+version = "1.2.6"
 dependencies = [
  "ronky",
  "serde_json",
@@ -51,14 +51,14 @@ checksum = "7c02d123df017efcdfbd739ef81735b36c5ba83ec3c59c80a9d7ecc718f92e50"
 
 [[package]]
 name = "arri_common"
-version = "1.2.5"
+version = "1.2.6"
 dependencies = [
  "heck",
 ]
 
 [[package]]
 name = "arri_repr"
-version = "1.2.5"
+version = "1.2.6"
 dependencies = [
  "arri_common",
  "bigdecimal",
@@ -234,7 +234,7 @@ checksum = "d0a5c400df2834b80a4c3327b3aad3a4c4cd4de0629063962b03235697506a28"
 
 [[package]]
 name = "custom_result"
-version = "1.2.5"
+version = "1.2.6"
 dependencies = [
  "ronky",
  "serde_json",
@@ -931,7 +931,7 @@ dependencies = [
 
 [[package]]
 name = "ronky"
-version = "1.2.5"
+version = "1.2.6"
 dependencies = [
  "arri_repr",
  "ronky_derive",
@@ -941,7 +941,7 @@ dependencies = [
 
 [[package]]
 name = "ronky_derive"
-version = "1.2.5"
+version = "1.2.6"
 dependencies = [
  "arri_common",
  "heck",
@@ -974,12 +974,6 @@ name = "rustversion"
 version = "1.0.22"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b39cdef0fa800fc44525c84ccb54a029961a8215f9619753635a9c0d2538d46d"
-
-[[package]]
-name = "ryu"
-version = "1.0.20"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "28d3b2b1366ec20994f1fd18c3c594f05c5dd4bc44d8bb0c1c632c8d6829481f"
 
 [[package]]
 name = "scopeguard"
@@ -1077,9 +1071,9 @@ dependencies = [
 
 [[package]]
 name = "sonic-rs"
-version = "0.5.6"
+version = "0.5.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4425ea8d66ec950e0a8f2ef52c766cc3d68d661d9a0845c353c40833179fd866"
+checksum = "e16b39f36452a4fa6f14a481b02e9ba5c6842c6a44d0545da967eca122f2eed9"
 dependencies = [
  "ahash 0.8.12",
  "bumpalo",
@@ -1088,12 +1082,12 @@ dependencies = [
  "faststr",
  "itoa",
  "ref-cast",
- "ryu",
  "serde",
  "simdutf8",
  "sonic-number",
  "sonic-simd",
  "thiserror",
+ "zmij",
 ]
 
 [[package]]
