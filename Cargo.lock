@@ -4,7 +4,7 @@ version = 4
 
 [[package]]
 name = "about"
-version = "1.2.6"
+version = "1.2.7"
 dependencies = [
  "ronky",
  "serde_json",
@@ -51,14 +51,14 @@ checksum = "7c02d123df017efcdfbd739ef81735b36c5ba83ec3c59c80a9d7ecc718f92e50"
 
 [[package]]
 name = "arri_common"
-version = "1.2.6"
+version = "1.2.7"
 dependencies = [
  "heck",
 ]
 
 [[package]]
 name = "arri_repr"
-version = "1.2.6"
+version = "1.2.7"
 dependencies = [
  "arri_common",
  "bigdecimal",
@@ -234,7 +234,7 @@ checksum = "d0a5c400df2834b80a4c3327b3aad3a4c4cd4de0629063962b03235697506a28"
 
 [[package]]
 name = "custom_result"
-version = "1.2.6"
+version = "1.2.7"
 dependencies = [
  "ronky",
  "serde_json",
@@ -711,9 +711,9 @@ dependencies = [
 
 [[package]]
 name = "proc-macro-crate"
-version = "3.4.0"
+version = "3.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "219cb19e96be00ab2e37d6e299658a0cfa83e52429179969b0f0121b4ac46983"
+checksum = "e67ba7e9b2b56446f1d419b1d807906278ffa1a658a8a5d8a39dcb1f5a78614f"
 dependencies = [
  "toml_edit",
 ]
@@ -931,7 +931,7 @@ dependencies = [
 
 [[package]]
 name = "ronky"
-version = "1.2.6"
+version = "1.2.7"
 dependencies = [
  "arri_repr",
  "ronky_derive",
@@ -941,7 +941,7 @@ dependencies = [
 
 [[package]]
 name = "ronky_derive"
-version = "1.2.6"
+version = "1.2.7"
 dependencies = [
  "arri_common",
  "heck",
@@ -1269,19 +1269,10 @@ dependencies = [
  "indexmap",
  "serde_core",
  "serde_spanned",
- "toml_datetime 1.0.0+spec-1.1.0",
+ "toml_datetime",
  "toml_parser",
  "toml_writer",
  "winnow",
-]
-
-[[package]]
-name = "toml_datetime"
-version = "0.7.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a197c0ec7d131bfc6f7e82c8442ba1595aeab35da7adbf05b6b73cd06a16b6be"
-dependencies = [
- "serde_core",
 ]
 
 [[package]]
@@ -1295,12 +1286,12 @@ dependencies = [
 
 [[package]]
 name = "toml_edit"
-version = "0.23.5"
+version = "0.25.0+spec-1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c2ad0b7ae9cfeef5605163839cb9221f453399f15cfb5c10be9885fcf56611f9"
+checksum = "caee3f6e1c6f2025affe9191e6e6f66ade10b48f36b1a1b3cd92dfe405ffd260"
 dependencies = [
  "indexmap",
- "toml_datetime 0.7.1",
+ "toml_datetime",
  "toml_parser",
  "winnow",
 ]
