@@ -1,103 +1,52 @@
-use super::goto_next;
-use proc_macro::TokenStream;
-use syn::{
-    Attribute, Ident, LitStr,
-    parse::{Parse, ParseStream},
-    token,
-};
+use syn::LitStr;
 
-use super::parse_arri_attrs;
+use super::{parse_flag, parse_required_string};
 
-/// Represents parsed attributes for struct fields.
-#[derive(Debug, Default)]
-pub(crate) struct FieldArguments {
-    /// Optional rename value for the field.
-    pub(crate) rename: Option<String>,
-}
+fn validate_rename(value: &LitStr) -> syn::Result<()> {
+    let new_name = value.value();
 
-impl Parse for FieldArguments {
-    /// Parses the input stream to extract `FieldArguments` attributes.
-    ///
-    /// # Arguments
-    ///
-    /// * `input` - The input parse stream.
-    ///
-    /// # Returns
-    ///
-    /// A `syn::Result` containing the parsed `FieldArguments` or an error.
-    fn parse(input: ParseStream) -> syn::Result<Self> {
-        let mut args = Self::default();
-
-        while !input.is_empty() {
-            let key: Ident = input.parse()?;
-            let key_str = key.to_string();
-
-            match key_str.as_str() {
-                "rename" => {
-                    if input.peek(token::Eq) {
-                        input.parse::<token::Eq>()?;
-                        let value: LitStr = input.parse()?;
-                        let new_name = value.value();
-
-                        if new_name.is_empty() {
-                            return Err(syn::Error::new(value.span(), "A rename cannot be empty"))?;
-                        } else if new_name.contains(' ') {
-                            return Err(syn::Error::new(
-                                value.span(),
-                                "A rename cannot contain spaces",
-                            ))?;
-                        } else if new_name.starts_with(|c: char| c.is_numeric()) {
-                            return Err(syn::Error::new(
-                                value.span(),
-                                "A rename cannot start with a number",
-                            ))?;
-                        } else if new_name
-                            .chars()
-                            .any(|c| !c.is_ascii_alphanumeric() && c != '_')
-                        {
-                            return Err(syn::Error::new(
-                                value.span(),
-                                "A rename can only contain a-z, A-Z and 0-9 or _",
-                            ))?;
-                        }
-                        args.rename = Some(new_name);
-                    } else {
-                        return Err(input.error("Expected '=' after 'rename'"))?;
-                    }
-                }
-                _ => {
-                    // TODO: create a simple trait or smth that auto implements this and makes it a lot easier
-                    // For unknown attributes, skip their values if present
-                    if input.peek(token::Eq) {
-                        input.parse::<token::Eq>()?;
-
-                        // Ignore all other content
-                        while !input.is_empty() && !input.peek(token::Comma) {
-                            let _: proc_macro2::TokenTree = input.parse()?;
-                        }
-                    }
-
-                    // Optionally, you could collect these for warnings
-                    // warnings.push((key.span(), format!("Unknown attribute: {}", key_str)));
-                }
-            }
-
-            goto_next(input)?;
-        }
-
-        Ok(args)
+    if new_name.is_empty() {
+        Err(syn::Error::new(value.span(), "A rename cannot be empty"))
+    } else if new_name.contains(' ') {
+        Err(syn::Error::new(
+            value.span(),
+            "A rename cannot contain spaces",
+        ))
+    } else if new_name.starts_with(|c: char| c.is_numeric()) {
+        Err(syn::Error::new(
+            value.span(),
+            "A rename cannot start with a number",
+        ))
+    } else if new_name
+        .chars()
+        .any(|c| !c.is_ascii_alphanumeric() && c != '_')
+    {
+        Err(syn::Error::new(
+            value.span(),
+            "A rename can only contain a-z, A-Z and 0-9 or _",
+        ))
+    } else {
+        Ok(())
     }
 }
 
-/// Extracts `FieldArguments` attributes from a list of attributes.
-///
-/// # Arguments
-///
-/// * `attrs` - A slice of `Attribute` objects to parse.
-///
-/// # Returns
-///
-/// A `Result` containing an optional `FieldArguments` or a `TokenStream` error.
-pub(crate) fn extract(attrs: &[Attribute]) -> Result<Vec<FieldArguments>, TokenStream> {
-    parse_arri_attrs(attrs)
+define_arri_attrs! {
+    /// Represents parsed attributes for struct fields.
+    pub(crate) struct FieldArguments {
+        /// Optional rename value for the field.
+        pub(crate) rename: Option<String>,
+        /// Indicates whether the type is nullable.
+        pub(crate) is_nullable: Option<bool>,
+    }
+
+    parse(args, input) {
+        "rename" => {
+            let value = parse_required_string(input, "rename")?;
+            validate_rename(&value)?;
+            args.rename = Some(value.value());
+        }
+        "nullable" => {
+            args.is_nullable = Some(parse_flag(input)?);
+        }
+    }
 }
