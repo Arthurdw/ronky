@@ -28,10 +28,7 @@ pub(crate) fn parse_flag(input: ParseStream) -> syn::Result<bool> {
 }
 
 /// Parses a required `= "value"` or `= ["value1", "value2"]`.
-pub(crate) fn parse_string_or_list(
-    input: ParseStream,
-    key_name: &str,
-) -> syn::Result<Vec<String>> {
+pub(crate) fn parse_string_or_list(input: ParseStream, key_name: &str) -> syn::Result<Vec<String>> {
     if !input.peek(syn::token::Eq) {
         return Err(input.error(format!("Expected '=' after '{}'", key_name)));
     }
