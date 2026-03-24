@@ -2,13 +2,7 @@ use proc_macro::TokenStream;
 use quote::{ToTokens, quote, quote_spanned};
 use syn::{Field, spanned::Spanned};
 
-use crate::parsers::{
-    attributes::{
-        fields,
-        typeschema::{self, TypeSchemaArguments},
-    },
-    types::is_option_type,
-};
+use crate::parsers::{attributes::fields, types::is_option_type};
 
 use super::{FieldParser, ParsedField};
 
@@ -40,54 +34,47 @@ impl FieldParser for BaseParser {
         // Check if the field type is an `Option`.
         let is_optional = is_option_type(&field.ty);
 
-        // Extract and process the `typeschema` attributes.
-        let attrs = match typeschema::extract(&field.attrs) {
-            Ok(attrs) => {
-                let mut actual = TypeSchemaArguments::default();
+        // Extract field attributes (rename + nullable).
+        let field_attrs = fields::extract(&field.attrs)?;
 
-                for attr in attrs {
-                    if let Some(is_nullable) = attr.is_nullable {
-                        // Ensure only optional types can be nullable.
-                        if !is_optional && is_nullable {
-                            let type_name = field.ty.to_token_stream().to_string();
-                            return Err(quote_spanned!(field.ty.span() =>
-                                compile_error!(concat!(
-                                    "Only an optional type can be nullable. Use Option<",
-                                    #type_name,
-                                    "> instead of ",
-                                    #type_name
-                                ))
-                            )
-                            .into());
-                        }
-
-                        actual.is_nullable = Some(is_nullable);
+        // Process nullable from field attributes.
+        let nullable_code = {
+            let mut actual_nullable: Option<bool> = None;
+            for attr in &field_attrs {
+                if let Some(is_nullable) = attr.is_nullable {
+                    // Ensure only optional types can be nullable.
+                    if !is_optional && is_nullable {
+                        let type_name = field.ty.to_token_stream().to_string();
+                        return Err(quote_spanned!(field.ty.span() =>
+                            compile_error!(concat!(
+                                "Only an optional type can be nullable. Use Option<",
+                                #type_name,
+                                "> instead of ",
+                                #type_name
+                            ))
+                        )
+                        .into());
                     }
+                    actual_nullable = Some(is_nullable);
                 }
-
-                // Generate nullable attribute code.
-                actual.is_nullable.map(|is_nullable| {
-                    quote! {
-                        use ronky::Serializable;
-                        ty.set_nullable(#is_nullable);
-                    }
-                })
             }
-            Err(stream) => return Err(stream),
+            actual_nullable.map(|is_nullable| {
+                quote! {
+                    use ronky::Serializable;
+                    ty.set_nullable(#is_nullable);
+                }
+            })
         };
 
         // Generate the type schema representation.
         let typeschema = quote! {
             {
                 let mut ty = #export;
-                #attrs
+                #nullable_code
                 ty
             }
         }
         .into();
-
-        // Extract field-specific attributes.
-        let field_attrs = fields::extract(&field.attrs)?;
 
         // Return the parsed field based on its optionality.
         if is_optional {

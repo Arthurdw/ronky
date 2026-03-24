@@ -1,15 +1,9 @@
-use super::goto_next;
 use heck::{
-    ToKebabCase, ToLowerCamelCase, ToPascalCase, ToShoutyKebabCase, ToShoutySnakeCase, ToSnakeCase,
-};
-use proc_macro::TokenStream;
-use syn::{
-    Attribute, Ident, LitBool, LitStr,
-    parse::{Parse, ParseStream},
-    token,
+    ToKebabCase, ToLowerCamelCase, ToPascalCase, ToShoutyKebabCase, ToShoutySnakeCase,
+    ToSnakeCase,
 };
 
-use super::parse_arri_attrs;
+use super::{parse_flag, parse_required_string};
 
 /// Supported casing transformations for rename_all.
 #[derive(Debug, Clone, PartialEq)]
@@ -50,86 +44,34 @@ impl CaseTransform {
     }
 }
 
-/// Represents parsed properties arguments.
-///
-/// This structure is used to store the parsed attributes for properties, such as the `strict` flag.
-#[derive(Debug, Default)]
-pub(crate) struct PropertiesArguments {
-    /// Indicates whether the `strict` property is enabled.
-    /// None means not set, Some(true) means enabled, Some(false) means explicitly disabled.
-    pub(crate) strict: Option<bool>,
-    /// Optional rename_all transformation for all fields.
-    pub(crate) rename_all: Option<CaseTransform>,
-}
-
-impl Parse for PropertiesArguments {
-    /// Parses the input stream to extract `PropertiesArguments` attributes.
-    ///
-    /// # Arguments
-    ///
-    /// * `input` - The input parse stream.
-    ///
-    /// # Returns
-    ///
-    /// A `syn::Result` containing the parsed `PropertiesArguments` or an error.
-    fn parse(input: ParseStream) -> syn::Result<Self> {
-        let mut args = Self::default();
-
-        while !input.is_empty() {
-            let key: Ident = input.parse()?;
-            let key_str = key.to_string();
-
-            match key_str.as_str() {
-                "strict" => {
-                    if input.peek(token::Eq) {
-                        input.parse::<token::Eq>()?;
-                        let value: LitBool = input.parse()?;
-                        args.strict = Some(value.value());
-                    } else {
-                        args.strict = Some(true);
-                    }
-                }
-                "rename_all" => {
-                    if input.peek(token::Eq) {
-                        input.parse::<token::Eq>()?;
-                        let value: LitStr = input.parse()?;
-                        let transform_str = value.value();
-
-                        match CaseTransform::from_str(&transform_str) {
-                            Some(transform) => args.rename_all = Some(transform),
-                            None => {
-                                return Err(syn::Error::new(
-                                    value.span(),
-                                    format!(
-                                        "Invalid rename_all value: '{}'. Supported values are: camelCase, PascalCase, snake_case, SCREAMING_SNAKE_CASE, kebab-case, SCREAMING-KEBAB-CASE",
-                                        transform_str
-                                    ),
-                                ))?;
-                            }
-                        }
-                    } else {
-                        return Err(input.error("Expected '=' after 'rename_all'"))?;
-                    }
-                }
-                _ => Err(input.error(format!("Unknown property: {}", key_str)))?,
-            }
-
-            goto_next(input)?;
-        }
-
-        Ok(args)
+define_arri_attrs! {
+    /// Represents parsed properties arguments.
+    pub(crate) struct PropertiesArguments {
+        /// Indicates whether the `strict` property is enabled.
+        pub(crate) strict: Option<bool>,
+        /// Optional rename_all transformation for all fields.
+        pub(crate) rename_all: Option<CaseTransform>,
     }
-}
 
-/// Extracts `PropertiesArguments` attributes from a list of attributes.
-///
-/// # Arguments
-///
-/// * `attrs` - A slice of `Attribute` objects to parse.
-///
-/// # Returns
-///
-/// A `Result` containing an optional `PropertiesArguments` or a `TokenStream` error.
-pub(crate) fn extract(attrs: &[Attribute]) -> Result<Vec<PropertiesArguments>, TokenStream> {
-    parse_arri_attrs(attrs)
+    parse(args, input) {
+        "strict" => {
+            args.strict = Some(parse_flag(input)?);
+        }
+        "rename_all" => {
+            let value = parse_required_string(input, "rename_all")?;
+            let transform_str = value.value();
+            match CaseTransform::from_str(&transform_str) {
+                Some(transform) => args.rename_all = Some(transform),
+                None => {
+                    return Err(syn::Error::new(
+                        value.span(),
+                        format!(
+                            "Invalid rename_all value: '{}'. Supported values are: camelCase, PascalCase, snake_case, SCREAMING_SNAKE_CASE, kebab-case, SCREAMING-KEBAB-CASE",
+                            transform_str
+                        ),
+                    ));
+                }
+            }
+        }
+    }
 }
