@@ -15,7 +15,6 @@ keywords.workspace = true
 workspace = true
 
 [dev-dependencies]
-# TODO: be able to remove this dev dependency
 serde_json = "1.0.140"
 
 [features]
@@ -34,7 +33,6 @@ dashmap = ["dep:dashmap"]
 smallvec = ["dep:smallvec"]
 
 [dependencies]
-# TODO: see if we can make downcast also a feature flag
 arri_common = { workspace = true }
 downcast-rs = "2.0.1"
 ronky_derive = { workspace = true }
