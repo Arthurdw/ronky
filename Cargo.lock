@@ -4,7 +4,7 @@ version = 4
 
 [[package]]
 name = "about"
-version = "1.3.0"
+version = "1.3.1"
 dependencies = [
  "ronky",
  "serde_json",
@@ -51,14 +51,14 @@ checksum = "7c02d123df017efcdfbd739ef81735b36c5ba83ec3c59c80a9d7ecc718f92e50"
 
 [[package]]
 name = "arri_common"
-version = "1.3.0"
+version = "1.3.1"
 dependencies = [
  "heck",
 ]
 
 [[package]]
 name = "arri_repr"
-version = "1.3.0"
+version = "1.3.1"
 dependencies = [
  "arri_common",
  "bigdecimal",
@@ -234,7 +234,7 @@ checksum = "d0a5c400df2834b80a4c3327b3aad3a4c4cd4de0629063962b03235697506a28"
 
 [[package]]
 name = "custom_result"
-version = "1.3.0"
+version = "1.3.1"
 dependencies = [
  "ronky",
  "serde_json",
@@ -528,9 +528,9 @@ dependencies = [
 
 [[package]]
 name = "indexmap"
-version = "2.13.0"
+version = "2.13.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7714e70437a7dc3ac8eb7e6f8df75fd8eb422675fc7678aff7364301092b1017"
+checksum = "45a8a2b9cb3e0b0c1803dbb0758ffac5de2f425b23c28f518faabd9d805342ff"
 dependencies = [
  "equivalent",
  "hashbrown 0.16.1",
@@ -931,7 +931,7 @@ dependencies = [
 
 [[package]]
 name = "ronky"
-version = "1.3.0"
+version = "1.3.1"
 dependencies = [
  "arri_repr",
  "ronky_derive",
@@ -941,7 +941,7 @@ dependencies = [
 
 [[package]]
 name = "ronky_derive"
-version = "1.3.0"
+version = "1.3.1"
 dependencies = [
  "arri_common",
  "heck",
