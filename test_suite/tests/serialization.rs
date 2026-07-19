@@ -225,7 +225,7 @@ fn test_serializing_string_escapes_special_characters() {
         bar: String::from("\"\\\x08\x0c\n\r\r\t"),
     };
     let json_str = val.to_json().expect("serialization succeeds");
-    println!("RESULT: {:?}", &json_str);
+    println!("RESULT: {:?}", json_str);
     serde_json::Value::from_json(&json_str).expect("deserialization succeeds");
 }
 
