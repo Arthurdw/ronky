@@ -25,7 +25,7 @@ proc-macro-crate = "3.2.0"
 quote = "1.0.40"
 sonic-rs = { workspace = true, optional = true }
 serde = { workspace = true, optional = true }
-syn = { version = "2.0.101", features = ["derive"] }
+syn = { version = "3.0.0", features = ["derive"] }
 
 [features]
 default = []
