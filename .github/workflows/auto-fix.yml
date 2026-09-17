@@ -16,7 +16,11 @@ jobs:
   auto-fix:
     name: Auto Fix Issues
     runs-on: ubuntu-latest
-    if: github.event.pull_request.head.repo.full_name == github.repository
+    # Dependabot-triggered runs only receive Dependabot secrets, so the app token
+    # secrets are unavailable; skip them (dependency bumps need no auto-fixes).
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.actor != 'dependabot[bot]'
     steps:
       - name: Generate App Token
         id: generate_token
