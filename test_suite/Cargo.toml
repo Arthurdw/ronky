@@ -33,5 +33,5 @@ smallvec.workspace = true
 sonic-rs.workspace = true
 serde.workspace = true
 serde_json = "1.0"
-trybuild = "1.0.104"
+trybuild = "1.0.121"
 version_check = "0.9"
