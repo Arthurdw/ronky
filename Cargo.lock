@@ -885,7 +885,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "serde",
- "sonic-rs",
  "syn 3.0.9",
 ]
 
