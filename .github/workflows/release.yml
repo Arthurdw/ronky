@@ -38,12 +38,16 @@ jobs:
         with:
           token: ${{ steps.get_token.outputs.token }}
           fetch-depth: 0
-          persist-credentials: false
+          # release-pilot pushes the version bump commit and tag via git
+          persist-credentials: true
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@686976e191b89faba57d3206551f0f330d8cb249 # stable
 
       - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
+        with:
+          # trybuild leaves dangling paths in target/ that break the cache save
+          save-if: false
 
       - name: Run tests
         run: cargo test --all --release
