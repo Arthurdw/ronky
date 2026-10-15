@@ -10,9 +10,7 @@ concurrency:
   group: ${{ github.workflow }}
   cancel-in-progress: false # Don't cancel - could interrupt publishing
 
-permissions:
-  contents: write
-  pull-requests: read
+permissions: {}
 
 jobs:
   release:
