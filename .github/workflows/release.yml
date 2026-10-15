@@ -16,8 +16,12 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
-    # Skip if this is a version bump commit (prevents infinite loops)
-    if: "!contains(github.event.head_commit.message, 'chore(release):')"
+    # Run only from the default branch (applies to scheduled and manually
+    # dispatched runs), so arbitrary branches cannot reach the credentialed
+    # publishing steps. Also skip version bump commits (prevents infinite loops).
+    if: >-
+      github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+      && !contains(github.event.head_commit.message, 'chore(release):')
 
     steps:
       - name: Get token
@@ -34,6 +38,7 @@ jobs:
         with:
           token: ${{ steps.get_token.outputs.token }}
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
