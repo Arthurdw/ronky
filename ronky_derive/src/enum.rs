@@ -134,22 +134,6 @@ fn resolve_representation(
     tag_key: Option<UnionKey>,
     value_key: Option<UnionKey>,
 ) -> Result<Representation, TokenStream> {
-    // Ensure all variants are either tagged union or regular enum variants
-    let check_not_mixed = || -> Result<(), TokenStream> {
-        let mixed = variants
-            .iter()
-            .zip(variants.iter().skip(1))
-            .find(|(prev, cur)| prev.fields.is_empty() != cur.fields.is_empty());
-
-        match mixed {
-            Some((_, variant)) => Err(quote_spanned!(
-                variant.span() =>
-                compile_error!("Arri requires that enums can only be all enum or all tagged union variants. This variant violates that rule.");
-            )
-            .into()),
-            None => Ok(()),
-        }
-    };
     let has_data = variants.iter().any(|v| !v.fields.is_empty());
 
     if let Some(key) = tag_key.as_ref().or(value_key.as_ref())
@@ -163,7 +147,17 @@ fn resolve_representation(
 
     match (discriminator, tag_key, value_key) {
         (Some(discriminator), ..) => {
-            check_not_mixed()?;
+            // The discriminator form requires every variant to be an object with data
+            let mixed = variants
+                .iter()
+                .zip(variants.iter().skip(1))
+                .find(|(prev, cur)| prev.fields.is_empty() != cur.fields.is_empty());
+            if let Some((_, variant)) = mixed {
+                return Err(quote_spanned!(variant.span() =>
+                    compile_error!("Arri requires that enums using `discriminator` can only be all enum or all tagged union variants. This variant violates that rule. Remove `discriminator` to export a union, which supports unit variants.");
+                )
+                .into());
+            }
             if !has_data {
                 return Err(quote_spanned!(discriminator.span() =>
                     compile_error!("Discriminator can only be used with tagged enums.");
@@ -183,18 +177,12 @@ fn resolve_representation(
                 )
                 .into());
             }
-            if let Some(variant) = variants.iter().find(|v| v.fields.is_empty()) {
-                return Err(quote_spanned!(variant.span() =>
-                    compile_error!("Unit variants are not supported in adjacently tagged unions (`tag_key` + `value_key`). Remove `value_key` to use an internally tagged union instead.");
-                )
-                .into());
-            }
             Ok(Representation::AdjacentlyTagged(tag_key, value_key))
         }
         (None, Some(tag_key), None) => {
             if let Some(variant) = variants
                 .iter()
-                .find(|v| matches!(v.fields, Fields::Unnamed(_)))
+                .find(|v| matches!(v.fields, Fields::Unnamed(_)) && !v.fields.is_empty())
             {
                 return Err(quote_spanned!(variant.span() =>
                     compile_error!("Internally tagged unions (`tag_key` without `value_key`) only support unit and struct variants. Add a `value_key` to use an adjacently tagged union instead.");
@@ -204,7 +192,7 @@ fn resolve_representation(
             Ok(Representation::InternallyTagged(tag_key))
         }
         (None, None, None) => {
-            check_not_mixed()?;
+            // Enums with only unit variants become an "enum", anything else an externally tagged union
             if has_data {
                 Ok(Representation::ExternallyTagged)
             } else {
@@ -251,24 +239,28 @@ fn export_variant(
         quote!(add_mapping)
     };
 
+    // `Unit`, `Unit {}` and `Unit()` are all treated as unit variants
     let stream = match (&variant.fields, representation) {
-        (Fields::Unit, Representation::InternallyTagged(_)) => {
-            // `{ "<tag_key>": "<variant>" }`, a variant without any other properties
-            let metadata = set_variant_metadata(quote!(export));
-            quote! {
-                schema.add_variant(#variant_name, Box::new({
-                    let mut export = ronky::PropertiesSchema::new();
-                    #metadata
-                    export
-                }));
-            }
-        }
-        (Fields::Unit, _) => {
+        (fields, Representation::Enum) if fields.is_empty() => {
             // TODO: followup on request of having a list of metadata as variants, as we can't provide
             // any docs or deprecation notices to a variant :/
             // See current state here: https://discord.com/channels/1272569268869005322/1272569269342965874/1363165596048429137
             quote! {
                 schema.add_variant(#variant_name);
+            }
+        }
+        (fields, _) if fields.is_empty() => {
+            // By convention unit variants of a union are represented as an empty object:
+            // - externally tagged: `{ "<variant>": {} }`
+            // - internally tagged: `{ "<tag_key>": "<variant>" }`
+            // - adjacently tagged: `{ "<tag_key>": "<variant>", "<value_key>": {} }`
+            let metadata = set_variant_metadata(quote!(export));
+            quote! {
+                schema.#add(#variant_name, Box::new({
+                    let mut export = ronky::PropertiesSchema::new();
+                    #metadata
+                    export
+                }));
             }
         }
         (Fields::Named(fields), _) => {
@@ -304,6 +296,7 @@ fn export_variant(
                 }));
             }
         }
+        (Fields::Unit, _) => unreachable!("unit variants are handled above"),
         (Fields::Unnamed(fields), _) => {
             // Newtype variants use the schema of their field directly
             let (field_stream, field_metadata) = export_unnamed_field(variant, fields, true)?;

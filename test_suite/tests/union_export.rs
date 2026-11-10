@@ -382,3 +382,93 @@ fn test_validator_rejects_mismatches() {
     let json = serde_json::to_value(InternallyTaggedInSerde::Circle { radius: 1.0 }).unwrap();
     assert!(!validate(&schema, &schema, &json));
 }
+
+#[test]
+fn test_unit_variants_in_unions() {
+    #[allow(dead_code)]
+    #[derive(Exported)]
+    enum External {
+        /// Nothing at all
+        Unit,
+        Braces {},
+        Label(String),
+    }
+
+    #[allow(dead_code)]
+    #[derive(Exported)]
+    #[arri(tag_key = "kind", value_key = "data")]
+    enum Adjacent {
+        Unit,
+        Label(String),
+    }
+
+    let empty = json!({ "properties": {}, "optionalProperties": {} });
+
+    assert_eq!(
+        schema_of::<External>(),
+        json!({
+            "union": {
+                "Unit": {
+                    "properties": {},
+                    "optionalProperties": {},
+                    "metadata": { "description": "Nothing at all" }
+                },
+                "Braces": empty,
+                "Label": { "type": "string" }
+            },
+            "metadata": { "id": "External" }
+        })
+    );
+
+    assert_eq!(
+        schema_of::<Adjacent>(),
+        json!({
+            "tagKey": "kind",
+            "valueKey": "data",
+            "union": {
+                "Unit": empty,
+                "Label": { "type": "string" }
+            },
+            "metadata": { "id": "Adjacent" }
+        })
+    );
+}
+
+#[test]
+fn test_unit_variants_match_serde_when_written_with_braces() {
+    // serde writes `Unit {}` as an empty object, matching the convention for unit variants
+    #[derive(Exported, Serialize, Deserialize)]
+    enum External {
+        Unit {},
+        Label(String),
+    }
+
+    #[derive(Exported, Serialize, Deserialize)]
+    #[serde(tag = "kind", content = "data")]
+    #[arri(tag_key = "kind", value_key = "data")]
+    enum Adjacent {
+        Unit {},
+        Label(String),
+    }
+
+    assert_valid(&External::Unit {});
+    assert_valid(&External::Label("hi".to_string()));
+    assert_valid(&Adjacent::Unit {});
+    assert_valid(&Adjacent::Label("hi".to_string()));
+}
+
+#[test]
+fn test_empty_variants_only_export_as_enum() {
+    #[allow(dead_code)]
+    #[derive(Exported)]
+    enum Flags {
+        A,
+        B {},
+        C(),
+    }
+
+    assert_eq!(
+        schema_of::<Flags>(),
+        json!({ "enum": ["A", "B", "C"], "metadata": { "id": "Flags" } })
+    );
+}

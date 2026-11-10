@@ -336,10 +336,13 @@ whose JSON representation lines up with serde's enum representations:
 | `#[arri(tag_key = "kind")]`                        | `#[serde(tag = "kind")]`                       | `{ "kind": "Circle", "radius": 2.5 }`      |
 | `#[arri(tag_key = "kind", value_key = "data")]`    | `#[serde(tag = "kind", content = "data")]`     | `{ "kind": "Circle", "data": { "radius": 2.5 } }` |
 
-Some rules (enforced at compile time):
-- Internally tagged unions only support struct and unit variants, and fields can't share a name with the `tag_key`.
-- Externally tagged unions can't mix unit and data variants, and adjacently tagged unions don't support unit variants.
+Some things worth knowing:
 - Newtype variants (`Label(String)`) use the schema of their field directly. `Option<T>` makes the variant nullable.
+- Unit variants (`Unit`) in a union are represented as an empty object: `{ "Unit": {} }`,
+  `{ "kind": "Unit" }` or `{ "kind": "Unit", "data": {} }`. serde writes a bare `Unit` differently
+  (`"Unit"`), so declare it as `Unit {}` if you serialize with serde.
+- Internally tagged unions only support struct and unit variants, and fields can't share a name with the
+  `tag_key` (enforced at compile time).
 
 ## 🐈 The Ronky Memorial Section
 
