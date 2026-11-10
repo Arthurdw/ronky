@@ -1,0 +1,5 @@
+error: `discriminator` cannot be combined with `tag_key` or `value_key`. Use `tag_key` instead, the discriminator schema form is deprecated.
+ --> tests/compile_fail/union_discriminator_with_tag_key.rs:4:42
+  |
+4 | #[arri(discriminator = "type", tag_key = "kind")]
+  |                                          ^^^^^^

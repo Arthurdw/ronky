@@ -1,0 +1,5 @@
+error: Internally tagged unions (`tag_key` without `value_key`) only support unit and struct variants. Add a `value_key` to use an adjacently tagged union instead.
+ --> tests/compile_fail/union_internally_tagged_tuple_variant.rs:7:5
+  |
+7 |     Label(String),
+  |     ^^^^^

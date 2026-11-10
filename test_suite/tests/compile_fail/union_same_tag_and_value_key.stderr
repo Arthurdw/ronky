@@ -1,0 +1,5 @@
+error: `value_key` must be different from `tag_key`.
+ --> tests/compile_fail/union_same_tag_and_value_key.rs:4:38
+  |
+4 | #[arri(tag_key = "kind", value_key = "kind")]
+  |                                      ^^^^^^

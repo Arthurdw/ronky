@@ -1,0 +1,5 @@
+error: Unit variants are not supported in adjacently tagged unions (`tag_key` + `value_key`). Remove `value_key` to use an internally tagged union instead.
+ --> tests/compile_fail/union_adjacently_tagged_unit_variant.rs:7:5
+  |
+7 |     Nothing,
+  |     ^^^^^^^
