@@ -93,6 +93,7 @@ fn test_export_unnamed() {
 fn test_export_metadata() {
     #[allow(dead_code)]
     #[derive(Exported)]
+    #[arri(discriminator = "type")]
     enum SampleUnion {
         /// This is a Circle
         Circle {

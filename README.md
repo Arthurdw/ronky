@@ -57,7 +57,7 @@ attention to detail that a cat gives to knocking your most precious possessions 
 │                           │ - Optional types know when to disappear   │
 ├───────────────────────────┼───────────────────────────────────────────┤
 │ 🛡️ Guardian Features      │ - Strict mode keeps schemas pristine      │
-│                           │ - Discriminators tag unions properly      │
+│                           │ - Unions tagged every which way           │
 │                           │ - Circular refs handled without dizziness │
 ├───────────────────────────┼───────────────────────────────────────────┤
 │ 🔄 Transformation Magic   │ - Case transformations (snake → UPPER)    │
@@ -195,8 +195,9 @@ enum CatColor {
 }
 
 /// Entities that interrupt your Zoom calls at the worst possible moment
+/// Exported as an internally tagged union: { "species": "DOG", "name": ... }
 #[derive(Exported)]
-#[arri(transform = "uppercase", discriminator = "species")]
+#[arri(transform = "uppercase", tag_key = "species")]
 enum Pet {
     Dog {
         /// The word you'll repeat 37 times at the dog park
@@ -316,11 +317,32 @@ fn main() {
 - `#[arri(rename_all = "camelCase")]` - Transform all field names to a specific case
   - Supported cases: `camelCase`, `PascalCase`, `snake_case`, `SCREAMING_SNAKE_CASE`, `kebab-case`, `SCREAMING-KEBAB-CASE`
 - `#[arri(transform = "snake_case")]` - Transform enum variant names (enums only)
-- `#[arri(discriminator = "type")]` - Set discriminator field name (tagged unions only)
+- `#[arri(tag_key = "type")]` - Export an enum as an internally tagged union (see below)
+- `#[arri(tag_key = "type", value_key = "data")]` - Export an enum as an adjacently tagged union (see below)
+- `#[arri(discriminator = "type")]` - _Deprecated_, exports the legacy "discriminator" schema form. Prefer `tag_key`.
 
 **Field-level attributes:**
 - `#[arri(rename = "newName")]` - Rename a specific field or variant (overrides `rename_all`)
 - `#[arri(nullable)]` - Mark a field as nullable
+
+### Enums & Unions
+
+Enums with only unit variants become an Arri `enum`. Enums with data become an Arri `union`,
+whose JSON representation lines up with serde's enum representations:
+
+| Ronky attributes                                   | serde attributes                               | JSON                                       |
+| -------------------------------------------------- | ---------------------------------------------- | ------------------------------------------ |
+| _(none)_                                           | _(none)_                                       | `{ "Circle": { "radius": 2.5 } }`          |
+| `#[arri(tag_key = "kind")]`                        | `#[serde(tag = "kind")]`                       | `{ "kind": "Circle", "radius": 2.5 }`      |
+| `#[arri(tag_key = "kind", value_key = "data")]`    | `#[serde(tag = "kind", content = "data")]`     | `{ "kind": "Circle", "data": { "radius": 2.5 } }` |
+
+Some things worth knowing:
+- Newtype variants (`Label(String)`) use the schema of their field directly. `Option<T>` makes the variant nullable.
+- Unit variants (`Unit`) in a union are represented as an empty object: `{ "Unit": {} }`,
+  `{ "kind": "Unit" }` or `{ "kind": "Unit", "data": {} }`. serde writes a bare `Unit` differently
+  (`"Unit"`), so declare it as `Unit {}` if you serialize with serde.
+- Internally tagged unions only support struct and unit variants, and fields can't share a name with the
+  `tag_key` (enforced at compile time).
 
 ## 🐈 The Ronky Memorial Section
 

@@ -1,0 +1,5 @@
+error: `tag_key` cannot be empty
+ --> tests/compile_fail/union_empty_tag_key.rs:4:18
+  |
+4 | #[arri(tag_key = "")]
+  |                  ^^

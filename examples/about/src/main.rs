@@ -51,7 +51,7 @@ enum CatColor {
 /// Represents a pet with a name and species.
 #[allow(dead_code)]
 #[derive(Exported)]
-#[arri(transform = "uppercase", discriminator = "species")]
+#[arri(transform = "uppercase", tag_key = "species")]
 enum Pet {
     Dog {
         /// The name of the pet.

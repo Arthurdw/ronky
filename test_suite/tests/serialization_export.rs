@@ -103,7 +103,6 @@ fn test_vector_and_hashmap_serialization() {
 #[test]
 fn test_enum_serialization() {
     #[derive(Exported, Serialize, Deserialize, Debug, PartialEq)]
-    #[arri(discriminator = "type")]
     enum Status {
         Active { dummy: Option<()> },
         Inactive { reason: String },

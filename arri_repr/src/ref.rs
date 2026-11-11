@@ -1,13 +1,20 @@
 use ronky_derive::Serializable as SerializableDerive;
 
+use crate::MetadataSchema;
+
 /// Represents a reference schema in an Arri schema.
 ///
 /// This struct is used to define a reference to another schema.
 #[derive(Default, Debug, PartialEq, Eq, SerializableDerive)]
-#[arri_disable(metadata, nullable)]
 pub struct RefSchema {
     /// The reference string pointing to another schema.
     pub r#ref: String,
+
+    /// Optional metadata associated with the reference.
+    pub metadata: Option<MetadataSchema>,
+
+    /// Indicates whether the reference allows null values.
+    pub is_nullable: Option<bool>,
 }
 
 impl RefSchema {
@@ -23,6 +30,7 @@ impl RefSchema {
     pub fn new(r#ref: impl ToString) -> Self {
         Self {
             r#ref: r#ref.to_string(),
+            ..Self::default()
         }
     }
 }

@@ -31,6 +31,7 @@ mod serializable;
 mod serializer;
 mod tagged_union;
 mod r#type;
+mod union;
 #[cfg(feature = "any")]
 mod value;
 mod values;
@@ -47,6 +48,7 @@ pub use serializable::Serializable;
 pub use serializer::Serializer;
 pub use tagged_union::TaggedUnionSchema;
 pub use r#type::{TypeSchema, Types};
+pub use union::UnionSchema;
 #[cfg(feature = "any")]
 pub use value::{NumberValue, Value};
 pub use values::ValuesSchema;

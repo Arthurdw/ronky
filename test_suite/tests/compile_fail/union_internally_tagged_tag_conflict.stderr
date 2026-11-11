@@ -1,0 +1,5 @@
+error: This field has the same name as the union's `tag_key`, which is not allowed for internally tagged unions.
+ --> tests/compile_fail/union_internally_tagged_tag_conflict.rs:9:9
+  |
+9 |         circle_kind: String,
+  |         ^^^^^^^^^^^
