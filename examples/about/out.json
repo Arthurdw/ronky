@@ -86,8 +86,12 @@
                 "type": "string"
               },
               "of": {
-                "discriminator": "species",
-                "mapping": {
+                "metadata": {
+                  "description": "Of what this about is",
+                  "id": "Pet"
+                },
+                "tagKey": "species",
+                "union": {
                   "CAT": {
                     "optionalProperties": {
                       "color": {
@@ -131,9 +135,6 @@
                       }
                     }
                   }
-                },
-                "metadata": {
-                  "description": "Of what this about is"
                 }
               }
             }

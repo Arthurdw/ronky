@@ -3,9 +3,7 @@
 /// This module defines the `Exportable` trait, which allows types to be
 /// converted into serializable schemas. It also includes macros and utilities
 /// for handling generic types, type schemas, and feature-specific schemas.
-use crate::{
-    EmptySchema, PropertiesSchema, RefSchema, TaggedUnionSchema, ValuesSchema, type_utils,
-};
+use crate::{EmptySchema, RefSchema, UnionSchema, ValuesSchema, type_utils};
 use crate::{Serializable, TypeSchema, Types, elements::ElementsSchema};
 use indexmap::{IndexMap, IndexSet};
 use std::cell::{Cell, RefCell};
@@ -251,16 +249,11 @@ exportable! {
 
         // General exports
         Box<T> => T::export_with_recursion_check(),
+        // Matches serde's (externally tagged) representation: `{"Ok": T}` / `{"Err": E}`
         Result<T, E> => {
-            let mut schema = TaggedUnionSchema::new();
-            let mut ok_props = PropertiesSchema::new();
-            let mut err_props = PropertiesSchema::new();
-
-            ok_props.set_property("value", Box::new(T::export()));
-            err_props.set_property("value", Box::new(E::export()));
-
-            schema.add_mapping("Ok", Box::new(ok_props));
-            schema.add_mapping("Err", Box::new(err_props));
+            let mut schema = UnionSchema::new();
+            schema.add_variant("Ok", T::export());
+            schema.add_variant("Err", E::export());
             schema
         },
 
