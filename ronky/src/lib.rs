@@ -195,8 +195,9 @@
 //! }
 //!
 //! /// Entities that interrupt your Zoom calls at the worst possible moment
+//! /// Exported as an internally tagged union: { "species": "DOG", "name": ... }
 //! #[derive(Exported)]
-//! #[arri(transform = "uppercase", discriminator = "species")]
+//! #[arri(transform = "uppercase", tag_key = "species")]
 //! enum Pet {
 //!     Dog {
 //!         /// The word you'll repeat 37 times at the dog park
@@ -283,7 +284,9 @@
 //!
 //! - `#[arri(strict)]` - No extra properties allowed
 //! - `#[arri(transform = "snake_case")]` - Transform enum variant names
-//! - `#[arri(discriminator = "type")]` - Set discriminator field name
+//! - `#[arri(tag_key = "type")]` - Export an enum as an internally tagged union
+//! - `#[arri(tag_key = "type", value_key = "data")]` - Export an enum as an adjacently tagged union
+//! - `#[arri(discriminator = "type")]` - _Deprecated_, exports the legacy "discriminator" schema form
 //! - `#[arri(rename = "newName")]` - Rename a field or variant
 //! - `#[arri(nullable)]` - Mark a field as nullable
 //!
@@ -311,7 +314,7 @@ pub use arri_repr::*;
 #[cfg(feature = "serialization")]
 pub use serialization::{ExportedDeserialize, ExportedSerialize};
 
-pub static SCHEMA_VERSION: &str = "v0.0.8";
+pub static SCHEMA_VERSION: &str = "v0.0.9";
 
 // TODO: implement conversion from ATD to Rust types
 // | ATD Type | Rust Type |

@@ -1,10 +1,15 @@
 use indexmap::IndexMap;
 
 use crate::{EnumTransformation, MetadataSchema, Serializable, serializer::Serializer};
-/// Represents a schema for a tagged union in an Arri schema.
+/// Represents a schema for a tagged union in an Arri schema (the "discriminator" schema form).
 ///
 /// This struct defines the discriminator, mapping of variants, optional metadata,
 /// and transformations associated with a tagged union.
+///
+/// **Deprecated:** the "discriminator" schema form is deprecated by the Arri specification
+/// in favor of internally tagged unions. Use [`UnionSchema`](crate::UnionSchema) with
+/// [`UnionSchema::set_tag_key`](crate::UnionSchema::set_tag_key) for new schemas. This type
+/// is kept so that existing schemas keep working.
 #[derive(Debug, PartialEq, Eq)]
 pub struct TaggedUnionSchema {
     /// The discriminator used to identify the variant in the tagged union.
